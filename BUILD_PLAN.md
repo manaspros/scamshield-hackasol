@@ -112,7 +112,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T2.3 [sonnet] `ScamNotificationListener` service (no `READ_SMS`; SMS arrive as notifications) -> mapper -> TextApi -> dispatcher; "Notification access" step added to Setup; all callbacks wrapped
   - **Files**: `K/ScamNotificationListener.kt`, `android/app/src/main/AndroidManifest.xml`, `lib/screens/setup_screen.dart`  **Depends on**: T2.2, T1.7, T1.15
   - **Done when**: `APP` succeeds; `KT(ListenerWiringTest)` passes (fake classify called with the right Source); manifest has no `READ_SMS`
-- [ ] T2.4 [codex] `RecordingPipeline` (pure): STT segments `{text, startMs}` -> `StatementSegmenter` -> classify function (source=RECORDING) -> existing `CallRiskTracker` -> `CallReport{overall, perStatement, topTriggers}`
+- [x] T2.4 [codex] `RecordingPipeline` (pure): STT segments `{text, startMs}` -> `StatementSegmenter` -> classify function (source=RECORDING) -> existing `CallRiskTracker` -> `CallReport{overall, perStatement, topTriggers}`
   - **Files**: `K/core/RecordingPipeline.kt`, `KT/core/RecordingPipelineTest.kt`  **Depends on**: T1.1
   - **Done when**: `KT(RecordingPipelineTest)` passes `T2_4_scamScriptRaisesRisk`, `T2_4_genuineCallStaysSafe` (fake classify, real tracker)
 - [ ] T2.5 [sonnet] `AudioDecoder`: MediaExtractor/MediaCodec -> 16 kHz mono PCM16 chunks; pure `PcmResampler` for downmix/resample

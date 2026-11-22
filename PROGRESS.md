@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T2.4 [sonnet] Recording pipeline (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*RecordingPipelineTest*'
 - T2.2 [sonnet] Notification mapper (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*NotificationMapperTest*'
 - T1.6 [sonnet] Alert policy (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*AlertPolicyTest*'
 - T5.4 [sonnet] Golden-hour timer and evidence zip (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*GoldenHourTest*'
