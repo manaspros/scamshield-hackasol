@@ -1,0 +1,1685 @@
+{
+  "_synthetic": true,
+  "rows": [
+    {
+      "district": "Balod",
+      "scam_type": "OTP",
+      "date": "2026-01-05"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-06"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-07"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "OTHER",
+      "date": "2026-01-08"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-09"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-10"
+    },
+    {
+      "district": "Durg",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-11"
+    },
+    {
+      "district": "Khairagarh-Chhuikhadan-Gandai",
+      "scam_type": "KYC",
+      "date": "2026-01-12"
+    },
+    {
+      "district": "Mungeli",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-13"
+    },
+    {
+      "district": "Sukma",
+      "scam_type": "JOB",
+      "date": "2026-01-14"
+    },
+    {
+      "district": "Bijapur",
+      "scam_type": "OTP",
+      "date": "2026-01-15"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-16"
+    },
+    {
+      "district": "Korea",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-17"
+    },
+    {
+      "district": "Raipur",
+      "scam_type": "OTHER",
+      "date": "2026-01-18"
+    },
+    {
+      "district": "Balod",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-19"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-20"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-21"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-22"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-23"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-24"
+    },
+    {
+      "district": "Gariaband",
+      "scam_type": "KYC",
+      "date": "2026-01-25"
+    },
+    {
+      "district": "Kondagaon",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-26"
+    },
+    {
+      "district": "Narayanpur",
+      "scam_type": "JOB",
+      "date": "2026-01-27"
+    },
+    {
+      "district": "Surajpur",
+      "scam_type": "OTP",
+      "date": "2026-01-28"
+    },
+    {
+      "district": "Bijapur",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-29"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-30"
+    },
+    {
+      "district": "Korea",
+      "scam_type": "OTHER",
+      "date": "2026-01-31"
+    },
+    {
+      "district": "Raipur",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-01"
+    },
+    {
+      "district": "Balod",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-02"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-03"
+    },
+    {
+      "district": "Kanker",
+      "scam_type": "KYC",
+      "date": "2026-02-04"
+    },
+    {
+      "district": "Mohla-Manpur-Ambagarh Chowki",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-05"
+    },
+    {
+      "district": "Sarangarh-Bilaigarh",
+      "scam_type": "JOB",
+      "date": "2026-02-06"
+    },
+    {
+      "district": "Bastar",
+      "scam_type": "OTP",
+      "date": "2026-02-07"
+    },
+    {
+      "district": "Gariaband",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-08"
+    },
+    {
+      "district": "Kondagaon",
+      "scam_type": "JOB",
+      "date": "2026-02-09"
+    },
+    {
+      "district": "Narayanpur",
+      "scam_type": "OTP",
+      "date": "2026-02-10"
+    },
+    {
+      "district": "Surajpur",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-11"
+    },
+    {
+      "district": "Bijapur",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-12"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "scam_type": "OTHER",
+      "date": "2026-02-13"
+    },
+    {
+      "district": "Mahasamund",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-14"
+    },
+    {
+      "district": "Rajnandgaon",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-15"
+    },
+    {
+      "district": "Baloda Bazar",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-16"
+    },
+    {
+      "district": "Dhamtari",
+      "scam_type": "KYC",
+      "date": "2026-02-17"
+    },
+    {
+      "district": "Kanker",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-18"
+    },
+    {
+      "district": "Mohla-Manpur-Ambagarh Chowki",
+      "scam_type": "JOB",
+      "date": "2026-02-19"
+    },
+    {
+      "district": "Sarangarh-Bilaigarh",
+      "scam_type": "OTP",
+      "date": "2026-02-20"
+    },
+    {
+      "district": "Bastar",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-21"
+    },
+    {
+      "district": "Gariaband",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-22"
+    },
+    {
+      "district": "Kondagaon",
+      "scam_type": "OTHER",
+      "date": "2026-02-23"
+    },
+    {
+      "district": "Raigarh",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-24"
+    },
+    {
+      "district": "Surguja",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-25"
+    },
+    {
+      "district": "Bilaspur",
+      "scam_type": "OTHER",
+      "date": "2026-02-26"
+    },
+    {
+      "district": "Jashpur",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-27"
+    },
+    {
+      "district": "Mahasamund",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-28"
+    },
+    {
+      "district": "Rajnandgaon",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-03-01"
+    },
+    {
+      "district": "Baloda Bazar",
+      "scam_type": "KYC",
+      "date": "2026-01-05"
+    },
+    {
+      "district": "Dhamtari",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-06"
+    },
+    {
+      "district": "Kanker",
+      "scam_type": "JOB",
+      "date": "2026-01-07"
+    },
+    {
+      "district": "Mohla-Manpur-Ambagarh Chowki",
+      "scam_type": "OTP",
+      "date": "2026-01-08"
+    },
+    {
+      "district": "Sukma",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-09"
+    },
+    {
+      "district": "Bemetara",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-10"
+    },
+    {
+      "district": "Gaurela-Pendra-Marwahi",
+      "scam_type": "OTHER",
+      "date": "2026-01-11"
+    },
+    {
+      "district": "Korba",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-12"
+    },
+    {
+      "district": "Raigarh",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-13"
+    },
+    {
+      "district": "Surguja",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-14"
+    },
+    {
+      "district": "Bilaspur",
+      "scam_type": "KYC",
+      "date": "2026-01-15"
+    },
+    {
+      "district": "Jashpur",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-16"
+    },
+    {
+      "district": "Mahasamund",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-17"
+    },
+    {
+      "district": "Rajnandgaon",
+      "scam_type": "KYC",
+      "date": "2026-01-18"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-19"
+    },
+    {
+      "district": "Durg",
+      "scam_type": "JOB",
+      "date": "2026-01-20"
+    },
+    {
+      "district": "Khairagarh-Chhuikhadan-Gandai",
+      "scam_type": "OTP",
+      "date": "2026-01-21"
+    },
+    {
+      "district": "Mungeli",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-22"
+    },
+    {
+      "district": "Sukma",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-23"
+    },
+    {
+      "district": "Bemetara",
+      "scam_type": "OTHER",
+      "date": "2026-01-24"
+    },
+    {
+      "district": "Gaurela-Pendra-Marwahi",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-25"
+    },
+    {
+      "district": "Korba",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-26"
+    },
+    {
+      "district": "Raigarh",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-27"
+    },
+    {
+      "district": "Surguja",
+      "scam_type": "KYC",
+      "date": "2026-01-28"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-29"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "JOB",
+      "date": "2026-01-30"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "OTP",
+      "date": "2026-01-31"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-01"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-02"
+    },
+    {
+      "district": "Durg",
+      "scam_type": "OTP",
+      "date": "2026-02-03"
+    },
+    {
+      "district": "Khairagarh-Chhuikhadan-Gandai",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-04"
+    },
+    {
+      "district": "Mungeli",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-05"
+    },
+    {
+      "district": "Sukma",
+      "scam_type": "OTHER",
+      "date": "2026-02-06"
+    },
+    {
+      "district": "Bemetara",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-07"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-08"
+    },
+    {
+      "district": "Korea",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-09"
+    },
+    {
+      "district": "Raipur",
+      "scam_type": "KYC",
+      "date": "2026-02-10"
+    },
+    {
+      "district": "Balod",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-11"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "JOB",
+      "date": "2026-02-12"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "OTP",
+      "date": "2026-02-13"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-14"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-15"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "OTHER",
+      "date": "2026-02-16"
+    },
+    {
+      "district": "Durg",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-17"
+    },
+    {
+      "district": "Kondagaon",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-18"
+    },
+    {
+      "district": "Narayanpur",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-19"
+    },
+    {
+      "district": "Surajpur",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-20"
+    },
+    {
+      "district": "Bijapur",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-21"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-22"
+    },
+    {
+      "district": "Korea",
+      "scam_type": "KYC",
+      "date": "2026-02-23"
+    },
+    {
+      "district": "Raipur",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-24"
+    },
+    {
+      "district": "Balod",
+      "scam_type": "JOB",
+      "date": "2026-02-25"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "OTP",
+      "date": "2026-02-26"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-27"
+    },
+    {
+      "district": "Mohla-Manpur-Ambagarh Chowki",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-28"
+    },
+    {
+      "district": "Sarangarh-Bilaigarh",
+      "scam_type": "OTHER",
+      "date": "2026-03-01"
+    },
+    {
+      "district": "Bastar",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-05"
+    },
+    {
+      "district": "Gariaband",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-06"
+    },
+    {
+      "district": "Kondagaon",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-07"
+    },
+    {
+      "district": "Narayanpur",
+      "scam_type": "KYC",
+      "date": "2026-01-08"
+    },
+    {
+      "district": "Surajpur",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-09"
+    },
+    {
+      "district": "Bijapur",
+      "scam_type": "JOB",
+      "date": "2026-01-10"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "scam_type": "OTP",
+      "date": "2026-01-11"
+    },
+    {
+      "district": "Korea",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-12"
+    },
+    {
+      "district": "Rajnandgaon",
+      "scam_type": "JOB",
+      "date": "2026-01-13"
+    },
+    {
+      "district": "Baloda Bazar",
+      "scam_type": "OTP",
+      "date": "2026-01-14"
+    },
+    {
+      "district": "Dhamtari",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-15"
+    },
+    {
+      "district": "Kanker",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-16"
+    },
+    {
+      "district": "Mohla-Manpur-Ambagarh Chowki",
+      "scam_type": "OTHER",
+      "date": "2026-01-17"
+    },
+    {
+      "district": "Sarangarh-Bilaigarh",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-18"
+    },
+    {
+      "district": "Bastar",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-19"
+    },
+    {
+      "district": "Gariaband",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-20"
+    },
+    {
+      "district": "Kondagaon",
+      "scam_type": "KYC",
+      "date": "2026-01-21"
+    },
+    {
+      "district": "Narayanpur",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-22"
+    },
+    {
+      "district": "Surguja",
+      "scam_type": "JOB",
+      "date": "2026-01-23"
+    },
+    {
+      "district": "Bilaspur",
+      "scam_type": "OTP",
+      "date": "2026-01-24"
+    },
+    {
+      "district": "Jashpur",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-25"
+    },
+    {
+      "district": "Mahasamund",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-26"
+    },
+    {
+      "district": "Rajnandgaon",
+      "scam_type": "OTHER",
+      "date": "2026-01-27"
+    },
+    {
+      "district": "Baloda Bazar",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-28"
+    },
+    {
+      "district": "Dhamtari",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-29"
+    },
+    {
+      "district": "Kanker",
+      "scam_type": "OTHER",
+      "date": "2026-01-30"
+    },
+    {
+      "district": "Mohla-Manpur-Ambagarh Chowki",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-31"
+    },
+    {
+      "district": "Sarangarh-Bilaigarh",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-01"
+    },
+    {
+      "district": "Bemetara",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-02"
+    },
+    {
+      "district": "Gaurela-Pendra-Marwahi",
+      "scam_type": "KYC",
+      "date": "2026-02-03"
+    },
+    {
+      "district": "Korba",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-04"
+    },
+    {
+      "district": "Raigarh",
+      "scam_type": "JOB",
+      "date": "2026-02-05"
+    },
+    {
+      "district": "Surguja",
+      "scam_type": "OTP",
+      "date": "2026-02-06"
+    },
+    {
+      "district": "Bilaspur",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-07"
+    },
+    {
+      "district": "Jashpur",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-08"
+    },
+    {
+      "district": "Mahasamund",
+      "scam_type": "OTHER",
+      "date": "2026-02-09"
+    },
+    {
+      "district": "Rajnandgaon",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-10"
+    },
+    {
+      "district": "Baloda Bazar",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-11"
+    },
+    {
+      "district": "Durg",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-12"
+    },
+    {
+      "district": "Khairagarh-Chhuikhadan-Gandai",
+      "scam_type": "KYC",
+      "date": "2026-02-13"
+    },
+    {
+      "district": "Mungeli",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-14"
+    },
+    {
+      "district": "Sukma",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-15"
+    },
+    {
+      "district": "Bemetara",
+      "scam_type": "KYC",
+      "date": "2026-02-16"
+    },
+    {
+      "district": "Gaurela-Pendra-Marwahi",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-17"
+    },
+    {
+      "district": "Korba",
+      "scam_type": "JOB",
+      "date": "2026-02-18"
+    },
+    {
+      "district": "Raigarh",
+      "scam_type": "OTP",
+      "date": "2026-02-19"
+    },
+    {
+      "district": "Surguja",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-20"
+    },
+    {
+      "district": "Bilaspur",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-21"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "OTHER",
+      "date": "2026-02-22"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-23"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-24"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-25"
+    },
+    {
+      "district": "Durg",
+      "scam_type": "KYC",
+      "date": "2026-02-26"
+    },
+    {
+      "district": "Khairagarh-Chhuikhadan-Gandai",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-27"
+    },
+    {
+      "district": "Mungeli",
+      "scam_type": "JOB",
+      "date": "2026-02-28"
+    },
+    {
+      "district": "Sukma",
+      "scam_type": "OTP",
+      "date": "2026-03-01"
+    },
+    {
+      "district": "Bemetara",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-05"
+    },
+    {
+      "district": "Gaurela-Pendra-Marwahi",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-06"
+    },
+    {
+      "district": "Korea",
+      "scam_type": "OTP",
+      "date": "2026-01-07"
+    },
+    {
+      "district": "Raipur",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-08"
+    },
+    {
+      "district": "Balod",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-09"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "OTHER",
+      "date": "2026-01-10"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-11"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-12"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-13"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "KYC",
+      "date": "2026-01-14"
+    },
+    {
+      "district": "Durg",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-15"
+    },
+    {
+      "district": "Khairagarh-Chhuikhadan-Gandai",
+      "scam_type": "JOB",
+      "date": "2026-01-16"
+    },
+    {
+      "district": "Narayanpur",
+      "scam_type": "OTP",
+      "date": "2026-01-17"
+    },
+    {
+      "district": "Surajpur",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-18"
+    },
+    {
+      "district": "Bijapur",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-19"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "scam_type": "OTHER",
+      "date": "2026-01-20"
+    },
+    {
+      "district": "Korea",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-21"
+    },
+    {
+      "district": "Raipur",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-22"
+    },
+    {
+      "district": "Balod",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-23"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-24"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-25"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-26"
+    },
+    {
+      "district": "Sarangarh-Bilaigarh",
+      "scam_type": "KYC",
+      "date": "2026-01-27"
+    },
+    {
+      "district": "Bastar",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-28"
+    },
+    {
+      "district": "Gariaband",
+      "scam_type": "JOB",
+      "date": "2026-01-29"
+    },
+    {
+      "district": "Kondagaon",
+      "scam_type": "OTP",
+      "date": "2026-01-30"
+    },
+    {
+      "district": "Narayanpur",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-31"
+    },
+    {
+      "district": "Surajpur",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-01"
+    },
+    {
+      "district": "Bijapur",
+      "scam_type": "OTHER",
+      "date": "2026-02-02"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-03"
+    },
+    {
+      "district": "Korea",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-04"
+    },
+    {
+      "district": "Raipur",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-05"
+    },
+    {
+      "district": "Baloda Bazar",
+      "scam_type": "KYC",
+      "date": "2026-02-06"
+    },
+    {
+      "district": "Dhamtari",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-07"
+    },
+    {
+      "district": "Kanker",
+      "scam_type": "JOB",
+      "date": "2026-02-08"
+    },
+    {
+      "district": "Mohla-Manpur-Ambagarh Chowki",
+      "scam_type": "OTP",
+      "date": "2026-02-09"
+    },
+    {
+      "district": "Sarangarh-Bilaigarh",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-10"
+    },
+    {
+      "district": "Bastar",
+      "scam_type": "JOB",
+      "date": "2026-02-11"
+    },
+    {
+      "district": "Gariaband",
+      "scam_type": "OTP",
+      "date": "2026-02-12"
+    },
+    {
+      "district": "Kondagaon",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-13"
+    },
+    {
+      "district": "Narayanpur",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-14"
+    },
+    {
+      "district": "Surajpur",
+      "scam_type": "OTHER",
+      "date": "2026-02-15"
+    },
+    {
+      "district": "Bilaspur",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-16"
+    },
+    {
+      "district": "Jashpur",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-17"
+    },
+    {
+      "district": "Mahasamund",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-18"
+    },
+    {
+      "district": "Rajnandgaon",
+      "scam_type": "KYC",
+      "date": "2026-02-19"
+    },
+    {
+      "district": "Baloda Bazar",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-20"
+    },
+    {
+      "district": "Dhamtari",
+      "scam_type": "JOB",
+      "date": "2026-02-21"
+    },
+    {
+      "district": "Kanker",
+      "scam_type": "OTP",
+      "date": "2026-02-22"
+    },
+    {
+      "district": "Mohla-Manpur-Ambagarh Chowki",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-23"
+    },
+    {
+      "district": "Sarangarh-Bilaigarh",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-24"
+    },
+    {
+      "district": "Bastar",
+      "scam_type": "OTHER",
+      "date": "2026-02-25"
+    },
+    {
+      "district": "Gaurela-Pendra-Marwahi",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-26"
+    },
+    {
+      "district": "Korba",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-27"
+    },
+    {
+      "district": "Raigarh",
+      "scam_type": "OTHER",
+      "date": "2026-02-28"
+    },
+    {
+      "district": "Surguja",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-03-01"
+    },
+    {
+      "district": "Bilaspur",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-05"
+    },
+    {
+      "district": "Jashpur",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-06"
+    },
+    {
+      "district": "Mahasamund",
+      "scam_type": "KYC",
+      "date": "2026-01-07"
+    },
+    {
+      "district": "Rajnandgaon",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-08"
+    },
+    {
+      "district": "Baloda Bazar",
+      "scam_type": "JOB",
+      "date": "2026-01-09"
+    },
+    {
+      "district": "Dhamtari",
+      "scam_type": "OTP",
+      "date": "2026-01-10"
+    },
+    {
+      "district": "Khairagarh-Chhuikhadan-Gandai",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-11"
+    },
+    {
+      "district": "Mungeli",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-12"
+    },
+    {
+      "district": "Sukma",
+      "scam_type": "OTHER",
+      "date": "2026-01-13"
+    },
+    {
+      "district": "Bemetara",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-14"
+    },
+    {
+      "district": "Gaurela-Pendra-Marwahi",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-15"
+    },
+    {
+      "district": "Korba",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-16"
+    },
+    {
+      "district": "Raigarh",
+      "scam_type": "KYC",
+      "date": "2026-01-17"
+    },
+    {
+      "district": "Surguja",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-18"
+    },
+    {
+      "district": "Bilaspur",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-19"
+    },
+    {
+      "district": "Jashpur",
+      "scam_type": "KYC",
+      "date": "2026-01-20"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-21"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "JOB",
+      "date": "2026-01-22"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "OTP",
+      "date": "2026-01-23"
+    },
+    {
+      "district": "Durg",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-24"
+    },
+    {
+      "district": "Khairagarh-Chhuikhadan-Gandai",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-25"
+    },
+    {
+      "district": "Mungeli",
+      "scam_type": "OTHER",
+      "date": "2026-01-26"
+    },
+    {
+      "district": "Sukma",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-27"
+    },
+    {
+      "district": "Bemetara",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-28"
+    },
+    {
+      "district": "Gaurela-Pendra-Marwahi",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-29"
+    },
+    {
+      "district": "Korba",
+      "scam_type": "KYC",
+      "date": "2026-01-30"
+    },
+    {
+      "district": "Raipur",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-31"
+    },
+    {
+      "district": "Balod",
+      "scam_type": "JOB",
+      "date": "2026-02-01"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "OTP",
+      "date": "2026-02-02"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-03"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-04"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "OTP",
+      "date": "2026-02-05"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-06"
+    },
+    {
+      "district": "Durg",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-07"
+    },
+    {
+      "district": "Khairagarh-Chhuikhadan-Gandai",
+      "scam_type": "OTHER",
+      "date": "2026-02-08"
+    },
+    {
+      "district": "Mungeli",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-09"
+    },
+    {
+      "district": "Surajpur",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-10"
+    },
+    {
+      "district": "Bijapur",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-11"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "scam_type": "KYC",
+      "date": "2026-02-12"
+    },
+    {
+      "district": "Korea",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-13"
+    },
+    {
+      "district": "Raipur",
+      "scam_type": "JOB",
+      "date": "2026-02-14"
+    },
+    {
+      "district": "Balod",
+      "scam_type": "OTP",
+      "date": "2026-02-15"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-16"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-17"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "OTHER",
+      "date": "2026-02-18"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-19"
+    },
+    {
+      "district": "Bastar",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-20"
+    },
+    {
+      "district": "Gariaband",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-21"
+    },
+    {
+      "district": "Kondagaon",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-22"
+    },
+    {
+      "district": "Narayanpur",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-23"
+    },
+    {
+      "district": "Surajpur",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-24"
+    },
+    {
+      "district": "Bijapur",
+      "scam_type": "KYC",
+      "date": "2026-02-25"
+    },
+    {
+      "district": "Janjgir-Champa",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-26"
+    },
+    {
+      "district": "Korea",
+      "scam_type": "JOB",
+      "date": "2026-02-27"
+    },
+    {
+      "district": "Raipur",
+      "scam_type": "OTP",
+      "date": "2026-02-28"
+    },
+    {
+      "district": "Balod",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-03-01"
+    },
+    {
+      "district": "Dhamtari",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-05"
+    },
+    {
+      "district": "Kanker",
+      "scam_type": "OTHER",
+      "date": "2026-01-06"
+    },
+    {
+      "district": "Mohla-Manpur-Ambagarh Chowki",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-07"
+    },
+    {
+      "district": "Sarangarh-Bilaigarh",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-08"
+    },
+    {
+      "district": "Bastar",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-09"
+    },
+    {
+      "district": "Gariaband",
+      "scam_type": "KYC",
+      "date": "2026-01-10"
+    },
+    {
+      "district": "Kondagaon",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-11"
+    },
+    {
+      "district": "Narayanpur",
+      "scam_type": "JOB",
+      "date": "2026-01-12"
+    },
+    {
+      "district": "Surajpur",
+      "scam_type": "OTP",
+      "date": "2026-01-13"
+    },
+    {
+      "district": "Bijapur",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-14"
+    },
+    {
+      "district": "Jashpur",
+      "scam_type": "JOB",
+      "date": "2026-01-15"
+    },
+    {
+      "district": "Mahasamund",
+      "scam_type": "OTP",
+      "date": "2026-01-16"
+    },
+    {
+      "district": "Rajnandgaon",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-17"
+    },
+    {
+      "district": "Baloda Bazar",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-18"
+    },
+    {
+      "district": "Dhamtari",
+      "scam_type": "OTHER",
+      "date": "2026-01-19"
+    },
+    {
+      "district": "Kanker",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-20"
+    },
+    {
+      "district": "Mohla-Manpur-Ambagarh Chowki",
+      "scam_type": "LOAN_APP",
+      "date": "2026-01-21"
+    },
+    {
+      "district": "Sarangarh-Bilaigarh",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-01-22"
+    },
+    {
+      "district": "Bastar",
+      "scam_type": "KYC",
+      "date": "2026-01-23"
+    },
+    {
+      "district": "Gariaband",
+      "scam_type": "FAKE_QR",
+      "date": "2026-01-24"
+    },
+    {
+      "district": "Korba",
+      "scam_type": "JOB",
+      "date": "2026-01-25"
+    },
+    {
+      "district": "Raigarh",
+      "scam_type": "OTP",
+      "date": "2026-01-26"
+    },
+    {
+      "district": "Surguja",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-01-27"
+    },
+    {
+      "district": "Bilaspur",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-28"
+    },
+    {
+      "district": "Jashpur",
+      "scam_type": "OTHER",
+      "date": "2026-01-29"
+    },
+    {
+      "district": "Mahasamund",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-01-30"
+    },
+    {
+      "district": "Rajnandgaon",
+      "scam_type": "INVESTMENT",
+      "date": "2026-01-31"
+    },
+    {
+      "district": "Baloda Bazar",
+      "scam_type": "OTHER",
+      "date": "2026-02-01"
+    },
+    {
+      "district": "Dhamtari",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-02"
+    },
+    {
+      "district": "Kanker",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-03"
+    },
+    {
+      "district": "Mungeli",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-04"
+    },
+    {
+      "district": "Sukma",
+      "scam_type": "KYC",
+      "date": "2026-02-05"
+    },
+    {
+      "district": "Bemetara",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-06"
+    },
+    {
+      "district": "Gaurela-Pendra-Marwahi",
+      "scam_type": "JOB",
+      "date": "2026-02-07"
+    },
+    {
+      "district": "Korba",
+      "scam_type": "OTP",
+      "date": "2026-02-08"
+    },
+    {
+      "district": "Raigarh",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-09"
+    },
+    {
+      "district": "Surguja",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-10"
+    },
+    {
+      "district": "Bilaspur",
+      "scam_type": "OTHER",
+      "date": "2026-02-11"
+    },
+    {
+      "district": "Jashpur",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-12"
+    },
+    {
+      "district": "Mahasamund",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-13"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-14"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "KYC",
+      "date": "2026-02-15"
+    },
+    {
+      "district": "Durg",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-16"
+    },
+    {
+      "district": "Khairagarh-Chhuikhadan-Gandai",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-17"
+    },
+    {
+      "district": "Mungeli",
+      "scam_type": "KYC",
+      "date": "2026-02-18"
+    },
+    {
+      "district": "Sukma",
+      "scam_type": "FAKE_QR",
+      "date": "2026-02-19"
+    },
+    {
+      "district": "Bemetara",
+      "scam_type": "JOB",
+      "date": "2026-02-20"
+    },
+    {
+      "district": "Gaurela-Pendra-Marwahi",
+      "scam_type": "OTP",
+      "date": "2026-02-21"
+    },
+    {
+      "district": "Korba",
+      "scam_type": "COURIER_CUSTOMS",
+      "date": "2026-02-22"
+    },
+    {
+      "district": "Raigarh",
+      "scam_type": "INVESTMENT",
+      "date": "2026-02-23"
+    },
+    {
+      "district": "Balod",
+      "scam_type": "OTHER",
+      "date": "2026-02-24"
+    },
+    {
+      "district": "Dantewada",
+      "scam_type": "DIGITAL_ARREST",
+      "date": "2026-02-25"
+    },
+    {
+      "district": "Kabirdham",
+      "scam_type": "LOAN_APP",
+      "date": "2026-02-26"
+    },
+    {
+      "district": "Manendragarh-Chirmiri-Bharatpur",
+      "scam_type": "MISTAKEN_TRANSFER",
+      "date": "2026-02-27"
+    },
+    {
+      "district": "Sakti",
+      "scam_type": "KYC",
+      "date": "2026-02-28"
+    },
+    {
+      "district": "Balrampur",
+      "scam_type": "FAKE_QR",
+      "date": "2026-03-01"
+    }
+  ]
+}
