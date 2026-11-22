@@ -45,6 +45,15 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/caption_accessibility_service" />
         </service>
+        <service
+            android:name=".ScamNotificationListener"
+            android:exported="true"
+            android:label="ScamShield message protection"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
         <!-- MediaPipe LLM inference may use the GPU OpenCL driver when present. -->
         <uses-native-library android:name="libOpenCL.so" android:required="false" />
         <!-- Don't delete the meta-data below.

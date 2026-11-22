@@ -24,7 +24,7 @@ import java.io.File
 /**
  * Flutter bridge.
  *  MethodChannel "scamshield/api": classify, modelStatus, loadModel, importModel, getSettings,
- *    setSettings, serviceStatus, app.initialRoute, perm.notificationsGranted, perm.requestNotifications, openAccessibilitySettings, openCaptionSettings, testOverlay
+ *    setSettings, serviceStatus, app.initialRoute, perm.notificationsGranted, perm.requestNotifications, perm.notificationAccessGranted, perm.openNotificationAccess, openAccessibilitySettings, openCaptionSettings, testOverlay
  *  EventChannel  "scamshield/events": caption / statement / verdict / discovery / call / model events
  */
 class MainActivity : FlutterActivity() {
@@ -114,6 +114,9 @@ class MainActivity : FlutterActivity() {
                     if (!notificationsGranted()) requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQ_NOTIF)
                     result.success(notificationsGranted())
                 }
+                "perm.notificationAccessGranted" -> result.success(
+                    androidx.core.app.NotificationManagerCompat.getEnabledListenerPackages(this).contains(packageName))
+                "perm.openNotificationAccess" -> { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)); result.success(null) }
                 "runMicProbe" -> { MicProbe(applicationContext).start(); result.success(null) }
                 "playProbe" -> {
                     val path = call.argument<String>("path")

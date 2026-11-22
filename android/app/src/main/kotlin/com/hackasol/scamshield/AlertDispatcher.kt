@@ -16,14 +16,14 @@ import com.hackasol.scamshield.core.Verdict
  * Report action. Main thread only (OverlayController requirement). Policy runs on the SHOWN label
  * (call-level tracker may differ from the raw verdict).
  */
-class AlertDispatcher(private val ctx: Context, private val overlay: OverlayController) {
+class AlertDispatcher(private val ctx: Context, private val overlay: OverlayController?) {
     private val nm = ctx.getSystemService(NotificationManager::class.java)
     private var channelReady = false
 
     fun dispatch(v: Verdict, shown: Label, callLevel: Label, callRisk: Double) {
         val sv = v.copy(label = shown)
         val plan = AlertPolicy.plan(sv, sv.source)
-        if (plan.bubble) overlay.showVerdict(v, shown, callLevel, callRisk)
+        if (plan.bubble) overlay?.showVerdict(v, shown, callLevel, callRisk)
         // Preliminary (rules-only, LLM pending) verdicts never notify: a final one follows.
         if (!plan.notify || v.preliminary) return
         val f = AlertNotificationMapper.fields(plan, sv, v.scamType) ?: return

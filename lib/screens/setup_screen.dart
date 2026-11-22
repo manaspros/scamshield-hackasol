@@ -19,6 +19,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   Map<Object?, Object?> _model = {};
   bool _mic = false;
   bool _notif = true;
+  bool _nlAccess = false;
   Map<Object?, Object?> _dl = {};
   StreamSubscription? _sub;
   bool _importing = false;
@@ -54,7 +55,8 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
     final mic = await TextApi.micPermission();
     final dl = await TextApi.downloadStatus();
     final notif = await _api.invokeMethod<bool>('perm.notificationsGranted') ?? true;
-    if (mounted) setState(() { _service = s; _model = m; _mic = mic; _notif = notif; if (dl['status'] != 'IDLE' || _dl.isEmpty) _dl = dl; });
+    final nl = await _api.invokeMethod<bool>('perm.notificationAccessGranted') ?? false;
+    if (mounted) setState(() { _nlAccess = nl; _service = s; _model = m; _mic = mic; _notif = notif; if (dl['status'] != 'IDLE' || _dl.isEmpty) _dl = dl; });
   }
 
   Future<void> _import() async {
@@ -238,6 +240,22 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
         ),
         _step(
           n: 6,
+          icon: Icons.mark_email_unread,
+          title: 'मैसेज सुरक्षा चालू करें',
+          done: _nlAccess,
+          body: 'ScamShield फ़ोन पर आए मैसेज (SMS, WhatsApp) की सूचनाएँ पढ़ता है, सिर्फ़ इसी फ़ोन पर। कुछ भी फ़ोन से बाहर नहीं जाता।\n'
+              'ScamShield reads message notifications on the phone only; nothing leaves the phone. '
+              'Settings → Notification access → ScamShield → On.',
+          actions: [
+            FilledButton.icon(
+              onPressed: () => _api.invokeMethod('perm.openNotificationAccess'),
+              icon: Icon(_nlAccess ? Icons.check : Icons.settings),
+              label: Text(_nlAccess ? 'चालू है' : 'नोटिफ़िकेशन एक्सेस खोलें'),
+            ),
+          ],
+        ),
+        _step(
+          n: 7,
           title: 'Test the warning bubble',
           done: false,
           body: 'Shows a sample SCAM warning on top of the screen, exactly as it appears during a call.',

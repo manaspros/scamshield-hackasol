@@ -109,7 +109,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T2.2 [codex] `NotificationMapper` (pure): package -> Source (WhatsApp, Telegram, default SMS apps -> SMS, else NOTIFICATION), ignore ongoing/group-summary/own package, min length 15, dedupe same text within 60 s
   - **Files**: `K/core/NotificationMapper.kt`, `KT/core/NotificationMapperTest.kt`  **Depends on**: T1.1
   - **Done when**: `KT(NotificationMapperTest)` passes `T2_2_mapsPackages`, `T2_2_dedupes`, `T2_2_ignoresOwn`
-- [ ] T2.3 [sonnet] `ScamNotificationListener` service (no `READ_SMS`; SMS arrive as notifications) -> mapper -> TextApi -> dispatcher; "Notification access" step added to Setup; all callbacks wrapped
+- [x] T2.3 [sonnet] `ScamNotificationListener` service (no `READ_SMS`; SMS arrive as notifications) -> mapper -> TextApi -> dispatcher; "Notification access" step added to Setup; all callbacks wrapped
   - **Files**: `K/ScamNotificationListener.kt`, `android/app/src/main/AndroidManifest.xml`, `lib/screens/setup_screen.dart`  **Depends on**: T2.2, T1.7, T1.15
   - **Done when**: `APP` succeeds; `KT(ListenerWiringTest)` passes (fake classify called with the right Source); manifest has no `READ_SMS`
 - [x] T2.4 [codex] `RecordingPipeline` (pure): STT segments `{text, startMs}` -> `StatementSegmenter` -> classify function (source=RECORDING) -> existing `CallRiskTracker` -> `CallReport{overall, perStatement, topTriggers}`
