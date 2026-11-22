@@ -80,7 +80,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T1.8 [codex] [NEEDS-OK:DEP4] `ml/` uv project + dataset schema + split by scam template (`text,label,lang,scam_type,template_id,source`, source = synthetic|real; real rows load from `data/eval/real/` and go to the test set only)
   - **Files**: `ml/pyproject.toml`, `ml/uv.lock`, `ml/scamshield_ml/data.py`, `ml/tests/test_data.py`  **Depends on**: none
   - **Done when**: `PT(tests/test_data.py)` passes `T1_8_noTemplateInBothSplits`, `T1_8_realRowsTestOnly`
-- [ ] T1.9 [codex] Deterministic synthetic generator: EN / Hindi (Devanagari) / Hinglish, 10 scam types plus hard genuine negatives (real bank OTP notices, delivery updates, bills), >=40 templates per language, slot-filled; output also as SFT pairs (prompt + target in the on-device output format)
+- [x] T1.9 [codex] Deterministic synthetic generator: EN / Hindi (Devanagari) / Hinglish, 10 scam types plus hard genuine negatives (real bank OTP notices, delivery updates, bills), >=40 templates per language, slot-filled; output also as SFT pairs (prompt + target in the on-device output format)
   - **Files**: `ml/scamshield_ml/synth.py`, `ml/tests/test_synth.py`  **Depends on**: T1.8
   - **Done when**: `PT(tests/test_synth.py)` passes `T1_9_templateCountPerLang`, `T1_9_allScamTypesPresent`, `T1_9_sftPairsWellFormed`
 - [ ] T1.10 [codex] Python port of the on-device prompt builder and output parser (the harness and training must use exactly the on-device format)

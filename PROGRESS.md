@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T1.9 [codex] synthetic EN/HI/Hinglish generator (44 templates per lang) — 2026-11-23 — `cd ml && uv run pytest -q tests/test_synth.py` (SFT target format is a placeholder until T1.10)
 - T3.7 [codex] dashboard agg + validate + districts + synthetic sample — 2026-11-23 — `node --test dashboard/test/agg.test.mjs && node dashboard/validate.mjs data/trends/sample.json` — commit 1f7248f
 - T3.9 [sonnet] policy dashboard static page — 2026-11-23 — `node --test dashboard/test/page.test.mjs` (serve over http from repo root; m1.json shape to recheck after T1.13; week gaps skipped not zero)
 - T1.8 [codex] ml uv project + schema + template split — 2026-11-23 — `cd ml && uv run pytest -q tests/test_data.py` (pins: numpy 2.4.6, pyyaml 6.0.3, pytest 9.2.0)
@@ -24,6 +25,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 - 2026-11-23: The `rtk` shell wrapper rewrites `uv run pytest` output to "No tests collected". Verifiers call `/Users/manas.choudhary/.local/bin/uv` (and `/usr/bin/wc`, `/usr/bin/grep`) by absolute path.
 - T1.8 committed 9a527f6.
+- 2026-11-23: GitHub account switched to manaspros at user request; AB527/scamshield still 404 for it.
 
 ## Failures log
 
