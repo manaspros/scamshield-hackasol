@@ -129,7 +129,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
   - **Done when**: human logs result with phone model and model id
 
 ## Phase 3 — Must-have screens
-- [ ] T3.1 [codex] `ReportPack` (pure): targets (money lost: 1930 + cybercrime.gov.in; not yet: Chakshu/Sanchar Saathi + 1930) as `[VERIFY]` constants; evidence checklist pre-filled from recent `VerdictEvent`s (time, scam type, source, triggers; user adds number, amount, UTR, screenshots)
+- [x] T3.1 [codex] `ReportPack` (pure): targets (money lost: 1930 + cybercrime.gov.in; not yet: Chakshu/Sanchar Saathi + 1930) as `[VERIFY]` constants; evidence checklist pre-filled from recent `VerdictEvent`s (time, scam type, source, triggers; user adds number, amount, UTR, screenshots)
   - **Files**: `K/core/ReportPack.kt`, `KT/core/ReportPackTest.kt`  **Depends on**: T1.3
   - **Done when**: `KT(ReportPackTest)` passes `T3_1_prefillsFromEvents`, `T3_1_lostVsNotYetTargets`
 - [ ] T3.2 [sonnet] [UI] Report screen: two paths ("I lost money" / "not yet"), checklist, buttons for 1930 (`ACTION_DIAL`, never auto-call), cybercrime.gov.in, Chakshu; opened by the alert's Report action (`route=report`)
