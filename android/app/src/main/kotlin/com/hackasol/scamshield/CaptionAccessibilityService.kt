@@ -19,7 +19,7 @@ import com.hackasol.scamshield.core.Verdict
 
 /**
  * Live pipeline:  caption window text -> StatementSegmenter -> TextApi (rules + Gemma)
- *                 -> CallRiskTracker -> OverlayController bubble (+ EventBus for the Flutter feed).
+ *                 -> CallRiskTracker -> AlertDispatcher (bubble + notification) (+ EventBus for the Flutter feed).
  * Also watches call state to OCR-fallback and best-effort auto-enable Live Caption.
  */
 class CaptionAccessibilityService : AccessibilityService() {
@@ -38,6 +38,7 @@ class CaptionAccessibilityService : AccessibilityService() {
     private lateinit var extractor: CaptionExtractor
     private lateinit var ocr: OcrCaptionReader
     private lateinit var overlay: OverlayController
+    private lateinit var dispatcher: AlertDispatcher
     private lateinit var toggler: CaptionToggler
     private lateinit var micProbe: MicProbe
     private val firedSignals = HashSet<String>()      // one alert per signal kind per call
@@ -72,6 +73,7 @@ class CaptionAccessibilityService : AccessibilityService() {
         extractor = CaptionExtractor(this)
         ocr = OcrCaptionReader(this)
         overlay = OverlayController(this)
+        dispatcher = AlertDispatcher(this, overlay)
         toggler = CaptionToggler(this, main)
         micProbe = MicProbe(this)
         safe("init") { TextApi.init(this) }
@@ -220,7 +222,7 @@ class CaptionAccessibilityService : AccessibilityService() {
         val shown = if (v.preliminary) {
             if (v.label == Label.SCAM) Label.SUSPICIOUS else v.label   // never go red on rules alone before LLM
         } else tracker.record(v, now)
-        overlay.showVerdict(v, shown, tracker.level(), tracker.risk)
+        dispatcher.dispatch(v, shown, tracker.level(), tracker.risk)
         EventBus.emit("verdict", v.toMap() + mapOf(
             "shownLabel" to shown.name, "callLevel" to tracker.level().name, "callRisk" to tracker.risk,
         ))
@@ -233,6 +235,6 @@ class CaptionAccessibilityService : AccessibilityService() {
         val v = Verdict("Sir aapka parcel customs mein ruka hai, OTP bata dijiye warna digital arrest hoga",
             Label.SCAM, 0.94, "Fake customs + OTP + arrest threat", listOf("OTP bata dijiye", "digital arrest"),
             "demo", 0, Source.CAPTION)
-        overlay.showVerdict(v, Label.SCAM, Label.SCAM, 0.82)
+        dispatcher.dispatch(v, Label.SCAM, Label.SCAM, 0.82)
     }
 }

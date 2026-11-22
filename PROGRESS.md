@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T1.7 [sonnet] AlertDispatcher (heads-up notification + Report action -> route=report, bubble via OverlayController), POST_NOTIFICATIONS step in Setup — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*AlertDispatcherMappingTest*' && flutter build apk --debug --android-skip-build-dependency-validation && flutter test
 - T1.15 [sonnet] model URL/filename/SHA from core/ModelConfig.kt (default = current base Gemma 3 1B release), Verdict.scamType wired to Dart map and verdict log — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*ModelConfigTest*' && flutter build apk --debug --android-skip-build-dependency-validation && flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
 - T4.4 [codex] new-scam clustering (HDBSCAN on trigger features, campaign alerts, dashboard JSON) — 2026-11-23 — cd ml && uv run pytest -q -rA (scikit-learn 1.9.1; enabled because the user asked to build all parts)
 - T1.5 [sonnet] fusion moved to core/Fusion.kt with FusionWeights (behaviour regression-locked) — 2026-11-23 — ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*FusionTest*'
@@ -45,6 +46,8 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
 ## Decisions
+- 2026-11-23: T1.7 follows AlertPolicy: SAFE live captions no longer show a green bubble, and a red bubble is not auto-replaced by a later SAFE line (a warning should not be dismissed by the next benign statement). MainActivity overrides getInitialRoute()="/" because FlutterActivity treats the intent extra "route" as its own initial route; route=report reaches Dart via scamshield/api app.initialRoute.
+- 2026-11-23: User priority order (coordinator): T1.7 -> T2.3 -> T5.7; T5.7 adds its own nav entry in main.dart ahead of T3.11.
 - 2026-11-23: User: no fine-tune for the prototype; base Gemma 3 1B SLM is the model; fine-tune is future work.
 - 2026-11-23: T3.5 lesson scores persist via new MethodChannel scamshield/prefs (getString/setString, key lesson_best_v1), because AppSettings only accepts fixed keys; falls back to in-memory until the native handler lands with the next MainActivity task (T1.4/T3.2). Language choice not persisted.
 - 2026-11-23: T1.12 reads its CSV from env RULES_EVAL_CSV (relative to repo root, default data/golden/eval_smoke.csv) at the ML session's request; env var instead of a system property so build.gradle stays unchanged. JSONL lines carry "text" because ml eval_heldout.load_rules_preds joins on text (build output, gitignored).

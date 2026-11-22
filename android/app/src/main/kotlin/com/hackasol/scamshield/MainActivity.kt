@@ -24,7 +24,7 @@ import java.io.File
 /**
  * Flutter bridge.
  *  MethodChannel "scamshield/api": classify, modelStatus, loadModel, importModel, getSettings,
- *    setSettings, serviceStatus, openAccessibilitySettings, openCaptionSettings, testOverlay
+ *    setSettings, serviceStatus, app.initialRoute, perm.notificationsGranted, perm.requestNotifications, openAccessibilitySettings, openCaptionSettings, testOverlay
  *  EventChannel  "scamshield/events": caption / statement / verdict / discovery / call / model events
  */
 class MainActivity : FlutterActivity() {
@@ -32,9 +32,27 @@ class MainActivity : FlutterActivity() {
         CoroutineExceptionHandler { _, t -> Log.e("ScamShield/Main", "uncaught", t) })
     private var pendingImport: MethodChannel.Result? = null
     private var player: MediaPlayer? = null
+    private var initialRoute: String? = null   // from the launching intent's `route` extra; consumed once by app.initialRoute
 
     companion object { private const val REQ_IMPORT = 4201
+        private const val REQ_NOTIF = 4203
         private val PREF_KEYS = setOf("lesson_best_v1") }
+
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        super.onCreate(savedInstanceState)
+        initialRoute = intent?.getStringExtra("route")
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.getStringExtra("route")?.let { initialRoute = it }
+    }
+
+    // FlutterActivity treats the intent extra "route" as its own initial route; pin it to "/" (app.initialRoute is the source).
+    override fun getInitialRoute(): String = "/"
+
+    private fun notificationsGranted() = android.os.Build.VERSION.SDK_INT < 33 ||
+        checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -89,6 +107,13 @@ class MainActivity : FlutterActivity() {
                 "micPermission" -> result.success(
                     checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)
                 "requestMic" -> { requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 4202); result.success(null) }
+                "app.initialRoute" -> { result.success(initialRoute); initialRoute = null }
+                "perm.notificationsGranted" -> result.success(notificationsGranted())
+                "perm.requestNotifications" -> {
+                    // Dart re-checks on app resume (Setup already does this for the mic).
+                    if (!notificationsGranted()) requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQ_NOTIF)
+                    result.success(notificationsGranted())
+                }
                 "runMicProbe" -> { MicProbe(applicationContext).start(); result.success(null) }
                 "playProbe" -> {
                     val path = call.argument<String>("path")

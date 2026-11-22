@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import '../api/text_api.dart';
 
 /// One-time setup checklist: accessibility service, Live Caption, Gemma model, overlay test.
+const _api = MethodChannel('scamshield/api');
+
 class SetupScreen extends StatefulWidget {
   const SetupScreen({super.key});
   @override
@@ -16,6 +18,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   Map<Object?, Object?> _service = {};
   Map<Object?, Object?> _model = {};
   bool _mic = false;
+  bool _notif = true;
   Map<Object?, Object?> _dl = {};
   StreamSubscription? _sub;
   bool _importing = false;
@@ -50,7 +53,8 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
     final m = await TextApi.modelStatus();
     final mic = await TextApi.micPermission();
     final dl = await TextApi.downloadStatus();
-    if (mounted) setState(() { _service = s; _model = m; _mic = mic; if (dl['status'] != 'IDLE' || _dl.isEmpty) _dl = dl; });
+    final notif = await _api.invokeMethod<bool>('perm.notificationsGranted') ?? true;
+    if (mounted) setState(() { _service = s; _model = m; _mic = mic; _notif = notif; if (dl['status'] != 'IDLE' || _dl.isEmpty) _dl = dl; });
   }
 
   Future<void> _import() async {
@@ -94,7 +98,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   void _snack(String s) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s)));
 
   Widget _step({required int n, required String title, required bool done, required String body,
-      List<Widget> actions = const []}) {
+      List<Widget> actions = const [], IconData? icon}) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -103,10 +107,14 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
             CircleAvatar(
               radius: 14,
               backgroundColor: done ? Colors.green : Theme.of(context).colorScheme.secondaryContainer,
-              child: done ? const Icon(Icons.check, size: 16, color: Colors.white) : Text('$n'),
+              child: done
+                  ? const Icon(Icons.check, size: 16, color: Colors.white)
+                  : icon != null ? Icon(icon, size: 18) : Text('$n'),
             ),
             const SizedBox(width: 10),
-            Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium)),
+            Expanded(child: Text(title, style: icon != null
+                ? Theme.of(context).textTheme.titleLarge
+                : Theme.of(context).textTheme.titleMedium)),
           ]),
           const SizedBox(height: 8),
           Text(body),
@@ -210,6 +218,26 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
         ),
         _step(
           n: 5,
+          icon: Icons.notifications_active,
+          title: 'अलर्ट सूचनाएँ चालू करें',
+          done: _notif,
+          body: 'स्कैम मिलने पर फ़ोन पर तुरंत चेतावनी दिखेगी, साथ में "रिपोर्ट करें" बटन।\n'
+              'Allow notifications so a scam warning pops up with a Report button.',
+          actions: [
+            FilledButton.icon(
+              onPressed: _notif
+                  ? null
+                  : () async {
+                      await _api.invokeMethod('perm.requestNotifications');
+                      _refresh();
+                    },
+              icon: Icon(_notif ? Icons.check : Icons.notifications),
+              label: Text(_notif ? 'सूचनाएँ चालू हैं' : 'सूचनाएँ चालू करें'),
+            ),
+          ],
+        ),
+        _step(
+          n: 6,
           title: 'Test the warning bubble',
           done: false,
           body: 'Shows a sample SCAM warning on top of the screen, exactly as it appears during a call.',
