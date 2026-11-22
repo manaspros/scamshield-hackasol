@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T0.5 [sonnet] Baseline green: Kotlin 24 CoreTest tests (31 total incl. SourceTest/TotpTest/UpiQrTest), Dart 5 tests, debug APK built, Gradle wrapper added — 2026-11-23 — `cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --rerun`; `flutter test`; `flutter build apk --debug --android-skip-build-dependency-validation`
 - T1.11 [sonnet] LoRA fine-tune + .task convert scripts, dry-run only (no GPU) — 2026-11-23 — cd ml && uv run pytest -q tests/test_finetune_dry.py
 - T1.13 [sonnet] eval harness (stub + hf backends, rules JSONL join, m1.json/accuracy.md/heldout.csv) — 2026-11-23 — cd ml && uv run pytest -q tests/test_eval.py (held-out = 26 synthetic rows; rules row waits on T1.12 JSONL; T1.10 provisional port committed separately)
 - T3.3 [codex] lessons data en/hi/hne (8 lessons) + Dart model — 2026-11-23 — flutter test test/lessons_test.dart (hne drafts await T3.6; flutter pub get under Flutter 3.50.1 updated pubspec.lock and analysis_options.yaml)

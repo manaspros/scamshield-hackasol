@@ -60,3 +60,5 @@ data/eval/real/
 key.properties
 __pycache__/
 .pytest_cache/
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+android/.gradle/

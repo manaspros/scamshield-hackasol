@@ -48,7 +48,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
   - **Done when**: `sdkmanager --list_installed` lists platform-tools, the platform and build-tools; `adb version` runs
 - [x] T0.4 [sonnet] [NEEDS-OK:DEP3] Install Flutter SDK, point it at the Android SDK  **Files**: none  **Depends on**: T0.3
   - **Done when**: `flutter --version` prints the pinned version; `flutter doctor -v` shows "Android toolchain" without errors
-- [ ] T0.5 [sonnet] Baseline green; record Kotlin and Dart test counts and the real test-source path in `PROGRESS.md`
+- [x] T0.5 [sonnet] Baseline green; record Kotlin and Dart test counts and the real test-source path in `PROGRESS.md`
   - **Files**: `PROGRESS.md`  **Depends on**: T0.1, T0.4
   - **Done when**: `KALL` exits 0 with 24 tests; `flutter test` exits 0; `APP` produces `build/app/outputs/flutter-apk/app-debug.apk`
 - [ ] T0.6 [sonnet] `scripts/check.sh` (runs every suite that exists, prints skipped) and `scripts/trace_report.sh` (task ID -> pass/fail/not-run/blocked from JUnit XML, pytest `-rA`, node, flutter output)
