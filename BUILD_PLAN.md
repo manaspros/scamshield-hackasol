@@ -187,7 +187,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T5.3 [sonnet] SQLite graph persistence fed by `ScamNotificationListener`; claim-vs-context and context-rule hits raise the verdict (rules can only raise) and add reasons shown in the alert
   - **Files**: `K/SqliteKnowledgeGraph.kt`, `K/ScamNotificationListener.kt`, `K/TextApi.kt`  **Depends on**: T5.2, T2.3, T1.15
   - **Done when**: `APP` succeeds; `KT(GraphRowMapperTest)` and `KT(GraphWiringTest)` pass (rule hit never downgrades Gemma's label)
-- [ ] T5.4 [codex] `GoldenHour` + `EvidenceZip` (pure): 60-minute timer model, case card pre-filled from the log and graph, ZIP of `card.json` + events + SHA-256 manifest via `java.util.zip`
+- [x] T5.4 [codex] `GoldenHour` + `EvidenceZip` (pure): 60-minute timer model, case card pre-filled from the log and graph, ZIP of `card.json` + events + SHA-256 manifest via `java.util.zip`
   - **Files**: `K/core/GoldenHour.kt`, `K/core/EvidenceZip.kt`, `KT/core/GoldenHourTest.kt`  **Depends on**: T3.1
   - **Done when**: `KT(GoldenHourTest)` passes `T5_4_cardPrefilled`, `T5_4_zipManifestVerifies`
 - [ ] T5.5 [sonnet] [UI] Golden-hour mode in the Report screen: "I got scammed" -> timer, pre-filled card, 1930 dial, share ZIP via FileProvider
