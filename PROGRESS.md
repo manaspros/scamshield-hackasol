@@ -4,6 +4,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
 - T3.7 [codex] dashboard agg + validate + districts + synthetic sample — 2026-11-23 — `node --test dashboard/test/agg.test.mjs && node dashboard/validate.mjs data/trends/sample.json` — commit 1f7248f
+- T3.9 [sonnet] policy dashboard static page — 2026-11-23 — `node --test dashboard/test/page.test.mjs` (serve over http from repo root; m1.json shape to recheck after T1.13; week gaps skipped not zero)
 - T1.8 [codex] ml uv project + schema + template split — 2026-11-23 — `cd ml && uv run pytest -q tests/test_data.py` (pins: numpy 2.4.6, pyyaml 6.0.3, pytest 9.2.0)
 
 ## Blocked
@@ -20,6 +21,9 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 - 2026-11-23: ScamShield source = https://github.com/AB527/scamshield (user message); T0.1 unblocked.
 - 2026-11-23: User direction: proactive approach, the on-device LLM does all message screening and context by itself. Consistent with SLM-first fusion (Gemma decides, rules only raise); no change to task list.
+
+- 2026-11-23: The `rtk` shell wrapper rewrites `uv run pytest` output to "No tests collected". Verifiers call `/Users/manas.choudhary/.local/bin/uv` (and `/usr/bin/wc`, `/usr/bin/grep`) by absolute path.
+- T1.8 committed 9a527f6.
 
 ## Failures log
 

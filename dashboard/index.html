@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScamShield policy dashboard</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <p class="eyebrow">ScamShield / Chhattisgarh</p>
+    <h1>Scam reports by district and type</h1>
+  </div>
+  <div class="controls">
+    <button id="theme" type="button" aria-pressed="false">Dark theme</button>
+    <label class="file" id="drop">
+      <input id="file" type="file" accept="application/json,.json">
+      <span>Open exported JSON, or drop a file here</span>
+    </label>
+  </div>
+</header>
+
+<div id="banner" class="banner" role="status" hidden></div>
+<div id="error" class="error" role="alert" hidden></div>
+
+<main>
+  <section aria-label="Summary" class="tiles" id="tiles"></section>
+
+  <section class="card" aria-labelledby="h-rank">
+    <h2 id="h-rank">District ranking</h2>
+    <p class="sub">Reports per district, highest first.</p>
+    <div id="ranking"></div>
+    <button id="more" type="button" hidden></button>
+  </section>
+
+  <section class="card" aria-labelledby="h-trend">
+    <h2 id="h-trend">Scam types by ISO week</h2>
+    <p class="sub">Reports per week for the four most reported types; all other types are grouped.</p>
+    <div id="legend" class="legend"></div>
+    <div id="trend" class="chart"></div>
+    <div id="tip" class="tip" hidden></div>
+    <details>
+      <summary>Show as table</summary>
+      <div class="scroll" id="trend-table"></div>
+    </details>
+  </section>
+
+  <section class="card" aria-labelledby="h-acc">
+    <h2 id="h-acc">Detector accuracy (M1)</h2>
+    <div id="accuracy"></div>
+  </section>
+</main>
+<footer>Reports contain only district, scam type and date. Nothing leaves this page.</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>

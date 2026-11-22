@@ -153,7 +153,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T3.8 [codex] `TrendExport` (pure): verdict events -> `{district, scam_type, date}` rows (SAFE skipped, no text, district chosen by user)
   - **Files**: `K/core/TrendExport.kt`, `KT/core/TrendExportTest.kt`  **Depends on**: T3.7, T1.3
   - **Done when**: `KT(TrendExportTest)` passes `T3_8_threeKeysOnly` and writes `android/app/build/trend_export.json`; `node dashboard/validate.mjs android/app/build/trend_export.json` exits 0
-- [ ] T3.9 [sonnet] [UI+DATAVIZ] Policy dashboard as a static page (no build step): district ranking, scam-type trend by week, stat tiles; loads `data/trends/sample.json` or a dropped export file; accuracy panel from a copy of `ml/reports/m1.json` ("not measured" if absent)
+- [x] T3.9 [sonnet] [UI+DATAVIZ] Policy dashboard as a static page (no build step): district ranking, scam-type trend by week, stat tiles; loads `data/trends/sample.json` or a dropped export file; accuracy panel from a copy of `ml/reports/m1.json` ("not measured" if absent)
   - **Files**: `dashboard/index.html`, `dashboard/app.js`, `dashboard/styles.css`, `dashboard/test/page.test.mjs`  **Depends on**: T3.7
   - **Done when**: `NT(page.test.mjs)` passes (every referenced file exists, `agg.mjs` imported, "not measured" path covered)
 - [ ] T3.10 [sonnet] [UI] Settings: district picker + "Export anonymised counts" (share-sheet file)
