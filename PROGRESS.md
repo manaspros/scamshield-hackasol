@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T0.2 [sonnet+human] JDK 17 (user ran the brew cask install) — 2026-11-23 — `/usr/libexec/java_home -v 17 && java -version`
 - T1.9 [codex] synthetic EN/HI/Hinglish generator (44 templates per lang) — 2026-11-23 — `cd ml && uv run pytest -q tests/test_synth.py` (SFT target format is a placeholder until T1.10)
 - T3.7 [codex] dashboard agg + validate + districts + synthetic sample — 2026-11-23 — `node --test dashboard/test/agg.test.mjs && node dashboard/validate.mjs data/trends/sample.json` — commit 1f7248f
 - T3.9 [sonnet] policy dashboard static page — 2026-11-23 — `node --test dashboard/test/page.test.mjs` (serve over http from repo root; m1.json shape to recheck after T1.13; week gaps skipped not zero)
@@ -11,7 +12,6 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 ## Blocked
 - T0.1 — https://github.com/AB527/scamshield returns 404 (`git clone`: Repository not found; `gh api` as manas-atlan: 404). Either private or a different name; no AB527 public repo matches. Human action: make it public, add manas-atlan as collaborator, or give the correct URL / a zip path.
 - Not supplied by user (2026-11-23): RTX box, real messages, hne reviewer.
-- T0.2 — human step: run `! /opt/homebrew/bin/brew install --cask temurin@17` (installer needs sudo password; Temurin 17.0.21.1+2 downloaded fine). Then verifier checks `/usr/libexec/java_home -v 17`.
 - T1.14 — needs RTX 5090 box + real messages in `data/eval/real/` + human upload of `.task`.
 - T2.8, T6.1, T6.2, T6.3, T6.4 — device (OnePlus 10T / Pixel) owned by teammates.
 - T3.6 — native Chhattisgarhi speaker sign-off.
@@ -26,6 +26,8 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - 2026-11-23: The `rtk` shell wrapper rewrites `uv run pytest` output to "No tests collected". Verifiers call `/Users/manas.choudhary/.local/bin/uv` (and `/usr/bin/wc`, `/usr/bin/grep`) by absolute path.
 - T1.8 committed 9a527f6.
 - 2026-11-23: GitHub account switched to manaspros at user request; AB527/scamshield still 404 for it.
+
+- 2026-11-23: T0.3 runs before T0.1 (user asked to parallelise): install cmdline-tools, platform-tools and latest stable platform + build-tools now; add the imported project's exact compileSdk after T0.1. T0.4 Flutter install likewise.
 
 ## Failures log
 
