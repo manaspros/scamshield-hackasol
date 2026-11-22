@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T5.1 [codex] Knowledge graph + claim-vs-context checks (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*GraphTest*'
 - T1.4 [sonnet] SQLite verdict log + verdicts channel — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*VerdictRowMapperTest*' && flutter build apk --debug --android-skip-build-dependency-validation (also native scamshield/prefs handler, allowlisted key lesson_best_v1)
 - T1.14 [sonnet] Mac eval, SYNTHETIC held-out by template (0 real / 26 synthetic): rules P 1.000 R 0.478 FPR 0.000 type-F1 0.313 (coverage 26/26); base Gemma 3 1B (HF bf16 MPS, final T1.10 prompt) P 1.000 R 0.913 FPR 0.000 type-F1 0.392; fine-tuned not run (no GPU box) — 2026-11-23 — uv run --group hf python -m scamshield_ml.eval_heldout --backend hf --rules-preds ml/reports/rules_preds_heldout.jsonl
 - T2.4 [sonnet] Recording pipeline (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*RecordingPipelineTest*'

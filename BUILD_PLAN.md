@@ -178,7 +178,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
   - **Done when**: `PT(tests/test_cluster.py)` passes `T4_4_newCampaignAlerts` (known types do not alert)
 
 ## Phase 5 — Differentiators on the foundation
-- [ ] T5.1 [codex] Knowledge graph (pure, new events only): entities sender/brand/event(order, bill, credit, out-for-delivery)/number/UPI ID, `ingest`, lookups, cold-start text "No record since ScamShield was installed"; regex claim parsers (brand, amount, UPI ID, link; use `UnicodeRegex.kt`); claim-vs-context (no bill/order event, non-DLT sender, link not `.bank.in`/`.gov.in`)
+- [x] T5.1 [codex] Knowledge graph (pure, new events only): entities sender/brand/event(order, bill, credit, out-for-delivery)/number/UPI ID, `ingest`, lookups, cold-start text "No record since ScamShield was installed"; regex claim parsers (brand, amount, UPI ID, link; use `UnicodeRegex.kt`); claim-vs-context (no bill/order event, non-DLT sender, link not `.bank.in`/`.gov.in`)
   - **Files**: `K/core/graph/KnowledgeGraph.kt`, `ClaimParsers.kt`, `ClaimVsContext.kt`, `KT/core/graph/GraphTest.kt`  **Depends on**: T1.2
   - **Done when**: `KT(GraphTest)` passes `T5_1_ingestThenLookup`, `T5_1_coldStartMessage`, `T5_1_noBillEventFlags`, `T5_1_linkAllowlist`
 - [ ] T5.2 [codex] Context rules (pure): mistaken-transfer A/B, bank-call 1600 check, delivery masked-number suppression/flag; wording as `[VERIFY]` constants
