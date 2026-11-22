@@ -1,0 +1,17 @@
+[project]
+name = "scamshield-ml"
+version = "0.1.0"
+description = "ScamShield dataset utilities"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy==2.4.6",
+    "pyyaml==6.0.3",
+]
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "pytest==9.2.0",
+]
