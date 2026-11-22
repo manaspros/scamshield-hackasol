@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T5.6 [codex] Totp pure RFC 6238 (SHA1, 30 s step, base32 secret, offline verify); verified by haiku — 2026-11-23 — `cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*TotpTest*' --rerun` (T5_6_rfcVectors, T5_6_codesMatchOffline passed)
 - T4.1 [codex] UpiQr pure parser (pa/pn/am, name mismatch, PAY framing, collect-request, malformed rejects); verified by haiku — 2026-11-23 — `cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*UpiQrTest*' --rerun` (4/4 passed)
 - T1.1 [codex] Source enum (CAPTION, PASTE, SHARE, SMS, WHATSAPP, NOTIFICATION, RECORDING, +SIGNAL kept from HEAD) with legacy string parse; verified by haiku — 2026-11-23 — `cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*SourceTest*' --rerun` (T1_1_parsesLegacyStrings passed)
 - T0.5 [sonnet] Baseline green: Kotlin 24 CoreTest tests (31 total incl. SourceTest/TotpTest/UpiQrTest), Dart 5 tests, debug APK built, Gradle wrapper added — 2026-11-23 — `cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --rerun`; `flutter test`; `flutter build apk --debug --android-skip-build-dependency-validation`

@@ -193,7 +193,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T5.5 [sonnet] [UI] Golden-hour mode in the Report screen: "I got scammed" -> timer, pre-filled card, 1930 dial, share ZIP via FileProvider
   - **Files**: `lib/screens/report_screen.dart`, `K/HandoffChannel.kt`, `android/app/src/main/AndroidManifest.xml`, `android/app/src/main/res/xml/file_paths.xml`  **Depends on**: T5.4, T3.2
   - **Done when**: `APP` succeeds; `FT(report_screen_test.dart)` passes `T5_5_timerAndCard`
-- [ ] T5.6 [codex] Family code (pure): TOTP RFC 6238 via `javax.crypto`, 30 s step, shared secret as base32 pairing string; offline only (no relay: it would be a new endpoint)
+- [x] T5.6 [codex] Family code (pure): TOTP RFC 6238 via `javax.crypto`, 30 s step, shared secret as base32 pairing string; offline only (no relay: it would be a new endpoint)
   - **Files**: `K/core/Totp.kt`, `KT/core/TotpTest.kt`  **Depends on**: T0.5
   - **Done when**: `KT(TotpTest)` passes RFC 6238 vectors (`T5_6_rfcVectors`, `T5_6_codesMatchOffline`)
 - [ ] T5.7 [sonnet] [UI] Family screen: pair (show/enter secret), rotating 6-digit code with countdown, "does the code match?" prompt; secret in app-private storage (prototype shortcut)
