@@ -86,7 +86,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T1.10 [codex] Python port of the on-device prompt builder and output parser (the harness and training must use exactly the on-device format)
   - **Files**: `ml/scamshield_ml/prompt.py`, `ml/scamshield_ml/parser.py`, `ml/tests/test_prompt_parity.py`  **Depends on**: T1.2, T1.8
   - **Done when**: `PT(tests/test_prompt_parity.py)` passes: prompt text equals and parsed results equal every entry of `data/golden/prompt_golden.json`
-- [ ] T1.11 [codex] [NEEDS-OK:DEP5] Gemma 3 1B LoRA fine-tune script (peft + trl, SFT on the T1.9 pairs, config in YAML, train split only) and conversion script (merge LoRA -> HF checkpoint -> MediaPipe `.task` int4); both support `--dry-run`/`--limit` so they are testable without a GPU
+- [x] T1.11 [codex] [NEEDS-OK:DEP5] Gemma 3 1B LoRA fine-tune script (peft + trl, SFT on the T1.9 pairs, config in YAML, train split only) and conversion script (merge LoRA -> HF checkpoint -> MediaPipe `.task` int4); both support `--dry-run`/`--limit` so they are testable without a GPU
   - **Files**: `ml/scamshield_ml/finetune.py`, `ml/scamshield_ml/convert_task.py`, `ml/configs/lora.yaml`, `ml/tests/test_finetune_dry.py`  **Depends on**: T1.9, T1.10
   - **Done when**: `PT(tests/test_finetune_dry.py)` passes `T1_11_formatsExamples`, `T1_11_convertDryRunArgs`; converter package name and version recorded in `PROGRESS.md`
 - [ ] T1.12 [codex] Rules-only predictions exporter: a Kotlin test reads the eval CSV and writes `RuleScorer` predictions (label, scam type, triggers) as JSONL, so the Python harness reports rules-only without re-implementing the rules
