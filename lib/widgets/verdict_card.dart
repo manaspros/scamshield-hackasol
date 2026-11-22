@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../models/verdict.dart';
+import '../theme/app_theme.dart';
+import '../theme/tokens.dart';
 
 /// Mirrors the on-call overlay bubble: "This statement is SCAM · 87%".
+/// Tinted surface + solid icon/label, so meaning never rests on colour alone.
 class VerdictCard extends StatelessWidget {
   const VerdictCard({super.key, required this.verdict, this.compact = false});
   final Verdict verdict;
@@ -11,48 +14,53 @@ class VerdictCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = verdict;
-    final fg = Colors.white;
-    return Card(
-      color: v.label.color,
+    final t = Theme.of(context);
+    final cs = t.colorScheme;
+    final tt = t.textTheme;
+    final st = t.extension<StatusColors>() ?? StatusColors.light;
+    final solid = st.solid(v.label);
+    final muted = tt.bodySmall?.copyWith(color: cs.onSurfaceVariant);
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Icon(v.label.icon, color: fg),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(v.headline + (v.preliminary ? ' …' : ''),
-                  style: TextStyle(color: fg, fontWeight: FontWeight.bold, fontSize: 16)),
-            ),
-          ]),
-          const SizedBox(height: 4),
-          Text(v.label.hindi, style: TextStyle(color: fg.withValues(alpha: 0.95))),
-          if (!compact) ...[
-            const SizedBox(height: 8),
-            Text('“${v.text}”',
-                style: TextStyle(color: fg, fontStyle: FontStyle.italic), maxLines: 3, overflow: TextOverflow.ellipsis),
-          ],
-          const SizedBox(height: 6),
-          Text('Why: ${v.reason}', style: TextStyle(color: fg)),
-          if (v.triggers.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Wrap(spacing: 6, runSpacing: 4, children: [
-                for (final t in v.triggers.take(5))
-                  Chip(
-                    label: Text(t, style: const TextStyle(fontSize: 12)),
-                    visualDensity: VisualDensity.compact,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-              ]),
-            ),
-          const SizedBox(height: 6),
-          Text('${v.engine} · ${v.latencyMs} ms · ${v.source}',
-              style: TextStyle(color: fg.withValues(alpha: 0.8), fontSize: 12)),
-        ]),
+      padding: const EdgeInsets.all(Sp.xl),
+      decoration: BoxDecoration(
+        color: st.tintOver(v.label, cs.surface),
+        borderRadius: BorderRadius.circular(Rad.lg),
+        border: Border.all(color: solid.withValues(alpha: 0.35)),
       ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(v.label.icon, size: 40, color: solid),
+          const SizedBox(width: Sp.m),
+          Expanded(
+            child: Text(v.headline + (v.preliminary ? ' …' : ''),
+                style: tt.titleLarge?.copyWith(color: solid)),
+          ),
+        ]),
+        const SizedBox(height: Sp.xs),
+        Text(v.label.hindi, style: tt.titleMedium),
+        if (!compact) ...[
+          const SizedBox(height: Sp.m),
+          Text('“${v.text}”',
+              style: tt.bodyLarge?.copyWith(fontStyle: FontStyle.italic), maxLines: 3, overflow: TextOverflow.ellipsis),
+        ],
+        const SizedBox(height: Sp.s),
+        Text('Why: ${v.reason}', style: tt.bodyLarge),
+        if (v.triggers.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: Sp.s),
+            child: Wrap(spacing: Sp.s, runSpacing: Sp.s, children: [
+              for (final trig in v.triggers.take(5))
+                Chip(
+                  label: Text(trig),
+                  visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+            ]),
+          ),
+        const SizedBox(height: Sp.s),
+        Text('${v.engine} · ${v.latencyMs} ms · ${v.source}', style: muted),
+      ]),
     );
   }
 }
