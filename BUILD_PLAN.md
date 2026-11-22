@@ -138,7 +138,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T3.3 [codex] Lessons data + Dart model: 8 lessons (OTP, UPI PIN, ATM PIN, QR, digital arrest, KYC, courier, loan app), 3 cards + 3 quiz questions each, `en/hi/hne` JSON in `assets/lessons/` (hne drafts `[VERIFY:hne]`)
   - **Files**: `assets/lessons/en.json`, `hi.json`, `hne.json`, `lib/lessons/lesson_model.dart`, `test/lessons_test.dart`, `pubspec.yaml` (asset entry)  **Depends on**: none
   - **Done when**: `FT(lessons_test.dart)` passes `T3_3_languageKeyParity`, `T3_3_eightLessons`
-- [ ] T3.4 [codex] Quiz engine + Digital Financial Literacy Score (0-100: mean of per-topic best attempt, untouched topics count 0), persistence behind an injected store interface
+- [x] T3.4 [codex] Quiz engine + Digital Financial Literacy Score (0-100: mean of per-topic best attempt, untouched topics count 0), persistence behind an injected store interface
   - **Files**: `lib/lessons/quiz_engine.dart`, `test/quiz_engine_test.dart`  **Depends on**: T3.3
   - **Done when**: `FT(quiz_engine_test.dart)` passes `T3_4_scoreBounds`, `T3_4_retryKeepsBest`, `T3_4_perTopic`
 - [ ] T3.5 [sonnet] [UI] Lesson cards + quiz screens, offline, Hindi/Chhattisgarhi first; store impl reuses whatever Settings persists with (verify after import; else native SharedPreferences over the existing channel)

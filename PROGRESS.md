@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T3.4 [sonnet] quiz engine + literacy score — 2026-11-23 — flutter test test/quiz_engine_test.dart
 - T5.6 [codex] Totp pure RFC 6238 (SHA1, 30 s step, base32 secret, offline verify); verified by haiku — 2026-11-23 — `cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*TotpTest*' --rerun` (T5_6_rfcVectors, T5_6_codesMatchOffline passed)
 - T4.1 [codex] UpiQr pure parser (pa/pn/am, name mismatch, PAY framing, collect-request, malformed rejects); verified by haiku — 2026-11-23 — `cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*UpiQrTest*' --rerun` (4/4 passed)
 - T1.1 [codex] Source enum (CAPTION, PASTE, SHARE, SMS, WHATSAPP, NOTIFICATION, RECORDING, +SIGNAL kept from HEAD) with legacy string parse; verified by haiku — 2026-11-23 — `cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*SourceTest*' --rerun` (T1_1_parsesLegacyStrings passed)
