@@ -1,0 +1,43 @@
+text,label,lang,scam_type,template_id,source
+"Sir, please share the OTP that you just received to verify your account",SCAM,en,OTP,smoke_otp_share_en,synthetic
+Your KYC is pending. Update immediately or your account will be blocked,SCAM,en,KYC,smoke_kyc_block_en,synthetic
+This is CBI. You are under digital arrest. Do not disconnect the call and do not tell anyone,SCAM,en,DIGITAL_ARREST,smoke_arrest_cbi_en,synthetic
+Your parcel is held at customs because it contains illegal items. Press 1 to speak to the officer,SCAM,en,COURIER_CUSTOMS,smoke_courier_illegal_en,synthetic
+Scan this QR code to receive your refund of Rs 5000 in your account,SCAM,en,FAKE_QR,smoke_qr_refund_en,synthetic
+Instant loan approved without documents. Install the app and pay a processing fee of Rs 999,SCAM,en,LOAN_APP,smoke_loan_fee_en,synthetic
+Join our VIP group for guaranteed 30% daily returns on crypto trading,SCAM,en,INVESTMENT,smoke_invest_vip_en,synthetic
+Part time job: earn Rs 5000 daily by liking videos. Pay a registration fee to start,SCAM,en,JOB,smoke_job_like_en,synthetic
+"Sorry, I sent Rs 10000 to your number by mistake. Please send it back to example@upi",SCAM,en,MISTAKEN_TRANSFER,smoke_mistaken_back_en,synthetic
+"Congratulations, you have won a lottery. Pay the tax to claim your prize",SCAM,en,OTHER,smoke_lottery_tax_en,synthetic
+"Dear customer, your account may be suspended. Please review your details",SUSPICIOUS,en,KYC,smoke_acct_review_en,synthetic
+123456 is your OTP for login to Example Bank. Do not share this OTP with anyone. The bank never asks for it.,SAFE,en,,smoke_bank_otp_notice_en,synthetic
+Your order has been shipped and will be delivered tomorrow between 10 and 12,SAFE,en,,smoke_delivery_update_en,synthetic
+Your electricity bill of Rs 1200 is due on 25th. Pay on the official app,SAFE,en,,smoke_bill_due_en,synthetic
+"Hi, are we still meeting for lunch tomorrow?",SAFE,en,,smoke_friend_lunch_en,synthetic
+Your parcel from the courier was delivered to the front desk,SAFE,en,,smoke_courier_delivered_en,synthetic
+"Mom said ""call me back, beta"", will do tonight",SAFE,en,,smoke_quoted_comma_en,synthetic
+"सर, आपके फोन पर एक ओटीपी आया होगा, कृपया बता दीजिए",SCAM,hi,OTP,smoke_otp_share_hi,synthetic
+"आपका केवाईसी अधूरा है, आज ही अपडेट करें वरना खाता बंद हो जाएगा",SCAM,hi,KYC,smoke_kyc_block_hi,synthetic
+"मैं सीबीआई ऑफिस से बोल रहा हूं, आप डिजिटल अरेस्ट में हैं",SCAM,hi,DIGITAL_ARREST,smoke_arrest_cbi_hi,synthetic
+"आपके नाम का पार्सल कस्टम में रोका गया है, उसमें ड्रग्स मिले हैं",SCAM,hi,COURIER_CUSTOMS,smoke_courier_drugs_hi,synthetic
+इस क्यूआर कोड को स्कैन करें और अपना रिफंड पाएं,SCAM,hi,FAKE_QR,smoke_qr_refund_hi,synthetic
+"तुरंत लोन मंजूर, ऐप डाउनलोड करें और प्रोसेसिंग फीस भेजें",SCAM,hi,LOAN_APP,smoke_loan_fee_hi,synthetic
+हमारे ग्रुप में निवेश करें और रोज 30 प्रतिशत का मुनाफा कमाएं,SCAM,hi,INVESTMENT,smoke_invest_group_hi,synthetic
+"घर बैठे वीडियो लाइक करके रोज 5000 कमाएं, पहले रजिस्ट्रेशन फीस जमा करें",SCAM,hi,JOB,smoke_job_like_hi,synthetic
+"माफ कीजिए, गलती से आपके नंबर पर 10000 रुपये चले गए, कृपया वापस भेज दीजिए",SCAM,hi,MISTAKEN_TRANSFER,smoke_mistaken_back_hi,synthetic
+"आपने लॉटरी जीती है, इनाम पाने के लिए टैक्स जमा करें",SCAM,hi,OTHER,smoke_lottery_tax_hi,synthetic
+आपके खाते से 500 रुपये डेबिट हुए। किसी भी शिकायत के लिए बैंक शाखा में संपर्क करें,SAFE,hi,,smoke_debit_notice_hi,synthetic
+"कल शाम को घर आ जाना, खाना साथ में खाएंगे",SAFE,hi,,smoke_family_dinner_hi,synthetic
+"Sir aapke phone pe ek OTP aaya hoga, woh jaldi bata dijiye",SCAM,hinglish,OTP,smoke_otp_share_hinglish,synthetic
+"Main SBI bank se bol raha hoon, aapka KYC pending hai",SUSPICIOUS,hinglish,KYC,smoke_bank_kyc_hinglish,synthetic
+"Aap digital arrest mein hain, kisi ko mat batana aur call mat kaatna",SCAM,hinglish,DIGITAL_ARREST,smoke_arrest_secret_hinglish,synthetic
+"Aapke parcel mein drugs mile hain, customs officer se baat karo",SCAM,hinglish,COURIER_CUSTOMS,smoke_courier_drugs_hinglish,synthetic
+"Is QR code ko scan karo aur refund paao, PIN daalo",SCAM,hinglish,FAKE_QR,smoke_qr_refund_hinglish,synthetic
+"Instant loan chahiye? App download karo, processing fee 500 bhejo",SCAM,hinglish,LOAN_APP,smoke_loan_fee_hinglish,synthetic
+"Hamare group mein invest karo, daily 30% return guaranteed hai",SCAM,hinglish,INVESTMENT,smoke_invest_group_hinglish,synthetic
+"Work from home job hai, video like karke roz 5000 kamao, pehle registration fee bhejo",SCAM,hinglish,JOB,smoke_job_like_hinglish,synthetic
+"Sorry bhai, galti se 10000 aapke number pe chale gaye, please wapas bhej do example@upi pe",SCAM,hinglish,MISTAKEN_TRANSFER,smoke_mistaken_back_hinglish,synthetic
+"Aapne lucky draw jeeta hai, inaam ke liye tax bhejo",SCAM,hinglish,OTHER,smoke_lottery_tax_hinglish,synthetic
+"Bhai, OTP aaya hai kya? Mera wala nahi aaya, tu apna check kar",SAFE,hinglish,,smoke_friend_otp_hinglish,synthetic
+"Aapka bijli bill 1200 rupaye ka hai, 25 tareekh tak official app se pay karein",SAFE,hinglish,,smoke_bill_due_hinglish,synthetic
+Aapka Zomato order 15 minute mein deliver ho jayega,SAFE,hinglish,,smoke_food_delivery_hinglish,synthetic
