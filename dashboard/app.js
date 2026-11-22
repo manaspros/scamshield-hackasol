@@ -116,6 +116,9 @@ export function modelAccuracy(m1) {
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const fmtDate = (iso) => `${Number(iso.slice(8))} ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
 
+// Pure: the toggle names the theme it switches to.
+export const themeLabel = (dark) => (dark ? 'Light theme' : 'Dark theme');
+
 // Pure: round the axis top up to a 1/2/5 step so ticks are whole numbers.
 export function niceScale(max) {
   const raw = Math.max(1, max) / 4;
@@ -178,7 +181,7 @@ if (typeof document !== 'undefined') {
       const t = el('div', 'tile');
       const num = el('div', 'num', v);
       if (unit) num.append(el('small', '', unit));
-      if (v === 'Not measured') num.style.fontSize = '28px';
+      if (v === 'Not measured') num.classList.add('na-num');
       t.append(el('div', 'lbl', l), num, el('div', 'cap', cap));
       if (ctx) t.append(el('div', 'ctx', ctx));
       return t;
@@ -204,65 +207,57 @@ if (typeof document !== 'undefined') {
   }
 
   function renderTrend(full) {
-    const s = { ...full, series: full.series.filter((x) => x.key !== OTHER) };
+    const series = full.series.filter((x) => x.key !== OTHER);
     const W = Math.max(280, Math.floor($('trend').clientWidth));
     drawnWidth = W;
-    const wide = W >= 600;
-    const H = wide ? 340 : 260;
-    const L = 32, T = 28, B = 44, R = wide ? 150 : 16;
-    const n = s.weeks.length;
-    const { step, top } = niceScale(Math.max(1, ...s.series.flatMap((x) => x.values)));
-    const x = (i) => L + (n === 1 ? (W - L - R) / 2 : (i / (n - 1)) * (W - L - R));
+    const PW = W > 640 ? Math.floor((W - 24) / 2) : W;
+    const H = 170, L = 28, R = 12, T = 12, B = 28;
+    const weeks = full.weeks;
+    const n = weeks.length;
+    const { step, top } = niceScale(Math.max(1, ...series.flatMap((x) => x.values)));
+    const x = (i) => L + (n === 1 ? (PW - L - R) / 2 : (i / (n - 1)) * (PW - L - R));
     const y = (v) => T + (1 - v / top) * (H - T - B);
-    const total = s.series.reduce((a, ser) => a + ser.values.reduce((p, q) => p + q, 0), 0);
-    const svg = mk('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img',
-      'aria-label': `Line chart of weekly reports by scam type, ${s.weeks[0]} to ${s.weeks[n - 1]}, ${total} reports in ${s.series.length} series. A data table follows the chart.` });
-    svg.append(mk('title', {}, 'Weekly reports by scam type'));
-    for (let v = 0; v <= top; v += step) {
-      svg.append(mk('line', { class: 'grid', x1: L, x2: W - R, y1: y(v), y2: y(v) }),
-        mk('text', { x: L - 8, y: y(v) + 4, 'text-anchor': 'end' }, v));
-    }
-    const every = Math.max(1, Math.ceil(n / Math.floor((W - L - R) / 48)));
-    s.weeks.forEach((w, i) => { if (i % every === 0) svg.append(mk('text', { x: x(i), y: H - B + 18, 'text-anchor': 'middle' }, w.slice(5))); });
-    svg.append(mk('text', { x: (L + W - R) / 2, y: H - 6, 'text-anchor': 'middle' }, `ISO week, ${s.weeks[0].slice(0, 4)}`));
-    svg.append(mk('text', { x: 0, y: 10, 'text-anchor': 'start' }, 'Reports per week'));
-    for (const ser of s.series) {
-      svg.append(mk('polyline', { class: 'line', stroke: ser.color,
-        points: ser.values.map((v, i) => `${x(i)},${y(v)}`).join(' ') }));
-      const end = ser.values.length - 1;
-      svg.append(mk('circle', { cx: x(end), cy: y(ser.values[end]), r: 4, fill: ser.color, stroke: 'var(--card)', 'stroke-width': 2 }));
-    }
-    if (wide) {
-      const end = n - 1;
-      const ys = spreadLabels(s.series.map((ser) => y(ser.values[end]) + 4), 16, T + 8, H - B);
-      s.series.forEach((ser, k) => svg.append(mk('text', { class: 'endlbl', x: x(end) + 12, y: ys[k] }, ser.name)));
-    }
-    const cross = mk('line', { class: 'cross', y1: T, y2: H - B, visibility: 'hidden' });
-    svg.append(cross);
     const tip = $('tip');
-    const move = (e) => {
-      const r = svg.getBoundingClientRect();
-      const px = ((e.clientX - r.left) / r.width) * W;
-      const i = Math.min(n - 1, Math.max(0, Math.round(((px - L) / (W - L - R)) * (n - 1))));
-      cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
-      tip.replaceChildren(el('strong', '', s.weeks[i]), ...s.series.map((ser) => el('div', '', `${ser.name}: ${ser.values[i]}`)));
-      tip.hidden = false;
-      tip.style.left = `${Math.min(e.clientX + 14, window.innerWidth - 256)}px`;
-      tip.style.top = `${e.clientY + 14}px`;
-    };
-    svg.addEventListener('pointermove', move);
-    svg.addEventListener('pointerleave', () => { tip.hidden = true; cross.setAttribute('visibility', 'hidden'); });
-    $('trend').replaceChildren(svg);
+    const every = Math.max(1, Math.ceil(n / Math.max(1, Math.floor((PW - L - R) / 44))));
+    const panels = series.map((ser) => {
+      const last = ser.values[n - 1];
+      const panel = el('div', 'panel');
+      const title = el('h3', '', `${ser.name} \u00b7 ${last} this week`);
+      title.style.setProperty('--c', ser.color);
+      const svg = mk('svg', { viewBox: `0 0 ${PW} ${H}`, role: 'img',
+        'aria-label': `${ser.name}: weekly reports from ${weeks[0]} to ${weeks[n - 1]}, latest week ${last}, peak ${Math.max(...ser.values)}. Same scale as the other panels. A data table follows the charts.` });
+      svg.append(mk('title', {}, `${ser.name}, weekly reports`));
+      for (let v = 0; v <= top; v += step) {
+        svg.append(mk('line', { class: 'grid', x1: L, x2: PW - R, y1: y(v), y2: y(v) }),
+          mk('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, v));
+      }
+      weeks.forEach((w, i) => { if (i % every === 0) svg.append(mk('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, w.slice(5))); });
+      const pts = ser.values.map((v, i) => `${x(i)},${y(v)}`);
+      svg.append(mk('polygon', { points: `${x(0)},${y(0)} ${pts.join(' ')} ${x(n - 1)},${y(0)}`, fill: ser.color, 'fill-opacity': 0.12 }),
+        mk('polyline', { class: 'line', stroke: ser.color, points: pts.join(' ') }),
+        mk('circle', { cx: x(n - 1), cy: y(last), r: 4, fill: ser.color, stroke: 'var(--card)', 'stroke-width': 2 }));
+      const cross = mk('line', { class: 'cross', y1: T, y2: H - B, visibility: 'hidden' });
+      svg.append(cross);
+      svg.addEventListener('pointermove', (e) => {
+        const r = svg.getBoundingClientRect();
+        const px = ((e.clientX - r.left) / r.width) * PW;
+        const i = Math.min(n - 1, Math.max(0, Math.round(((px - L) / (PW - L - R)) * (n - 1))));
+        cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
+        tip.replaceChildren(el('strong', '', weeks[i]), el('div', '', `${ser.name}: ${ser.values[i]}`));
+        tip.hidden = false;
+        tip.style.left = `${Math.min(e.clientX + 14, window.innerWidth - 256)}px`;
+        tip.style.top = `${e.clientY + 14}px`;
+      });
+      svg.addEventListener('pointerleave', () => { tip.hidden = true; cross.setAttribute('visibility', 'hidden'); });
+      panel.append(title, svg);
+      return panel;
+    });
+    $('trend').replaceChildren(...panels);
   }
 
   function renderTrendMeta(s) {
     const other = s.series.find((x) => x.key === OTHER);
     $('other-note').textContent = other ? `Other types (not shown): ${other.values.reduce((a, b) => a + b, 0)} reports over the period` : '';
-    $('legend').replaceChildren(...s.series.filter((x) => x.key !== OTHER).map((ser) => {
-      const sp = el('span', '', ser.name);
-      sp.style.setProperty('--c', ser.color);
-      return sp;
-    }));
     const table = el('table');
     const head = el('tr');
     head.append(el('th', '', 'Week'), ...s.series.map((x2) => el('th', '', x2.name)));
@@ -335,13 +330,18 @@ if (typeof document !== 'undefined') {
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
   drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); readFile(e.dataTransfer.files[0]); });
   $('more').addEventListener('click', () => { showAll = !showAll; if (summary) renderRanking(summary); });
-  $('theme').addEventListener('click', (e) => {
-    const root = document.documentElement;
-    const dark = (root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) !== 'dark';
-    root.dataset.theme = dark ? 'dark' : 'light';
-    e.target.setAttribute('aria-pressed', String(dark));
-    e.target.textContent = dark ? 'Light theme' : 'Dark theme';
+  const isDark = () => (document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
+  const syncTheme = () => {
+    const dark = isDark();
+    $('theme').setAttribute('aria-pressed', String(dark));
+    $('theme').textContent = themeLabel(dark);
+  };
+  $('theme').addEventListener('click', () => {
+    document.documentElement.dataset.theme = isDark() ? 'light' : 'dark';
+    syncTheme();
   });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
+  syncTheme();
   // Charts are drawn in real pixels, so redraw when the container width changes.
   new ResizeObserver(() => { if (summary && Math.floor($('trend').clientWidth) !== drawnWidth) renderTrend(summary); }).observe($('trend'));
 

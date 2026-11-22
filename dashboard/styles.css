@@ -43,6 +43,7 @@ h2{font-size:clamp(24px,3vw,32px);line-height:1.15;letter-spacing:-.2px}
 .tile,.card{background:var(--card);border:1px solid var(--rule);border-radius:18px;padding:24px;min-width:0}
 .tile .lbl{font-size:14px;font-weight:600;color:var(--muted)}
 .tile .num{font-size:56px;font-weight:600;line-height:1.07;letter-spacing:-.28px;margin:8px 0 4px;white-space:nowrap}
+.tile .num.na-num{font-size:28px;white-space:normal;line-height:1.2}
 .tile .num small{font-size:28px;font-weight:600;color:var(--muted);margin-left:2px}
 .tile .cap{font-size:14px;color:var(--muted);line-height:1.4;margin-bottom:16px}
 .tile .ctx{font-size:14px;font-weight:600;margin-top:auto;color:var(--ink);padding-top:12px;border-top:1px solid var(--rule)}
@@ -52,12 +53,11 @@ h2{font-size:clamp(24px,3vw,32px);line-height:1.15;letter-spacing:-.2px}
 .rank .bar-fill{height:16px;background:var(--bar);border-radius:0 8px 8px 0;flex:0 0 auto;width:max(2px,calc(var(--r) * (100% - 56px)))}
 .rank .v{font-weight:600;font-size:17px;min-width:3ch}
 #more{margin-top:16px}
-.legend{display:flex;flex-wrap:wrap;gap:8px 24px;margin-bottom:16px;font-size:14px}
-.legend span::before{content:"";display:inline-block;width:20px;height:0;border-top:3px solid var(--c);margin-right:8px;vertical-align:middle}
-.legend span.dash::before{border-top-style:dashed}
+.chart{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.panel h3{margin:0 0 8px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px}
+.panel h3::before{content:"";width:20px;border-top:3px solid var(--c)}
 .chart svg{display:block;width:100%;height:auto;overflow:visible}
 .chart text{fill:var(--muted);font:400 12px system-ui,-apple-system,"Segoe UI",sans-serif}
-.chart .endlbl{fill:var(--ink);font-weight:600}
 .chart .grid{stroke:var(--rule);stroke-width:1}
 .chart .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .chart .line.dash{stroke-dasharray:6 4}
@@ -95,6 +95,7 @@ footer{padding-bottom:48px;color:var(--muted);font-size:14px}
   .tile .lbl,.tile .cap,.tile .ctx{font-size:13px}
   .tile{padding:16px 12px}
   .card{padding:24px 16px}
+  .chart{grid-template-columns:1fr;gap:16px}
   .rank{grid-template-columns:1fr;gap:4px;margin-bottom:8px}
   .intro{align-items:stretch}
   th,td{padding:12px 4px}

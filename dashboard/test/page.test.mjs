@@ -36,7 +36,8 @@ test('T3_9_notMeasuredPath', async () => {
 });
 
 test('T3_9_headlineAndAccuracyTiles', async () => {
-  const { headline, modelAccuracy, niceScale, spreadLabels } = await import('../app.js');
+  const { headline, modelAccuracy, niceScale, spreadLabels, themeLabel } = await import('../app.js');
+  assert.deepEqual([themeLabel(true), themeLabel(false)], ['Light theme', 'Dark theme']);
   const rows = [
     { district: 'Raipur', scam_type: 'OTP', date: '2026-01-05' },
     { district: 'Raipur', scam_type: 'OTHER', date: '2026-01-06' },
