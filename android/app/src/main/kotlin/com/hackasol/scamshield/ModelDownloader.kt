@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.hackasol.scamshield.core.ModelConfig
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
@@ -26,8 +27,8 @@ import java.net.URL
  */
 object ModelDownloader {
     private const val TAG = "ScamShield/Download"
-    const val DEFAULT_URL = "https://github.com/AB527/open-model/releases/download/v1/gemma3-1b-it-int4.task"
-    const val FILE_NAME = "gemma3-1b-it-int4.task"
+    const val DEFAULT_URL = ModelConfig.URL
+    const val FILE_NAME = ModelConfig.FILENAME
     private const val NEEDED_BYTES = 700L * 1024 * 1024
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO +

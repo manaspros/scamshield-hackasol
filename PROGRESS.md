@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T1.15 [sonnet] model URL/filename/SHA from core/ModelConfig.kt (default = current base Gemma 3 1B release), Verdict.scamType wired to Dart map and verdict log — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*ModelConfigTest*' && flutter build apk --debug --android-skip-build-dependency-validation && flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
 - T4.4 [codex] new-scam clustering (HDBSCAN on trigger features, campaign alerts, dashboard JSON) — 2026-11-23 — cd ml && uv run pytest -q -rA (scikit-learn 1.9.1; enabled because the user asked to build all parts)
 - T1.5 [sonnet] fusion moved to core/Fusion.kt with FusionWeights (behaviour regression-locked) — 2026-11-23 — ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*FusionTest*'
 - T2.5 [sonnet] AudioDecoder + PcmResampler (pure downmix/resample) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*PcmResamplerTest*' && flutter build apk --debug --android-skip-build-dependency-validation
@@ -82,3 +83,4 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - Implementers: sonnet (Agent tool), codex `gpt-6-luna` (Orca). Verifier: haiku.
 - Base model: google/gemma-3-1b-it (HF, gated). Converter: litert-torch==0.10.0 (PyPI 2026-10-20, renamed ai-edge-torch; Gemma 3 1B via litert_torch/generative/examples/gemma3, quant dynamic_int4_block32) + mediapipe==1.2.3 genai bundler (2026-11-11) -> .task. Not installed (dry-run only).
 - Eval base model: google/gemma-3-1b-it, https://huggingface.co/google/gemma-3-1b-it (gated; HF account manaspros accepted licence 2026-11-23), transformers 5.23.0 bf16 on Apple M4 MPS.
+- On-device model: base Gemma 3 1B int4, https://github.com/AB527/open-model/releases/download/v1/gemma3-1b-it-int4.task (no SHA-256 pinned; ModelConfig.SHA256 is null, pin before release).

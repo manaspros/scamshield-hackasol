@@ -68,6 +68,7 @@ data class Verdict(
     val latencyMs: Long,
     val source: Source,
     val preliminary: Boolean = false,
+    val scamType: ScamType? = null,
 ) {
     fun toMap(): Map<String, Any?> = mapOf(
         "text" to text,
@@ -79,6 +80,7 @@ data class Verdict(
         "latencyMs" to latencyMs,
         "source" to source.name.lowercase(),
         "preliminary" to preliminary,
+        "scamType" to scamType?.name,
     )
 
     /** 0..1 risk used by the call-level tracker. */

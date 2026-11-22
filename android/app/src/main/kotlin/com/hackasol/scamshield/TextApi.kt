@@ -72,7 +72,7 @@ object TextApi {
         val log = verdictLog ?: return
         try {
             // scamType is null until T1.15 adds Verdict.scamType.
-            val e = VerdictEvent(0, System.currentTimeMillis(), v.source, v.label, v.confidence, null, v.triggers, v.engine)
+            val e = VerdictEvent(0, System.currentTimeMillis(), v.source, v.label, v.confidence, v.scamType, v.triggers, v.engine)
             withContext(Dispatchers.IO) { log.append(e) }
         } catch (t: Throwable) {
             Log.e("ScamShield/TextApi", "verdict log append failed", t)
@@ -85,12 +85,12 @@ object TextApi {
         val llm = if (AppSettings.useLlm) GemmaClassifier.classify(req.text, req.context) else null
         val elapsed = SystemClock.elapsedRealtime() - t0
         val f = Fusion.fuse(llm, rules, RuleScorer.scamType(req.text))
-        return Verdict(req.text, f.label, f.confidence, f.reason, f.triggers, f.engine, elapsed, req.source)
+        return Verdict(req.text, f.label, f.confidence, f.reason, f.triggers, f.engine, elapsed, req.source, scamType = f.scamType)
     }
 
     private fun rulesVerdict(req: ClassifyRequest, rules: com.hackasol.scamshield.core.RuleResult, ms: Long, preliminary: Boolean = false): Verdict {
-        val f = Fusion.fuse(null, rules, null)   // type not needed until T1.15 adds Verdict.scamType
-        return Verdict(req.text, f.label, f.confidence, f.reason, f.triggers, f.engine, ms, req.source, preliminary)
+        val f = Fusion.fuse(null, rules, RuleScorer.scamType(req.text))
+        return Verdict(req.text, f.label, f.confidence, f.reason, f.triggers, f.engine, ms, req.source, preliminary, f.scamType)
     }
 
     fun requestFromMap(m: Map<*, *>) = ClassifyRequest(
