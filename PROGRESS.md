@@ -62,6 +62,10 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - 2026-11-23 (ML): held-out split is 26 synthetic rows (one row per template, 20% of templates) so numbers are noisy; more slot-fills per template would need a synth.py change outside ML scope. Binary positive = SCAM or SUSPICIOUS; UNPARSED counts negative. Provisional T1.10 port committed before T1.13 because the harness imports it.
 - 2026-11-23 (ML): T1.10 Parsed.reason -> reasons: list[str] to match the golden output. SFT target = one-line JSON {label, scam_type (NONE for SAFE), confidence fixed per label, reason}. T1_9_sftPairsWellFormed now asserts every target parses with the on-device parser (the old LABEL:/TYPE: text assertion could not hold after the format swap). Unparseable output -> label UNPARSED in Python (Kotlin returns null).
 - 2026-11-23 (ML): torch 2.15.0 (2026-10-28) + transformers 5.23.0 (2026-11-13) in uv group 'hf' (DEP5); [tool.uv] exclude-newer 2026-11-16 keeps the 7-day cooldown on re-resolve; pytest pythonpath=["."] added because package=false left scamshield_ml unimportable after uv sync. Dashboard m1.json not written while Gemma is blocked: stub numbers must never reach the panel.
+- 2026-11-23: Reverted an uncommitted `dart format` pass over 12 lib/test files (formatting only), so later UI tasks get clean diffs; UI workers must not format files outside their Files list.
+- 2026-11-23: Commit c5542e6 (T1.3) also carries the ML session's T1.10 tick and Done line, because a concurrent edit got staged; content is correct (T1.10 = a05edae), and history is not rewritten on a shared branch.
+- 2026-11-23: T1.3, T1.6, T2.2, T2.4, T3.1, T3.4, T3.8, T5.4 were tagged [codex] but implemented by Sonnet subagents under the APP phase lead (drafted in the scratchpad while baseline builds ran, then installed serially, one Gradle run at a time); verifiers are haiku.
+- 2026-11-23: Every full Kotlin suite run is followed by `RULES_EVAL_CSV=ml/reports/heldout.csv ... --tests '*RulesEvalExportTest*' --rerun`, so android/app/build/rules_preds.jsonl stays the 26-row heldout export the ML session reads.
 
 ## Failures log
 
