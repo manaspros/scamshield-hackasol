@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T1.6 [sonnet] Alert policy (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*AlertPolicyTest*'
 - T5.4 [sonnet] Golden-hour timer and evidence zip (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*GoldenHourTest*'
 - T3.8 [sonnet] Anonymised trend export (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*TrendExportTest*' && node dashboard/validate.mjs android/app/build/trend_export.json
 - T3.1 [sonnet] Report pack with official targets (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*ReportPackTest*'

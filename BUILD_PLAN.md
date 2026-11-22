@@ -71,7 +71,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T1.5 [codex] Fusion in one place: move the existing fusion out of `TextApi` into `K/core/Fusion.kt` with a `FusionWeights` object; behaviour unchanged (regression-locked); scam type = SLM type when present, else rule type
   - **Files**: `K/core/Fusion.kt`, `K/TextApi.kt`, `KT/core/FusionTest.kt`  **Depends on**: T1.4
   - **Done when**: `KT(FusionTest)` passes `T1_5_gemmaDecides`, `T1_5_rulesOnlyRaise`, `T1_5_confidence70_30`, `T1_5_rulesOnlyMode`
-- [ ] T1.6 [codex] `AlertPolicy` (pure): Verdict + Source -> `{bubble, notify, reportAction}`; SCAM -> notify + (bubble when CAPTION), SUSPICIOUS -> bubble for live sources else notify, SAFE -> nothing
+- [x] T1.6 [codex] `AlertPolicy` (pure): Verdict + Source -> `{bubble, notify, reportAction}`; SCAM -> notify + (bubble when CAPTION), SUSPICIOUS -> bubble for live sources else notify, SAFE -> nothing
   - **Files**: `K/core/AlertPolicy.kt`, `KT/core/AlertPolicyTest.kt`  **Depends on**: T1.1
   - **Done when**: `KT(AlertPolicyTest)` passes one test per label/source combo (`T1_6_...`)
 - [ ] T1.7 [sonnet] `AlertDispatcher`: high-importance heads-up notification channel + bubble via existing `OverlayController`, always with a "Report" action (PendingIntent -> `MainActivity` extra `route=report`); request `POST_NOTIFICATIONS` on Android 13+ in Setup; `CaptionAccessibilityService` calls the dispatcher (callbacks stay wrapped in `safe{}`)
