@@ -3,6 +3,8 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T1.3 [sonnet] Verdict event log (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*VerdictLogTest*'
+- T1.10 [sonnet] Python prompt/parser port, parity with data/golden/prompt_golden.json (APP T1.2 7c09a0e); synth.py SFT pairs now use the on-device format — 2026-11-23 — cd ml && uv run pytest -q tests/test_prompt_parity.py
 - T1.12 [sonnet] rules-only predictions exporter (RULES_EVAL_CSV override, default data/golden/eval_smoke.csv) — 2026-11-23 — ./gradlew ... --tests '*RulesEvalExportTest*'
 - T1.2 [sonnet] ScamType + GemmaPrompt + parser + rule type + golden — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest (ScamTypeTest 3/3; also fixes Source.parse("signal") -> SIGNAL)
 - T3.4 [sonnet] quiz engine + literacy score — 2026-11-23 — flutter test test/quiz_engine_test.dart
@@ -24,7 +26,6 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 ## Blocked
 - Not supplied by user (2026-11-23): real messages, hne reviewer. (RTX box dropped by user.)
 - T1.14 — base Gemma: HF returns 403 "not in the authorized list" for google/gemma-3-1b-it (user must accept the licence on the account that 'hf auth whoami' shows). Rules-only row: waits on android/app/build/rules_preds.jsonl from APP T1.12 over ml/reports/heldout.csv. Fine-tuned row: not run (no GPU box).
-- T1.10 golden parity + synth.py SFT target swap — waits on data/golden/prompt_golden.json from APP T1.2 (provisional port committed 16fc554).
 - T2.8, T6.1, T6.2, T6.3, T6.4 — device (OnePlus 10T / Pixel) owned by teammates.
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
@@ -51,6 +52,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - 2026-11-23: Flutter 3.50.1 (framework 2026-11-18) is under the 7-day cooldown; brew offers only latest; kept under the user's blanket approval, flagged for review. android-36/build-tools 36.0.0 chosen over 37.x for cooldown and compatibility. ANDROID_HOME set per command, no rc edits.
 - 2026-11-23 (ML): training uses raw build_prompt text, no chat turns, matching GemmaClassifier.kt:127 addQueryChunk. convert_task.py has --dry-run but no --limit (nothing to limit). [VERIFY] gemma3 example script ships in the litert-torch 0.10.0 wheel; mediapipe 1.2.3 bundler import path; peft vs litert-torch torch<2.15 pin.
 - 2026-11-23 (ML): held-out split is 26 synthetic rows (one row per template, 20% of templates) so numbers are noisy; more slot-fills per template would need a synth.py change outside ML scope. Binary positive = SCAM or SUSPICIOUS; UNPARSED counts negative. Provisional T1.10 port committed before T1.13 because the harness imports it.
+- 2026-11-23 (ML): T1.10 Parsed.reason -> reasons: list[str] to match the golden output. SFT target = one-line JSON {label, scam_type (NONE for SAFE), confidence fixed per label, reason}. T1_9_sftPairsWellFormed now asserts every target parses with the on-device parser (the old LABEL:/TYPE: text assertion could not hold after the format swap). Unparseable output -> label UNPARSED in Python (Kotlin returns null).
 - 2026-11-23 (ML): torch 2.15.0 (2026-10-28) + transformers 5.23.0 (2026-11-13) in uv group 'hf' (DEP5); [tool.uv] exclude-newer 2026-11-16 keeps the 7-day cooldown on re-resolve; pytest pythonpath=["."] added because package=false left scamshield_ml unimportable after uv sync. Dashboard m1.json not written while Gemma is blocked: stub numbers must never reach the panel.
 
 ## Failures log

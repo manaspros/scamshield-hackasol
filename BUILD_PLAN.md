@@ -62,7 +62,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T1.2 [codex] Scam-type label from the SLM: `ScamType` enum (OTP, KYC, DIGITAL_ARREST, COURIER_CUSTOMS, FAKE_QR, LOAN_APP, INVESTMENT, JOB, MISTAKEN_TRANSFER, OTHER; SAFE has none); extract the few-shot prompt into pure `K/core/GemmaPrompt.kt` with a scam-type output line; extend `LlmOutputParser` to read it (missing/unknown -> OTHER); `RuleScorer` triggers map to a rule-derived type for rules-only mode; Kotlin test writes `data/golden/prompt_golden.json` (prompt text + sample model outputs + parsed result)
   - **Files**: `K/core/Models.kt`, `K/core/GemmaPrompt.kt`, `K/core/LlmOutputParser.kt`, `K/core/RuleScorer.kt`, `K/GemmaClassifier.kt` (call the extracted builder), `KT/core/ScamTypeTest.kt`, `data/golden/prompt_golden.json`  **Depends on**: T1.1
   - **Done when**: `KT(ScamTypeTest)` passes `T1_2_parsesScamType`, `T1_2_ruleTypeFallback`, `T1_2_goldenWritten`; existing parser tests unchanged and green in `KALL`
-- [ ] T1.3 [codex] Verdict event log, pure: `VerdictEvent{id, tsMs, source, label, confidence, scamType, triggers, engine}` (no raw text stored), `VerdictLog` interface (`append`, `since`, `latest`, `countsByType`), in-memory impl
+- [x] T1.3 [codex] Verdict event log, pure: `VerdictEvent{id, tsMs, source, label, confidence, scamType, triggers, engine}` (no raw text stored), `VerdictLog` interface (`append`, `since`, `latest`, `countsByType`), in-memory impl
   - **Files**: `K/core/VerdictLog.kt`, `KT/core/VerdictLogTest.kt`  **Depends on**: T1.2
   - **Done when**: `KT(VerdictLogTest)` passes `T1_3_countsByType`, `T1_3_sinceFilters`
 - [ ] T1.4 [sonnet] SQLite verdict log persisting every `TextApi` result (all sources); channel methods `verdicts.recent(sinceMs)` and `verdicts.counts`
@@ -83,7 +83,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T1.9 [codex] Deterministic synthetic generator: EN / Hindi (Devanagari) / Hinglish, 10 scam types plus hard genuine negatives (real bank OTP notices, delivery updates, bills), >=40 templates per language, slot-filled; output also as SFT pairs (prompt + target in the on-device output format)
   - **Files**: `ml/scamshield_ml/synth.py`, `ml/tests/test_synth.py`  **Depends on**: T1.8
   - **Done when**: `PT(tests/test_synth.py)` passes `T1_9_templateCountPerLang`, `T1_9_allScamTypesPresent`, `T1_9_sftPairsWellFormed`
-- [ ] T1.10 [codex] Python port of the on-device prompt builder and output parser (the harness and training must use exactly the on-device format)
+- [x] T1.10 [codex] Python port of the on-device prompt builder and output parser (the harness and training must use exactly the on-device format)
   - **Files**: `ml/scamshield_ml/prompt.py`, `ml/scamshield_ml/parser.py`, `ml/tests/test_prompt_parity.py`  **Depends on**: T1.2, T1.8
   - **Done when**: `PT(tests/test_prompt_parity.py)` passes: prompt text equals and parsed results equal every entry of `data/golden/prompt_golden.json`
 - [x] T1.11 [codex] [NEEDS-OK:DEP5] Gemma 3 1B LoRA fine-tune script (peft + trl, SFT on the T1.9 pairs, config in YAML, train split only) and conversion script (merge LoRA -> HF checkpoint -> MediaPipe `.task` int4); both support `--dry-run`/`--limit` so they are testable without a GPU
