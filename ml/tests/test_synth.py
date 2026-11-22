@@ -1,6 +1,7 @@
 from collections import Counter
 
 from scamshield_ml.data import LANGUAGES, SCAM_TYPES
+from scamshield_ml.parser import parse_output
 from scamshield_ml.synth import generate_rows, sft_pairs
 
 
@@ -26,9 +27,4 @@ def test_T1_9_sftPairsWellFormed() -> None:
         set(pair) == {"prompt", "target"} and pair["prompt"] and pair["target"]
         for pair in pairs
     )
-    assert all(
-        "LABEL: " in pair["target"]
-        and "\nTYPE: " in pair["target"]
-        and "\nREASON: " in pair["target"]
-        for pair in pairs
-    )
+    assert all(parse_output(pair["target"])["label"] != "UNPARSED" for pair in pairs)

@@ -10,21 +10,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from scamshield_ml.data import COLUMNS, LANGUAGES, SCAM_TYPES, Row, validate_row
-
-SFT_PROMPT = "Classify this message for scam risk. Return label, type, and a short reason.\nMESSAGE: {text}"
-
-
-def target_for_row(row: Row) -> str:
-    """Return temporary SFT target; replace when T1.10 ports GemmaPrompt.kt."""
-    # shortcut: target format is a placeholder until T1.10 ports GemmaPrompt.kt
-    label = "SAFE" if row["label"] == "SAFE" else "SCAM"
-    kind = row["scam_type"] or "NONE"
-    reason = (
-        "Routine service update."
-        if label == "SAFE"
-        else f"Requests risky action associated with {kind}."
-    )
-    return f"LABEL: {label}\nTYPE: {kind}\nREASON: {reason}"
+from scamshield_ml.prompt import build_prompt, target_for_row
 
 
 # Each language has four message variants for every scam type, then four hard negatives.
@@ -297,7 +283,7 @@ def generate_rows(seed: int = 0) -> list[Row]:
 
 def sft_pairs(rows: Iterable[Row]) -> list[dict[str, str]]:
     return [
-        {"prompt": SFT_PROMPT.format(text=row["text"]), "target": target_for_row(row)}
+        {"prompt": build_prompt(row["text"]), "target": target_for_row(row)}
         for row in rows
     ]
 
