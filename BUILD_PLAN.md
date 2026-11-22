@@ -173,7 +173,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T4.3 [sonnet] [NEEDS-OK:DEP7] [OPTIONAL: if time remains after P3] ML Kit code scanner button feeding T4.2
   - **Files**: `K/QrChannel.kt`, `android/app/build.gradle(.kts)`, `lib/screens/try_api_screen.dart`  **Depends on**: T4.2
   - **Done when**: `APP` and `REL` succeed; the scanner result is passed to the same parser (`KT(UpiQrTest)` still green)
-- [ ] T4.4 [codex] [NEEDS-OK:DEP4] [OPTIONAL: only if P0-P3 done and a human asks] New-scam clustering on exported trigger features (HDBSCAN from scikit-learn), cluster summaries JSON for the dashboard
+- [x] T4.4 [codex] [NEEDS-OK:DEP4] [OPTIONAL: only if P0-P3 done and a human asks] New-scam clustering on exported trigger features (HDBSCAN from scikit-learn), cluster summaries JSON for the dashboard
   - **Files**: `ml/scamshield_ml/cluster.py`, `ml/tests/test_cluster.py`  **Depends on**: T1.9
   - **Done when**: `PT(tests/test_cluster.py)` passes `T4_4_newCampaignAlerts` (known types do not alert)
 

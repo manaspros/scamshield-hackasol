@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T4.4 [codex] new-scam clustering (HDBSCAN on trigger features, campaign alerts, dashboard JSON) — 2026-11-23 — cd ml && uv run pytest -q -rA (scikit-learn 1.9.1; enabled because the user asked to build all parts)
 - T1.5 [sonnet] fusion moved to core/Fusion.kt with FusionWeights (behaviour regression-locked) — 2026-11-23 — ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*FusionTest*'
 - T2.5 [sonnet] AudioDecoder + PcmResampler (pure downmix/resample) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*PcmResamplerTest*' && flutter build apk --debug --android-skip-build-dependency-validation
 - T5.2 [codex] Context rules: mistaken transfer, 1600 bank call, delivery (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*ContextRulesTest*'
