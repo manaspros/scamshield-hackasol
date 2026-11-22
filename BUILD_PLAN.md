@@ -164,7 +164,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
   - **Done when**: `APP` succeeds; `flutter test` exits 0
 
 ## Phase 4 — Bonus
-- [ ] T4.1 [codex] `UpiQr` (pure): parse `upi://pay?pa=&pn=&am=`, payee-name vs expected-name mismatch, "You will PAY Rs X to <name>" framing, collect-request wording
+- [x] T4.1 [codex] `UpiQr` (pure): parse `upi://pay?pa=&pn=&am=`, payee-name vs expected-name mismatch, "You will PAY Rs X to <name>" framing, collect-request wording
   - **Files**: `K/core/UpiQr.kt`, `KT/core/UpiQrTest.kt`  **Depends on**: T0.5
   - **Done when**: `KT(UpiQrTest)` passes `T4_1_parsesPaTn`, `T4_1_nameMismatch`, `T4_1_payFraming`, `T4_1_rejectsMalformed`
 - [ ] T4.2 [sonnet] [UI] Fake-QR checker in Try API: `upi://` in pasted/shared text (or manual link) + optional "name I was told" -> card with PAY framing and mismatch warning; also logs a FAKE_QR verdict event
