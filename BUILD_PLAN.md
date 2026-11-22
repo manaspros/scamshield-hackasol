@@ -181,7 +181,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T5.1 [codex] Knowledge graph (pure, new events only): entities sender/brand/event(order, bill, credit, out-for-delivery)/number/UPI ID, `ingest`, lookups, cold-start text "No record since ScamShield was installed"; regex claim parsers (brand, amount, UPI ID, link; use `UnicodeRegex.kt`); claim-vs-context (no bill/order event, non-DLT sender, link not `.bank.in`/`.gov.in`)
   - **Files**: `K/core/graph/KnowledgeGraph.kt`, `ClaimParsers.kt`, `ClaimVsContext.kt`, `KT/core/graph/GraphTest.kt`  **Depends on**: T1.2
   - **Done when**: `KT(GraphTest)` passes `T5_1_ingestThenLookup`, `T5_1_coldStartMessage`, `T5_1_noBillEventFlags`, `T5_1_linkAllowlist`
-- [ ] T5.2 [codex] Context rules (pure): mistaken-transfer A/B, bank-call 1600 check, delivery masked-number suppression/flag; wording as `[VERIFY]` constants
+- [x] T5.2 [codex] Context rules (pure): mistaken-transfer A/B, bank-call 1600 check, delivery masked-number suppression/flag; wording as `[VERIFY]` constants
   - **Files**: `K/core/graph/ContextRules.kt`, `KT/core/graph/ContextRulesTest.kt`  **Depends on**: T5.1
   - **Done when**: `KT(ContextRulesTest)` passes `T5_2_fakeCreditNoMoneyArrived`, `T5_2_realCreditReturnWarning`, `T5_2_non1600BankCall`, `T5_2_outForDeliverySuppresses`
 - [ ] T5.3 [sonnet] SQLite graph persistence fed by `ScamNotificationListener`; claim-vs-context and context-rule hits raise the verdict (rules can only raise) and add reasons shown in the alert
