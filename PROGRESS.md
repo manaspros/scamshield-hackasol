@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T3.8 [sonnet] Anonymised trend export (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*TrendExportTest*' && node dashboard/validate.mjs android/app/build/trend_export.json
 - T3.1 [sonnet] Report pack with official targets (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*ReportPackTest*'
 - T3.5 [sonnet] lessons + quiz screens (hi default, hne/en toggle, scale 2.0) — 2026-11-23 — flutter test test/lessons_screen_test.dart
 - T1.3 [sonnet] Verdict event log (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*VerdictLogTest*'

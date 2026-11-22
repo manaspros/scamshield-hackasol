@@ -150,7 +150,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T3.7 [codex] Dashboard data + aggregation: `dashboard/agg.mjs` (validates exactly `{district, scam_type, date}`, rejects extra keys, counts by district/type/week), `dashboard/validate.mjs <file>`, `data/districts.json` `[VERIFY list]`, labelled-synthetic `data/trends/sample.json`
   - **Files**: `dashboard/agg.mjs`, `dashboard/validate.mjs`, `data/districts.json`, `data/trends/sample.json`, `dashboard/test/agg.test.mjs`  **Depends on**: none
   - **Done when**: `NT(agg.test.mjs)` passes `T3_7_rejectsExtraKeys`, `T3_7_weeklyCounts`; `node dashboard/validate.mjs data/trends/sample.json` exits 0
-- [ ] T3.8 [codex] `TrendExport` (pure): verdict events -> `{district, scam_type, date}` rows (SAFE skipped, no text, district chosen by user)
+- [x] T3.8 [codex] `TrendExport` (pure): verdict events -> `{district, scam_type, date}` rows (SAFE skipped, no text, district chosen by user)
   - **Files**: `K/core/TrendExport.kt`, `KT/core/TrendExportTest.kt`  **Depends on**: T3.7, T1.3
   - **Done when**: `KT(TrendExportTest)` passes `T3_8_threeKeysOnly` and writes `android/app/build/trend_export.json`; `node dashboard/validate.mjs android/app/build/trend_export.json` exits 0
 - [x] T3.9 [sonnet] [UI+DATAVIZ] Policy dashboard as a static page (no build step): district ranking, scam-type trend by week, stat tiles; loads `data/trends/sample.json` or a dropped export file; accuracy panel from a copy of `ml/reports/m1.json` ("not measured" if absent)
