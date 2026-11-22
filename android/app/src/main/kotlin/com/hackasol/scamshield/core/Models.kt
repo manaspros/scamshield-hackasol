@@ -24,7 +24,8 @@ enum class Source { CAPTION, PASTE, SHARE, SMS, WHATSAPP, NOTIFICATION, RECORDIN
                 "share" -> SHARE
                 "sms" -> SMS
                 "whatsapp", "whats_app" -> WHATSAPP
-                "notification", "signal" -> NOTIFICATION
+                "notification" -> NOTIFICATION
+                "signal" -> SIGNAL
                 "recording" -> RECORDING
                 else -> CAPTION
             }
@@ -45,7 +46,17 @@ data class RuleResult(
     val reason: String,
 )
 
-data class LlmResult(val label: Label, val confidence: Double, val reason: String)
+enum class ScamType { OTP, KYC, DIGITAL_ARREST, COURIER_CUSTOMS, FAKE_QR, LOAN_APP, INVESTMENT, JOB, MISTAKEN_TRANSFER, OTHER;
+    companion object {
+        /** Null for blank/unknown/"NONE"; accepts any case and space/hyphen separators. */
+        fun parse(s: String?): ScamType? {
+            val n = s?.trim()?.uppercase()?.replace('-', '_')?.replace(' ', '_') ?: return null
+            return values().firstOrNull { it.name == n }
+        }
+    }
+}
+
+data class LlmResult(val label: Label, val confidence: Double, val reason: String, val scamType: ScamType? = null)
 
 data class Verdict(
     val text: String,

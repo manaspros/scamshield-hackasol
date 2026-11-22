@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
+import com.hackasol.scamshield.core.GemmaPrompt
 import com.hackasol.scamshield.core.LlmOutputParser
 import com.hackasol.scamshield.core.LlmResult
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -124,7 +125,7 @@ object GemmaClassifier {
                         .setRandomSeed(0)
                         .build()
                     session = LlmInferenceSession.createFromOptions(engine, sOpts)
-                    session.addQueryChunk(Prompt.build(text, context))
+                    session.addQueryChunk(GemmaPrompt.build(text, context))
                     val raw = session.generateResponse()
                     Log.d(TAG, "raw=$raw")
                     LlmOutputParser.parse(raw)
@@ -136,36 +137,5 @@ object GemmaClassifier {
                 }
             }
         }
-    }
-}
-
-/** Few-shot prompt. Kept short: every prompt token costs latency on a phone. */
-object Prompt {
-    private const val HEADER = """You are a fraud detector for Indian phone calls. Classify the caller's STATEMENT as SAFE, SUSPICIOUS or SCAM. Text may be English, Hindi (Devanagari) or Hinglish.
-SCAM: asks for OTP/PIN/CVV/password, threatens arrest or "digital arrest", says police/CBI/customs/courier has a case against you, asks to move money to a "safe account", install AnyDesk/an app, or keep the call secret.
-SUSPICIOUS: unsolicited bank/KYC/prize/loan/refund claims, urgency, asks for personal details, but no direct demand yet.
-SAFE: normal conversation.
-Answer with ONLY one line of JSON: {"label":"SAFE|SUSPICIOUS|SCAM","confidence":0.0-1.0,"reason":"max 10 words"}
-
-STATEMENT: "Sir aapke phone pe ek OTP aaya hoga, woh jaldi bata dijiye"
-{"label":"SCAM","confidence":0.97,"reason":"Asks you to share OTP"}
-STATEMENT: "मैं सीबीआई ऑफिस से बोल रहा हूं, आप डिजिटल अरेस्ट में हैं"
-{"label":"SCAM","confidence":0.98,"reason":"Fake CBI digital arrest threat"}
-STATEMENT: "Your parcel to Taiwan has drugs, press 1 to talk to customs officer"
-{"label":"SCAM","confidence":0.93,"reason":"Fake customs parcel story"}
-STATEMENT: "Main SBI bank se bol raha hoon, aapka KYC pending hai"
-{"label":"SUSPICIOUS","confidence":0.75,"reason":"Unsolicited bank KYC claim"}
-STATEMENT: "Beta khana kha liya? Kal shaam ko milte hain"
-{"label":"SAFE","confidence":0.95,"reason":"Normal family conversation"}
-STATEMENT: "Your order will be delivered tomorrow between 10 and 12"
-{"label":"SAFE","confidence":0.85,"reason":"Routine delivery update"}
-"""
-
-    fun build(text: String, context: List<String>): String {
-        val sb = StringBuilder(HEADER)
-        val ctx = context.takeLast(2).filter { it.isNotBlank() }
-        if (ctx.isNotEmpty()) sb.append("\nEarlier in this call: ").append(ctx.joinToString(" | ") { "\"${it.take(150)}\"" }).append('\n')
-        sb.append("STATEMENT: \"").append(text.take(300).replace("\"", "'")).append("\"\n")
-        return sb.toString()
     }
 }

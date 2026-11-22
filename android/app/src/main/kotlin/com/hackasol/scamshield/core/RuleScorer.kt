@@ -83,6 +83,28 @@ object RuleScorer {
         return RuleResult(score, label, top.map { it.second }.distinct(), reason)
     }
 
+    /**
+     * Rule-derived scam type for rules-only mode. Null when the rules label the text SAFE;
+     * OTHER when it is SCAM/SUSPICIOUS but no rule tag maps to a specific type.
+     * shortcut: re-runs the regexes (score + tags), fine for short statements; cache if it gets hot.
+     */
+    fun scamType(text: String): ScamType? {
+        if (score(text).label == Label.SAFE) return null
+        val tags = rules.filter { it.regex.find(text) != null }.map { it.tag }.toSet()
+        return typeFromTags(tags)
+    }
+
+    private fun typeFromTags(t: Set<String>): ScamType = when {
+        "digital_arrest" in t -> ScamType.DIGITAL_ARREST
+        "parcel" in t && ("authority" in t || "contraband" in t || "arrest" in t) -> ScamType.COURIER_CUSTOMS
+        "arrest" in t || "authority" in t || "contraband" in t -> ScamType.DIGITAL_ARREST
+        "otp_share" in t || "otp" in t || "pin" in t -> ScamType.OTP
+        "kyc" in t || "account_block" in t || "bank_claim" in t -> ScamType.KYC
+        "loan" in t -> ScamType.LOAN_APP
+        "parcel" in t -> ScamType.COURIER_CUSTOMS
+        else -> ScamType.OTHER
+    }
+
     /** How much the rule evidence supports a given label (0..1). */
     fun support(r: RuleResult, label: Label): Double = when (label) {
         Label.SCAM -> r.score
