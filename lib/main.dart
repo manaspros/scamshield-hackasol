@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'screens/family_screen.dart';
 import 'screens/live_feed_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/setup_screen.dart';
@@ -32,7 +33,7 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _tab = 0;
-  static const _titles = ['Setup', 'Try the Text API', 'Live call feed', 'Settings'];
+  static const _titles = ['Setup', 'Try the Text API', 'Live call feed', 'Family code', 'Settings'];
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +43,7 @@ class _HomeShellState extends State<HomeShell> {
         SetupScreen(),
         TryApiScreen(),
         LiveFeedScreen(),
+        FamilyScreen(),
         SettingsScreen(),
       ]),
       bottomNavigationBar: NavigationBar(
@@ -51,6 +53,7 @@ class _HomeShellState extends State<HomeShell> {
           NavigationDestination(icon: Icon(Icons.checklist), label: 'Setup'),
           NavigationDestination(icon: Icon(Icons.text_snippet), label: 'Try API'),
           NavigationDestination(icon: Icon(Icons.graphic_eq), label: 'Live'),
+          NavigationDestination(icon: Icon(Icons.family_restroom), label: 'Family'),
           NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),

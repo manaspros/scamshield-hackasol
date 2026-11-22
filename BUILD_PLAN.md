@@ -196,7 +196,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T5.6 [codex] Family code (pure): TOTP RFC 6238 via `javax.crypto`, 30 s step, shared secret as base32 pairing string; offline only (no relay: it would be a new endpoint)
   - **Files**: `K/core/Totp.kt`, `KT/core/TotpTest.kt`  **Depends on**: T0.5
   - **Done when**: `KT(TotpTest)` passes RFC 6238 vectors (`T5_6_rfcVectors`, `T5_6_codesMatchOffline`)
-- [ ] T5.7 [sonnet] [UI] Family screen: pair (show/enter secret), rotating 6-digit code with countdown, "does the code match?" prompt; secret in app-private storage (prototype shortcut)
+- [x] T5.7 [sonnet] [UI] Family screen: pair (show/enter secret), rotating 6-digit code with countdown, "does the code match?" prompt; secret in app-private storage (prototype shortcut)
   - **Files**: `lib/screens/family_screen.dart`, `K/FamilyChannel.kt`, `lib/main.dart`  **Depends on**: T5.6, T3.11
   - **Done when**: `APP` succeeds; `FT(family_screen_test.dart)` passes `T5_7_codeScreen`
 - [ ] T5.8 [sonnet] APK guard: pure `ApkRisk` permission scoring + `.apk` in a notification/shared file -> `getPackageArchiveInfo` -> heads-up warning with the risky permissions before install
