@@ -115,7 +115,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T2.4 [codex] `RecordingPipeline` (pure): STT segments `{text, startMs}` -> `StatementSegmenter` -> classify function (source=RECORDING) -> existing `CallRiskTracker` -> `CallReport{overall, perStatement, topTriggers}`
   - **Files**: `K/core/RecordingPipeline.kt`, `KT/core/RecordingPipelineTest.kt`  **Depends on**: T1.1
   - **Done when**: `KT(RecordingPipelineTest)` passes `T2_4_scamScriptRaisesRisk`, `T2_4_genuineCallStaysSafe` (fake classify, real tracker)
-- [ ] T2.5 [sonnet] `AudioDecoder`: MediaExtractor/MediaCodec -> 16 kHz mono PCM16 chunks; pure `PcmResampler` for downmix/resample
+- [x] T2.5 [sonnet] `AudioDecoder`: MediaExtractor/MediaCodec -> 16 kHz mono PCM16 chunks; pure `PcmResampler` for downmix/resample
   - **Files**: `K/AudioDecoder.kt`, `K/core/PcmResampler.kt`, `KT/core/PcmResamplerTest.kt`  **Depends on**: T0.5
   - **Done when**: `APP` succeeds; `KT(PcmResamplerTest)` passes `T2_5_downmixAndRate`
 - [ ] T2.6 [sonnet] [NEEDS-OK:DEP6] Vosk STT engine + Hindi model download via the existing `ModelDownloader` path; Vosk JSON -> `SttSegment`; keep-rules added

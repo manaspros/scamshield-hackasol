@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T2.5 [sonnet] AudioDecoder + PcmResampler (pure downmix/resample) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*PcmResamplerTest*' && flutter build apk --debug --android-skip-build-dependency-validation
 - T5.2 [codex] Context rules: mistaken transfer, 1600 bank call, delivery (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*ContextRulesTest*'
 - T5.1 [codex] Knowledge graph + claim-vs-context checks (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*GraphTest*'
 - T1.4 [sonnet] SQLite verdict log + verdicts channel — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*VerdictRowMapperTest*' && flutter build apk --debug --android-skip-build-dependency-validation (also native scamshield/prefs handler, allowlisted key lesson_best_v1)
