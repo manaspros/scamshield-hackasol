@@ -1,0 +1,27 @@
+text,label,lang,scam_type,template_id,source
+Customs clearance failed. Submit payment at demo-loan-app.test for your parcel.,SCAM,en,COURIER_CUSTOMS,en_courier_customs_04,synthetic
+"Exclusive shares offer: send ₹2,500 now for a guaranteed profit.",SCAM,en,INVESTMENT,en_investment_03,synthetic
+Your Example Bank account needs KYC. Submit details at demo-loan-app.test.,SCAM,en,KYC,en_kyc_03,synthetic
+Final KYC reminder: confirm your Test Bank profile at example-parcel-check.test today.,SCAM,en,KYC,en_kyc_04,synthetic
+"Get a quick loan today; send ₹2,500 upfront to unlock funds.",SCAM,en,LOAN_APP,en_loan_app_02,synthetic
+"Wrong transfer of ₹2,500; send it back to this UPI handle: sample.person@example.",SCAM,en,MISTAKEN_TRANSFER,en_mistaken_transfer_02,synthetic
+Salary credit: ₹500 deposited to account ending XXXXXX1234.,SAFE,en,,en_safe_04,synthetic
+पार्सल TEST456 का सीमा शुल्क ₹750 बाकी है। छुड़ाने के लिए demo-loan-app.test पर दें।,SCAM,hi,COURIER_CUSTOMS,hi_courier_customs_01,synthetic
+"कूरियर सूचना: SAMPLE789 पार्सल ₹2,500 भुगतान तक रुका है।",SCAM,hi,COURIER_CUSTOMS,hi_courier_customs_03,synthetic
+कस्टम क्लियरेंस नहीं हुआ। पार्सल के लिए demo-loan-app.test पर भुगतान करें।,SCAM,hi,COURIER_CUSTOMS,hi_courier_customs_04,synthetic
+"पुलिस केस सूचना: डिजिटल गिरफ्तारी से बचने के लिए ₹1,200 भेजें।",SCAM,hi,DIGITAL_ARREST,hi_digital_arrest_02,synthetic
+"आपका पार्सल जांच में है। कॉल न काटें, ₹1,200 जमा करें।",SCAM,hi,DIGITAL_ARREST,hi_digital_arrest_03,synthetic
+"आपका ₹2,500 रिफंड तैयार है। QR स्कैन कर कलेक्ट अनुरोध मंजूर करें।",SCAM,hi,FAKE_QR,hi_fake_qr_02,synthetic
+"खास शेयर ऑफर: निश्चित लाभ के लिए ₹1,200 अभी भेजें।",SCAM,hi,INVESTMENT,hi_investment_03,synthetic
+₹500 का भुगतान भूल से हुआ। इसे demo.payee@example पर वापस करें।,SCAM,hi,MISTAKEN_TRANSFER,hi_mistaken_transfer_04,synthetic
+आपका खाता खतरे में है। अभी example-bank-kyc.xyz से सहायता ऐप लें।,SCAM,hi,OTHER,hi_other_01,synthetic
+संदिग्ध लॉगिन रद्द करने के लिए सुरक्षा एजेंट को OTP 123456 भेजें।,SCAM,hi,OTP,hi_otp_04,synthetic
+डिलीवरी सूचना: पार्सल DEMO123 आज पहुंचेगा। कोई भुगतान बाकी नहीं।,SAFE,hi,,hi_safe_02,synthetic
+"Aapka parcel investigation mein hai. Call mat kaato, ₹500 do.",SCAM,hinglish,DIGITAL_ARREST,hinglish_digital_arrest_03,synthetic
+₹500 refund ready hai. QR scan karke collect request approve karo.,SCAM,hinglish,FAKE_QR,hinglish_fake_qr_02,synthetic
+Abhi sample-reward.test par KYC update karein warna Test Bank access block hoga.,SCAM,hinglish,KYC,hinglish_kyc_02,synthetic
+Instant loan approved. example-bank-kyc.xyz app install karo aur ₹500 processing fee do.,SCAM,hinglish,LOAN_APP,hinglish_loan_app_01,synthetic
+Loan limit ready hai. example-parcel-check.test se app lo aur contacts share karo.,SCAM,hinglish,LOAN_APP,hinglish_loan_app_04,synthetic
+₹500 payment mistake se gaya. Abhi test.receiver@example par return karo.,SCAM,hinglish,MISTAKEN_TRANSFER,hinglish_mistaken_transfer_04,synthetic
+Aapka Sample Bank account locked hai. Unlock karne ko agent ko OTP 123456 bhejein.,SCAM,hinglish,OTP,hinglish_otp_02,synthetic
+Salary credit: account XXXXXX1234 mein ₹500 jama hue.,SAFE,hinglish,,hinglish_safe_04,synthetic
