@@ -106,7 +106,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T2.1 [sonnet] [UI] Paste + share-sheet: extend Try API (source=PASTE, shows scam type chip + triggers); transparent `ShareReceiver` activity for `ACTION_SEND text/plain` (source=SHARE) -> TextApi -> dispatcher
   - **Files**: `lib/screens/try_api_screen.dart`, `K/ShareReceiver.kt`, `android/app/src/main/AndroidManifest.xml`  **Depends on**: T1.7, T1.15
   - **Done when**: `APP` succeeds; `FT(try_api_screen_test.dart)` passes `T2_1_showsTypeAndTriggers` (fake channel); `KT(ShareIntentMapperTest)` passes
-- [ ] T2.2 [codex] `NotificationMapper` (pure): package -> Source (WhatsApp, Telegram, default SMS apps -> SMS, else NOTIFICATION), ignore ongoing/group-summary/own package, min length 15, dedupe same text within 60 s
+- [x] T2.2 [codex] `NotificationMapper` (pure): package -> Source (WhatsApp, Telegram, default SMS apps -> SMS, else NOTIFICATION), ignore ongoing/group-summary/own package, min length 15, dedupe same text within 60 s
   - **Files**: `K/core/NotificationMapper.kt`, `KT/core/NotificationMapperTest.kt`  **Depends on**: T1.1
   - **Done when**: `KT(NotificationMapperTest)` passes `T2_2_mapsPackages`, `T2_2_dedupes`, `T2_2_ignoresOwn`
 - [ ] T2.3 [sonnet] `ScamNotificationListener` service (no `READ_SMS`; SMS arrive as notifications) -> mapper -> TextApi -> dispatcher; "Notification access" step added to Setup; all callbacks wrapped
