@@ -3,6 +3,7 @@ package com.hackasol.scamshield
 import android.content.Context
 import android.os.SystemClock
 import com.hackasol.scamshield.core.ClassifyRequest
+import com.hackasol.scamshield.core.Fusion
 import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.RuleScorer
 import com.hackasol.scamshield.core.Source
@@ -83,21 +84,14 @@ object TextApi {
         val rules = RuleScorer.score(req.text)
         val llm = if (AppSettings.useLlm) GemmaClassifier.classify(req.text, req.context) else null
         val elapsed = SystemClock.elapsedRealtime() - t0
-        if (llm == null) return rulesVerdict(req, rules, elapsed)
-
-        // Fusion: the LLM decides; strong rule evidence can only raise the label.
-        var label = llm.label
-        var llmConf = llm.confidence
-        if (rules.score >= 0.85 && label != Label.SCAM) { label = Label.SCAM; llmConf = 0.5 }
-        else if (rules.score >= RuleScorer.SUSPICIOUS_AT && label == Label.SAFE) { label = Label.SUSPICIOUS; llmConf = 0.5 }
-        val confidence = (0.7 * llmConf + 0.3 * RuleScorer.support(rules, label)).coerceIn(0.0, 1.0)
-        val reason = llm.reason.ifBlank { rules.reason }
-        return Verdict(req.text, label, confidence, reason, rules.triggers, "gemma+rules", elapsed, req.source)
+        val f = Fusion.fuse(llm, rules, RuleScorer.scamType(req.text))
+        return Verdict(req.text, f.label, f.confidence, f.reason, f.triggers, f.engine, elapsed, req.source)
     }
 
-    private fun rulesVerdict(req: ClassifyRequest, rules: com.hackasol.scamshield.core.RuleResult, ms: Long, preliminary: Boolean = false) =
-        Verdict(req.text, rules.label, RuleScorer.confidence(rules), rules.reason, rules.triggers,
-            "rules-only", ms, req.source, preliminary)
+    private fun rulesVerdict(req: ClassifyRequest, rules: com.hackasol.scamshield.core.RuleResult, ms: Long, preliminary: Boolean = false): Verdict {
+        val f = Fusion.fuse(null, rules, null)   // type not needed until T1.15 adds Verdict.scamType
+        return Verdict(req.text, f.label, f.confidence, f.reason, f.triggers, f.engine, ms, req.source, preliminary)
+    }
 
     fun requestFromMap(m: Map<*, *>) = ClassifyRequest(
         text = (m["text"] as? String).orEmpty(),

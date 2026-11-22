@@ -68,7 +68,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T1.4 [sonnet] SQLite verdict log persisting every `TextApi` result (all sources); channel methods `verdicts.recent(sinceMs)` and `verdicts.counts`
   - **Files**: `K/SqliteVerdictLog.kt`, `K/TextApi.kt`, `K/MainActivity.kt`, `KT/VerdictRowMapperTest.kt`  **Depends on**: T1.3
   - **Done when**: `APP` succeeds; `KT(VerdictRowMapperTest)` passes (row <-> event round trip); `KALL` green
-- [ ] T1.5 [codex] Fusion in one place: move the existing fusion out of `TextApi` into `K/core/Fusion.kt` with a `FusionWeights` object; behaviour unchanged (regression-locked); scam type = SLM type when present, else rule type
+- [x] T1.5 [codex] Fusion in one place: move the existing fusion out of `TextApi` into `K/core/Fusion.kt` with a `FusionWeights` object; behaviour unchanged (regression-locked); scam type = SLM type when present, else rule type
   - **Files**: `K/core/Fusion.kt`, `K/TextApi.kt`, `KT/core/FusionTest.kt`  **Depends on**: T1.4
   - **Done when**: `KT(FusionTest)` passes `T1_5_gemmaDecides`, `T1_5_rulesOnlyRaise`, `T1_5_confidence70_30`, `T1_5_rulesOnlyMode`
 - [x] T1.6 [codex] `AlertPolicy` (pure): Verdict + Source -> `{bubble, notify, reportAction}`; SCAM -> notify + (bubble when CAPTION), SUSPICIOUS -> bubble for live sources else notify, SAFE -> nothing

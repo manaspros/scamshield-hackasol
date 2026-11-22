@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T1.5 [sonnet] fusion moved to core/Fusion.kt with FusionWeights (behaviour regression-locked) — 2026-11-23 — ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*FusionTest*'
 - T2.5 [sonnet] AudioDecoder + PcmResampler (pure downmix/resample) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*PcmResamplerTest*' && flutter build apk --debug --android-skip-build-dependency-validation
 - T5.2 [codex] Context rules: mistaken transfer, 1600 bank call, delivery (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*ContextRulesTest*'
 - T5.1 [codex] Knowledge graph + claim-vs-context checks (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*GraphTest*'
@@ -72,6 +73,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - 2026-11-23: T1.3, T1.6, T2.2, T2.4, T3.1, T3.4, T3.8, T5.4 were tagged [codex] but implemented by Sonnet subagents under the APP phase lead (drafted in the scratchpad while baseline builds ran, then installed serially, one Gradle run at a time); verifiers are haiku.
 - 2026-11-23: Every full Kotlin suite run is followed by `RULES_EVAL_CSV=ml/reports/heldout.csv ... --tests '*RulesEvalExportTest*' --rerun`, so android/app/build/rules_preds.jsonl stays the 26-row heldout export the ML session reads.
 - 2026-11-23 (ML): only 3 of 26 held-out rows are SAFE-labelled negatives (all 26 are synthetic), so FPR 0 rests on 3 negatives and is weak evidence. Base Gemma often emits scam_type values outside the enum (e.g. DEMO_LOAN_APP, leading spaces); parser kept at Kotlin parity, so type-F1 reflects on-device behaviour. Rules predictions copied to ml/reports/rules_preds_heldout.jsonl (APP T1.12 51b005a) because the Kotlin full test run overwrites the build/ file.
+- 2026-11-23: T1.5 keeps today's confidence formula: 0.7*gemmaConf + 0.3*RuleScorer.support(rules, finalLabel); when rules raise the label the Gemma term uses 0.5. It is the 70/30 split of the plan with "rules" = rule support for the final label; switching to the raw rule score is a one-line change in Fusion.kt. Scam type = SLM type, else rule type, null when SAFE.
 
 ## Failures log
 
