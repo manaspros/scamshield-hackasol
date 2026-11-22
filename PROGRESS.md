@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T0.3/T0.4 [sonnet] Android SDK (platform-tools, android-36, build-tools 36.0.0, + cmdline-tools;latest) at ~/Library/Android/sdk; Flutter 3.50.1 / Dart 3.14.0 — 2026-11-23 — sdkmanager --list_installed, adb version, flutter doctor -v
 - T0.1 [sonnet] imported AB527/scamshield @ 55f2343 into repo root — 2026-11-23 — ls of RuleScorer.kt, try_api_screen.dart, proguard-rules.pro
 - T0.2 [sonnet+human] JDK 17 (user ran the brew cask install) — 2026-11-23 — `/usr/libexec/java_home -v 17 && java -version`
 - T1.9 [codex] synthetic EN/HI/Hinglish generator (44 templates per lang) — 2026-11-23 — `cd ml && uv run pytest -q tests/test_synth.py` (SFT target format is a placeholder until T1.10)
@@ -34,6 +35,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - 2026-11-23: User: no RTX 5090; use the existing base Gemma 3 1B (GitHub release model) for now; fine-tune deferred. T1.14 rewritten to run base eval on this Mac. T1.15 keeps the current model URL. T1.11 scripts still built (dry-run only).
 
 - 2026-11-23: Source AB527/scamshield (private, read via gh account manaspros) @ 55f2343. Kotlin tests: android/app/src/test/kotlin/com/hackasol/scamshield/core/CoreTest.kt (24 @Test by grep). minSdk 26; compileSdk/targetSdk from flutter.*; AGP 9.0.1, Kotlin 2.3.20, JVM 17; Dart ^3.12.2. Source HANDOFF.md kept beside SCAMSHIELD_HANDOFF.md.
+- 2026-11-23: Flutter 3.50.1 (framework 2026-11-18) is under the 7-day cooldown; brew offers only latest; kept under the user's blanket approval, flagged for review. android-36/build-tools 36.0.0 chosen over 37.x for cooldown and compatibility. ANDROID_HOME set per command, no rc edits.
 
 ## Failures log
 

@@ -39,14 +39,14 @@ Loop must not install anything whose row says `no`. On approval it records the p
 Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: use platform channels and existing persistence.
 
 ## Phase 0 — Import + toolchain
-- [x] T0.1 [sonnet] [BLOCKED:human provides ScamShield git URL or zip path] Import ScamShield into the repo root; add `.gitignore` (`.dart_tool/`, `build/`, `local.properties`, `.env*`, `.venv/`, `data/eval/real/`, `*.task`, `*.keystore`); create `PROGRESS.md` (Done / Blocked / Decisions / Failures / Model ids)
+- [x] T0.1 [sonnet] Import ScamShield into the repo root; add `.gitignore` (`.dart_tool/`, `build/`, `local.properties`, `.env*`, `.venv/`, `data/eval/real/`, `*.task`, `*.keystore`); create `PROGRESS.md` (Done / Blocked / Decisions / Failures / Model ids)
   - **Files**: repo root (copy, drop nested `.git`, skip build outputs, keystores, `local.properties`), `.gitignore`, `PROGRESS.md`  **Depends on**: none
   - **Done when**: `ls android/app/src/main/kotlin/com/hackasol/scamshield/core/RuleScorer.kt lib/screens/try_api_screen.dart android/app/proguard-rules.pro` lists all three; `git status --short` clean after commit; no `*.task` or key file tracked
 - [x] T0.2 [sonnet] [NEEDS-OK:DEP1] Install JDK 17  **Files**: none  **Depends on**: none
   - **Done when**: `/usr/libexec/java_home -v 17 && java -version 2>&1 | head -1` shows 17.x
-- [ ] T0.3 [sonnet] [NEEDS-OK:DEP2] Install Android SDK packages (human types `sdkmanager --licenses`)  **Files**: `android/local.properties` (gitignored)  **Depends on**: T0.1, T0.2
+- [x] T0.3 [sonnet] [NEEDS-OK:DEP2] Install Android SDK packages (human types `sdkmanager --licenses`)  **Files**: `android/local.properties` (gitignored)  **Depends on**: T0.1, T0.2
   - **Done when**: `sdkmanager --list_installed` lists platform-tools, the platform and build-tools; `adb version` runs
-- [ ] T0.4 [sonnet] [NEEDS-OK:DEP3] Install Flutter SDK, point it at the Android SDK  **Files**: none  **Depends on**: T0.3
+- [x] T0.4 [sonnet] [NEEDS-OK:DEP3] Install Flutter SDK, point it at the Android SDK  **Files**: none  **Depends on**: T0.3
   - **Done when**: `flutter --version` prints the pinned version; `flutter doctor -v` shows "Android toolchain" without errors
 - [ ] T0.5 [sonnet] Baseline green; record Kotlin and Dart test counts and the real test-source path in `PROGRESS.md`
   - **Files**: `PROGRESS.md`  **Depends on**: T0.1, T0.4
