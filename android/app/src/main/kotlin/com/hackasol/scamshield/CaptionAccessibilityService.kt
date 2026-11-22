@@ -1,0 +1,238 @@
+package com.hackasol.scamshield
+
+import android.accessibilityservice.AccessibilityService
+import android.app.Notification
+import android.media.AudioManager
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.Looper
+import android.os.SystemClock
+import android.util.Log
+import android.view.accessibility.AccessibilityEvent
+import com.hackasol.scamshield.core.CallRiskTracker
+import com.hackasol.scamshield.core.ClassifyRequest
+import com.hackasol.scamshield.core.InCallSignals
+import com.hackasol.scamshield.core.Label
+import com.hackasol.scamshield.core.Source
+import com.hackasol.scamshield.core.StatementSegmenter
+import com.hackasol.scamshield.core.Verdict
+
+/**
+ * Live pipeline:  caption window text -> StatementSegmenter -> TextApi (rules + Gemma)
+ *                 -> CallRiskTracker -> OverlayController bubble (+ EventBus for the Flutter feed).
+ * Also watches call state to OCR-fallback and best-effort auto-enable Live Caption.
+ */
+class CaptionAccessibilityService : AccessibilityService() {
+    companion object {
+        private const val TAG = "ScamShield/Service"
+        private const val TICK_MS = 300L
+        private const val SCAN_DEBOUNCE_MS = 150L
+        private const val ENABLE_CHECK_AFTER_MS = 6000L
+        @Volatile var instance: CaptionAccessibilityService? = null; private set
+    }
+
+    private val main = Handler(Looper.getMainLooper())
+    // Reading other apps' node trees is slow binder IPC: never do it on the main thread (ANR -> Android disables us).
+    private val scanThread = HandlerThread("scamshield-scan").apply { start() }
+    private val bg = Handler(scanThread.looper)
+    private lateinit var extractor: CaptionExtractor
+    private lateinit var ocr: OcrCaptionReader
+    private lateinit var overlay: OverlayController
+    private lateinit var toggler: CaptionToggler
+    private lateinit var micProbe: MicProbe
+    private val firedSignals = HashSet<String>()      // one alert per signal kind per call
+    private var probeDoneThisCall = false
+    private val segmenter = StatementSegmenter()
+    private val tracker = CallRiskTracker()
+    private val recent = ArrayDeque<String>()          // context for the LLM
+
+    private var lastCaption = ""
+    private var lastCaptionMs = 0L                     // last time caption text was seen (node or OCR)
+    private var lastNodeCaptionMs = 0L
+    private var lastOcrMs = 0L
+    private val lastDiscovery = HashMap<String, String>()
+
+    private var inCall = false
+    private var callStartMs = 0L
+    private var enableAttempted = false
+    @Volatile private var scanPending = false
+
+    /** Any exception inside an accessibility callback kills the process and Android then disables the service. */
+    private inline fun safe(where: String, block: () -> Unit) {
+        try { block() } catch (t: Throwable) {
+            Log.e(TAG, "error in $where", t)
+            EventBus.emit("error", mapOf("where" to where, "message" to "${t.javaClass.simpleName}: ${t.message}"))
+        }
+    }
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        instance = this
+        AppSettings.init(this)
+        extractor = CaptionExtractor(this)
+        ocr = OcrCaptionReader(this)
+        overlay = OverlayController(this)
+        toggler = CaptionToggler(this, main)
+        micProbe = MicProbe(this)
+        safe("init") { TextApi.init(this) }
+        main.post(tick)
+        EventBus.emit("service", mapOf("connected" to true))
+        Log.i(TAG, "connected")
+    }
+
+    override fun onDestroy() {
+        instance = null
+        main.removeCallbacksAndMessages(null)
+        bg.removeCallbacksAndMessages(null)
+        scanThread.quitSafely()
+        if (::overlay.isInitialized) safe("hide") { overlay.hide() }
+        EventBus.emit("service", mapOf("connected" to false))
+        super.onDestroy()
+    }
+
+    override fun onInterrupt() {}
+
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) = safe("event") {
+        if (event == null || event.packageName == packageName) return@safe
+        if (inCall && AppSettings.inCallSignals) checkSignals(event)
+        if (event.eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED) return@safe
+        if (scanPending) return@safe
+        scanPending = true
+        bg.postDelayed({
+            scanPending = false
+            var windows: List<CaptionExtractor.WindowText> = emptyList()
+            safe("collect") { windows = extractor.collect(captionOnly = !AppSettings.discoveryMode) }
+            main.post { safe("scan") { scan(windows) } }
+        }, SCAN_DEBOUNCE_MS)
+    }
+
+    private fun scan(windows: List<CaptionExtractor.WindowText>) {
+        if (AppSettings.discoveryMode) {
+            for (w in windows) {
+                if (lastDiscovery[w.pkg] == w.text) continue
+                lastDiscovery[w.pkg] = w.text
+                Log.i(TAG, "DISCOVERY pkg=${w.pkg} title=${w.title} text=${w.text.take(200)}")
+                EventBus.emit("discovery", mapOf("pkg" to w.pkg, "title" to w.title, "text" to w.text.take(300)))
+            }
+        }
+        val caption = extractor.captionText(windows) ?: return
+        lastNodeCaptionMs = SystemClock.elapsedRealtime()
+        feedSnapshot(caption.text, "node:${caption.pkg}")
+    }
+
+    private fun feedSnapshot(text: String, via: String) {
+        val now = SystemClock.elapsedRealtime()
+        lastCaptionMs = now
+        if (text == lastCaption) return
+        lastCaption = text
+        EventBus.emit("caption", mapOf("text" to text.takeLast(300), "via" to via))
+        handleStatements(segmenter.onSnapshot(text, now))
+    }
+
+    private val tick = object : Runnable {
+        override fun run() {
+            safe("tick") { onTick() }
+            main.postDelayed(this, TICK_MS)
+        }
+    }
+
+    private fun onTick() {
+        val now = SystemClock.elapsedRealtime()
+        handleStatements(segmenter.onTick(now))
+        tracker.maybeExpire(now)
+
+        val am = getSystemService(AudioManager::class.java)
+        val callNow = am.mode == AudioManager.MODE_IN_CALL || am.mode == AudioManager.MODE_IN_COMMUNICATION
+        if (callNow != inCall) {
+            inCall = callNow
+            EventBus.emit("call", mapOf("active" to callNow))
+            if (callNow) {
+                callStartMs = now; enableAttempted = false
+                firedSignals.clear(); probeDoneThisCall = false
+                segmenter.reset(); tracker.reset(); recent.clear(); lastCaption = ""
+            }
+        }
+        if (!inCall) return
+
+        // Experiment: can the mic hear the call on this phone? (once per call, 2 s in)
+        if (AppSettings.micProbe && !probeDoneThisCall && now - callStartMs > 2000) {
+            probeDoneThisCall = true
+            AppSettings.micProbe = false          // one-shot: only the call right after "Test on next call"
+            micProbe.start()
+        }
+
+        // OCR fallback: in a call, node tree gave no caption for 3 s.
+        if (AppSettings.ocrFallback && now - lastNodeCaptionMs > 3000 && now - lastOcrMs > 1000) {
+            lastOcrMs = now
+            ocr.read { text -> main.post { safe("ocr") { feedSnapshot(text, "ocr") } } }
+        }
+
+        // Captions never appeared since the call started -> try to turn Live Caption on (once per call).
+        if (!enableAttempted && AppSettings.autoEnableCaptions &&
+            now - callStartMs > ENABLE_CHECK_AFTER_MS && lastCaptionMs < callStartMs) {
+            enableAttempted = true
+            EventBus.emit("captions_missing", emptyMap())
+            toggler.tryEnable { ok ->
+                safe("toggle") {
+                    EventBus.emit("captions_enable", mapOf("ok" to ok))
+                    if (!ok) overlay.showCaptionPrompt { toggler.openVolumePanel() }
+                }
+            }
+        }
+    }
+
+    private fun checkSignals(event: AccessibilityEvent) {
+        val pkg = event.packageName?.toString() ?: return
+        val signal = when (event.eventType) {
+            AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED -> {
+                val n = event.parcelableData as? Notification
+                val text = buildString {
+                    event.text.forEach { append(it).append(' ') }
+                    n?.extras?.let { e ->
+                        append(e.getCharSequence(Notification.EXTRA_TITLE) ?: "").append(' ')
+                        append(e.getCharSequence(Notification.EXTRA_TEXT) ?: "").append(' ')
+                        append(e.getCharSequence(Notification.EXTRA_BIG_TEXT) ?: "")
+                    }
+                }
+                InCallSignals.fromNotification(text)
+            }
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> InCallSignals.fromForegroundApp(pkg)
+            else -> null
+        } ?: return
+        if (!firedSignals.add(signal.kind)) return
+        val v = Verdict("[${signal.trigger}] ${signal.reason}", signal.label, signal.confidence, signal.reason,
+            listOf(signal.trigger), "in-call signal", 0, Source.SIGNAL)
+        EventBus.emit("signal", mapOf("kind" to signal.kind, "pkg" to pkg, "trigger" to signal.trigger))
+        main.post { safe("signal") { onVerdict(v) } }
+    }
+
+    private fun handleStatements(statements: List<String>) {
+        for (s in statements) {
+            val ctx = recent.toList()
+            recent.addLast(s); if (recent.size > 3) recent.removeFirst()
+            EventBus.emit("statement", mapOf("text" to s))
+            TextApi.submitCaption(ClassifyRequest(s, ctx, Source.CAPTION)) { v -> main.post { safe("verdict") { onVerdict(v) } } }
+        }
+    }
+
+    private fun onVerdict(v: Verdict) {
+        val now = SystemClock.elapsedRealtime()
+        val shown = if (v.preliminary) {
+            if (v.label == Label.SCAM) Label.SUSPICIOUS else v.label   // never go red on rules alone before LLM
+        } else tracker.record(v, now)
+        overlay.showVerdict(v, shown, tracker.level(), tracker.risk)
+        EventBus.emit("verdict", v.toMap() + mapOf(
+            "shownLabel" to shown.name, "callLevel" to tracker.level().name, "callRisk" to tracker.risk,
+        ))
+    }
+
+    /** Called from the Flutter "Test overlay" button. */
+    fun demoOverlay() = main.post { safe("demo") { demoOverlayNow() } }
+
+    private fun demoOverlayNow() {
+        val v = Verdict("Sir aapka parcel customs mein ruka hai, OTP bata dijiye warna digital arrest hoga",
+            Label.SCAM, 0.94, "Fake customs + OTP + arrest threat", listOf("OTP bata dijiye", "digital arrest"),
+            "demo", 0, Source.CAPTION)
+        overlay.showVerdict(v, Label.SCAM, Label.SCAM, 0.82)
+    }
+}

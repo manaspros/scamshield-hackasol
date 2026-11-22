@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_description">ScamShield reads on-screen Live Caption text during calls and warns you, on your phone, if the caller sounds like a scammer. No audio is recorded and nothing leaves your phone.</string>
+</resources>

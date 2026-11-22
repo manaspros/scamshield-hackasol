@@ -39,7 +39,7 @@ Loop must not install anything whose row says `no`. On approval it records the p
 Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: use platform channels and existing persistence.
 
 ## Phase 0 — Import + toolchain
-- [ ] T0.1 [sonnet] [BLOCKED:human provides ScamShield git URL or zip path] Import ScamShield into the repo root; add `.gitignore` (`.dart_tool/`, `build/`, `local.properties`, `.env*`, `.venv/`, `data/eval/real/`, `*.task`, `*.keystore`); create `PROGRESS.md` (Done / Blocked / Decisions / Failures / Model ids)
+- [x] T0.1 [sonnet] [BLOCKED:human provides ScamShield git URL or zip path] Import ScamShield into the repo root; add `.gitignore` (`.dart_tool/`, `build/`, `local.properties`, `.env*`, `.venv/`, `data/eval/real/`, `*.task`, `*.keystore`); create `PROGRESS.md` (Done / Blocked / Decisions / Failures / Model ids)
   - **Files**: repo root (copy, drop nested `.git`, skip build outputs, keystores, `local.properties`), `.gitignore`, `PROGRESS.md`  **Depends on**: none
   - **Done when**: `ls android/app/src/main/kotlin/com/hackasol/scamshield/core/RuleScorer.kt lib/screens/try_api_screen.dart android/app/proguard-rules.pro` lists all three; `git status --short` clean after commit; no `*.task` or key file tracked
 - [x] T0.2 [sonnet] [NEEDS-OK:DEP1] Install JDK 17  **Files**: none  **Depends on**: none
@@ -95,9 +95,9 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T1.13 [codex] Eval harness (device-free): held-out split -> same prompt + parser -> precision/recall/FPR per language and scam-type macro-F1 for **rules-only** (from T1.12 JSONL), **base Gemma few-shot** and **fine-tuned Gemma** (`--backend hf` on the RTX box, `--backend stub` for tests); report states real vs synthetic counts, headline "real" only with >=100 real rows; writes `ml/reports/m1.json` and `docs/accuracy.md` (table for the slide)
   - **Files**: `ml/scamshield_ml/eval_heldout.py`, `ml/tests/test_eval.py`, `docs/accuracy.md`  **Depends on**: T1.9, T1.10, T1.12
   - **Done when**: `PT(tests/test_eval.py)` passes `T1_13_perLanguageMetrics`, `T1_13_threeSystemsInReport`, `T1_13_labelsRealVsSynthetic` with the stub backend
-- [ ] T1.14 [sonnet] [BLOCKED:RTX 5090 box + DEP5 approved + real messages in `data/eval/real/`] Run it: eval rules-only and base Gemma; LoRA fine-tune; convert to `.task`; eval fine-tuned; human uploads the `.task` to a release and gives the URL
+- [ ] T1.14 [sonnet] Run it on this Mac (user 2026-11-23: no RTX 5090, keep the existing base Gemma 3 1B model): eval rules-only and base Gemma (HF bf16 on MPS, or stub if weights unavailable); fine-tuned row reported "not run"; report labelled synthetic unless >=100 real rows
   - **Files**: `ml/reports/m1.json`, `docs/accuracy.md`, `PROGRESS.md` (model id + URL)  **Depends on**: T1.11, T1.13
-  - **Done when**: `ml/reports/m1.json` has numbers for all three systems with real row count stated; `.task` file size and SHA-256 recorded
+  - **Done when**: `ml/reports/m1.json` has numbers for rules-only and base Gemma, fine-tuned marked "not run", real row count stated
 - [ ] T1.15 [sonnet] Make the model source configurable and wire the SLM scam type end to end: `ModelDownloader` URL/filename/SHA from one constant (default stays the current GitHub release; switch to the fine-tuned URL after T1.14), `GemmaClassifier` uses `GemmaPrompt`, `TextApi` fills `Verdict.scamType` from the parsed output, `proguard-rules.pro` unchanged or extended
   - **Files**: `K/ModelDownloader.kt`, `K/GemmaClassifier.kt`, `K/TextApi.kt`, `KT/ModelConfigTest.kt`  **Depends on**: T1.5, T1.2
   - **Done when**: `APP` and `REL` succeed; `KT(ModelConfigTest)` passes `T1_15_urlFromConstant`; `KALL` green
