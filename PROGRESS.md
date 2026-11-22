@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T1.14 [sonnet] Mac eval, SYNTHETIC held-out by template (0 real / 26 synthetic): rules P 1.000 R 0.478 FPR 0.000 type-F1 0.313 (coverage 26/26); base Gemma 3 1B (HF bf16 MPS, final T1.10 prompt) P 1.000 R 0.913 FPR 0.000 type-F1 0.392; fine-tuned not run (no GPU box) — 2026-11-23 — uv run --group hf python -m scamshield_ml.eval_heldout --backend hf --rules-preds ml/reports/rules_preds_heldout.jsonl
 - T2.4 [sonnet] Recording pipeline (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*RecordingPipelineTest*'
 - T2.2 [sonnet] Notification mapper (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*NotificationMapperTest*'
 - T1.6 [sonnet] Alert policy (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*AlertPolicyTest*'
@@ -32,7 +33,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Blocked
 - Not supplied by user (2026-11-23): real messages, hne reviewer. (RTX box dropped by user.)
-- T1.14 — base Gemma: HF returns 403 "not in the authorized list" for google/gemma-3-1b-it (user must accept the licence on the account that 'hf auth whoami' shows). Rules-only row: waits on android/app/build/rules_preds.jsonl from APP T1.12 over ml/reports/heldout.csv. Fine-tuned row: not run (no GPU box).
+- M1 "real" headline — needs >=100 real messages in data/eval/real/ (none supplied); fine-tuned row needs a GPU box.
 - T2.8, T6.1, T6.2, T6.3, T6.4 — device (OnePlus 10T / Pixel) owned by teammates.
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
@@ -66,9 +67,11 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - 2026-11-23: Commit c5542e6 (T1.3) also carries the ML session's T1.10 tick and Done line, because a concurrent edit got staged; content is correct (T1.10 = a05edae), and history is not rewritten on a shared branch.
 - 2026-11-23: T1.3, T1.6, T2.2, T2.4, T3.1, T3.4, T3.8, T5.4 were tagged [codex] but implemented by Sonnet subagents under the APP phase lead (drafted in the scratchpad while baseline builds ran, then installed serially, one Gradle run at a time); verifiers are haiku.
 - 2026-11-23: Every full Kotlin suite run is followed by `RULES_EVAL_CSV=ml/reports/heldout.csv ... --tests '*RulesEvalExportTest*' --rerun`, so android/app/build/rules_preds.jsonl stays the 26-row heldout export the ML session reads.
+- 2026-11-23 (ML): only 3 of 26 held-out rows are SAFE-labelled negatives (all 26 are synthetic), so FPR 0 rests on 3 negatives and is weak evidence. Base Gemma often emits scam_type values outside the enum (e.g. DEMO_LOAN_APP, leading spaces); parser kept at Kotlin parity, so type-F1 reflects on-device behaviour. Rules predictions copied to ml/reports/rules_preds_heldout.jsonl (APP T1.12 51b005a) because the Kotlin full test run overwrites the build/ file.
 
 ## Failures log
 
 ## Model ids
 - Implementers: sonnet (Agent tool), codex `gpt-6-luna` (Orca). Verifier: haiku.
 - Base model: google/gemma-3-1b-it (HF, gated). Converter: litert-torch==0.10.0 (PyPI 2026-10-20, renamed ai-edge-torch; Gemma 3 1B via litert_torch/generative/examples/gemma3, quant dynamic_int4_block32) + mediapipe==1.2.3 genai bundler (2026-11-11) -> .task. Not installed (dry-run only).
+- Eval base model: google/gemma-3-1b-it, https://huggingface.co/google/gemma-3-1b-it (gated; HF account manaspros accepted licence 2026-11-23), transformers 5.23.0 bf16 on Apple M4 MPS.

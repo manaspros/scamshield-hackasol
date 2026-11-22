@@ -1,0 +1,139 @@
+{
+  "data": {
+    "real_rows": 0,
+    "synthetic_rows": 26,
+    "headline": "synthetic",
+    "label": "synthetic held-out by template"
+  },
+  "positive_class": "SCAM or SUSPICIOUS; UNPARSED counts as negative",
+  "systems": {
+    "rules": {
+      "coverage": 1.0,
+      "matched": 26,
+      "overall": {
+        "precision": 1.0,
+        "recall": 0.4782608695652174,
+        "fpr": 0.0,
+        "macro_f1": 0.3134920634920635,
+        "counts": {
+          "n": 26,
+          "tp": 11,
+          "fp": 0,
+          "fn": 12,
+          "tn": 3
+        },
+        "unparsed": 0
+      },
+      "per_language": {
+        "en": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "fpr": 0.0,
+          "macro_f1": 0.4,
+          "counts": {
+            "n": 7,
+            "tp": 3,
+            "fp": 0,
+            "fn": 3,
+            "tn": 1
+          },
+          "unparsed": 0
+        },
+        "hi": {
+          "precision": 1.0,
+          "recall": 0.4,
+          "fpr": 0.0,
+          "macro_f1": 0.3095238095238095,
+          "counts": {
+            "n": 11,
+            "tp": 4,
+            "fp": 0,
+            "fn": 6,
+            "tn": 1
+          },
+          "unparsed": 0
+        },
+        "hinglish": {
+          "precision": 1.0,
+          "recall": 0.5714285714285714,
+          "fpr": 0.0,
+          "macro_f1": 0.27777777777777773,
+          "counts": {
+            "n": 8,
+            "tp": 4,
+            "fp": 0,
+            "fn": 3,
+            "tn": 1
+          },
+          "unparsed": 0
+        }
+      }
+    },
+    "base_gemma": {
+      "backend": "hf",
+      "model": "google/gemma-3-1b-it",
+      "overall": {
+        "precision": 1.0,
+        "recall": 0.9130434782608695,
+        "fpr": 0.0,
+        "macro_f1": 0.39153439153439146,
+        "counts": {
+          "n": 26,
+          "tp": 21,
+          "fp": 0,
+          "fn": 2,
+          "tn": 3
+        },
+        "unparsed": 0
+      },
+      "per_language": {
+        "en": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "fpr": 0.0,
+          "macro_f1": 0.6,
+          "counts": {
+            "n": 7,
+            "tp": 6,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1
+          },
+          "unparsed": 0
+        },
+        "hi": {
+          "precision": 1.0,
+          "recall": 0.9,
+          "fpr": 0.0,
+          "macro_f1": 0.21428571428571427,
+          "counts": {
+            "n": 11,
+            "tp": 9,
+            "fp": 0,
+            "fn": 1,
+            "tn": 1
+          },
+          "unparsed": 0
+        },
+        "hinglish": {
+          "precision": 1.0,
+          "recall": 0.8571428571428571,
+          "fpr": 0.0,
+          "macro_f1": 0.4444444444444444,
+          "counts": {
+            "n": 8,
+            "tp": 6,
+            "fp": 0,
+            "fn": 1,
+            "tn": 1
+          },
+          "unparsed": 0
+        }
+      }
+    },
+    "finetuned_gemma": {
+      "status": "not run",
+      "reason": "no --finetuned path given"
+    }
+  }
+}
