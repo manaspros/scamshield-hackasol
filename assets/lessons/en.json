@@ -1,0 +1,404 @@
+{
+  "lessons": [
+    {
+      "id": "otp",
+      "title": "OTP safety",
+      "cards": [
+        {
+          "title": "Keep it secret",
+          "body": "Never tell anyone your OTP. A caller or message asking for it may be a scam."
+        },
+        {
+          "title": "A code is for you",
+          "body": "An OTP can approve a sign-in or payment. Read the screen before you use it."
+        },
+        {
+          "title": "Stop and check",
+          "body": "If someone rushes you for a code, stop. Contact the bank using its official app or card."
+        }
+      ],
+      "questions": [
+        {
+          "question": "Who should know your OTP?",
+          "options": [
+            "Only you",
+            "A caller",
+            "A chat group"
+          ],
+          "correctIndex": 0,
+          "explanation": "Keep your OTP private."
+        },
+        {
+          "question": "A caller asks for your code. What do you do?",
+          "options": [
+            "Share it quickly",
+            "Do not share; stop and check",
+            "Send a photo of it"
+          ],
+          "correctIndex": 1,
+          "explanation": "A real helper does not need you to tell them your OTP."
+        },
+        {
+          "question": "What can an OTP do?",
+          "options": [
+            "Approve an action",
+            "Clean your phone",
+            "Add phone battery"
+          ],
+          "correctIndex": 0,
+          "explanation": "An OTP may approve a sign-in or payment."
+        }
+      ]
+    },
+    {
+      "id": "upi_pin",
+      "title": "UPI PIN",
+      "cards": [
+        {
+          "title": "PIN means pay",
+          "body": "You need your UPI PIN only to PAY. You never need it to RECEIVE money."
+        },
+        {
+          "title": "Keep PIN private",
+          "body": "Never share your UPI PIN, even with someone who says they are from a bank."
+        },
+        {
+          "title": "Check before paying",
+          "body": "Read the name and amount on screen before entering your PIN."
+        }
+      ],
+      "questions": [
+        {
+          "question": "When do you need a UPI PIN?",
+          "options": [
+            "To receive money",
+            "To pay money",
+            "To open a message"
+          ],
+          "correctIndex": 1,
+          "explanation": "A UPI PIN is used to approve a payment."
+        },
+        {
+          "question": "Someone says “enter PIN to get money.” What is true?",
+          "options": [
+            "That is needed",
+            "You never need a PIN to receive money",
+            "Try a smaller PIN"
+          ],
+          "correctIndex": 1,
+          "explanation": "A PIN is only for paying, never for receiving."
+        },
+        {
+          "question": "Before entering your PIN, check what?",
+          "options": [
+            "Payee and amount",
+            "Phone wallpaper",
+            "Battery colour"
+          ],
+          "correctIndex": 0,
+          "explanation": "Check who gets the money and how much."
+        }
+      ]
+    },
+    {
+      "id": "atm_pin",
+      "title": "ATM PIN",
+      "cards": [
+        {
+          "title": "Cover the keypad",
+          "body": "Hide the keypad with your hand when you enter your ATM PIN."
+        },
+        {
+          "title": "Never tell the PIN",
+          "body": "Bank staff, strangers, and callers must not know your ATM PIN."
+        },
+        {
+          "title": "Use a safe ATM",
+          "body": "If a stranger offers help or the machine looks changed, cancel and leave."
+        }
+      ],
+      "questions": [
+        {
+          "question": "How do you protect your ATM PIN?",
+          "options": [
+            "Say it aloud",
+            "Cover the keypad",
+            "Write it on the card"
+          ],
+          "correctIndex": 1,
+          "explanation": "Cover the keypad so others cannot see."
+        },
+        {
+          "question": "A stranger offers to help and asks for your PIN. What do you do?",
+          "options": [
+            "Tell them",
+            "Refuse and cancel",
+            "Give half the PIN"
+          ],
+          "correctIndex": 1,
+          "explanation": "Never tell anyone your ATM PIN."
+        },
+        {
+          "question": "The ATM looks changed. What is safest?",
+          "options": [
+            "Use it anyway",
+            "Cancel and leave",
+            "Ask a stranger to check"
+          ],
+          "correctIndex": 1,
+          "explanation": "Do not use a machine that looks unsafe."
+        }
+      ]
+    },
+    {
+      "id": "qr",
+      "title": "QR codes",
+      "cards": [
+        {
+          "title": "Scan means pay",
+          "body": "A QR code may start a payment. Check the screen before you approve."
+        },
+        {
+          "title": "PIN does not receive",
+          "body": "You need a PIN to PAY, never to RECEIVE money."
+        },
+        {
+          "title": "Check the name",
+          "body": "Before paying, check the person’s name and amount shown on your phone."
+        }
+      ],
+      "questions": [
+        {
+          "question": "What can scanning a QR code do?",
+          "options": [
+            "Start a payment",
+            "Give free phone data",
+            "Charge your phone"
+          ],
+          "correctIndex": 0,
+          "explanation": "Some QR codes start a payment."
+        },
+        {
+          "question": "A person asks for your PIN to send you money. What should you know?",
+          "options": [
+            "PIN is needed",
+            "PIN is never needed to receive",
+            "Only ATM PIN is needed"
+          ],
+          "correctIndex": 1,
+          "explanation": "A PIN is only needed to pay."
+        },
+        {
+          "question": "What should you check before approving?",
+          "options": [
+            "Name and amount",
+            "Phone case",
+            "Time of day"
+          ],
+          "correctIndex": 0,
+          "explanation": "Check the name and amount on the payment screen."
+        }
+      ]
+    },
+    {
+      "id": "digital_arrest",
+      "title": "Digital arrest",
+      "cards": [
+        {
+          "title": "Police do not arrest by video",
+          "body": "Police or CBI never put you under “digital arrest” over a video call."
+        },
+        {
+          "title": "Do not send money",
+          "body": "A caller may threaten you and demand money. Do not pay or share codes."
+        },
+        {
+          "title": "Get help safely",
+          "body": "End the call. Tell someone you trust and report at 1930 or cybercrime.gov.in."
+        }
+      ],
+      "questions": [
+        {
+          "question": "Can police put you under digital arrest on a video call?",
+          "options": [
+            "Yes, if the caller is strict",
+            "No",
+            "Only at night"
+          ],
+          "correctIndex": 1,
+          "explanation": "Police and CBI never do digital arrest over video call."
+        },
+        {
+          "question": "A caller threatens you and asks for money. What do you do?",
+          "options": [
+            "Pay now",
+            "End the call and get help",
+            "Share your OTP"
+          ],
+          "correctIndex": 1,
+          "explanation": "Do not send money or share codes under pressure."
+        },
+        {
+          "question": "Where can you report cyber fraud?",
+          "options": [
+            "1930 or cybercrime.gov.in",
+            "A caller’s number only",
+            "A game chat"
+          ],
+          "correctIndex": 0,
+          "explanation": "Use 1930 or cybercrime.gov.in."
+        }
+      ]
+    },
+    {
+      "id": "kyc",
+      "title": "KYC update",
+      "cards": [
+        {
+          "title": "Avoid message links",
+          "body": "Banks do not ask you to update KYC through a link in a message."
+        },
+        {
+          "title": "Use official ways",
+          "body": "Open your bank app yourself or visit your bank. Do not use a link sent by a stranger."
+        },
+        {
+          "title": "Never share codes",
+          "body": "Do not share OTP, PIN, or password to “save” an account."
+        }
+      ],
+      "questions": [
+        {
+          "question": "How do banks ask you to update KYC?",
+          "options": [
+            "Through any message link",
+            "They do not ask through links",
+            "By asking for your PIN in chat"
+          ],
+          "correctIndex": 1,
+          "explanation": "Banks do not ask KYC updates through links."
+        },
+        {
+          "question": "A text says your account will close; tap a link. What is safer?",
+          "options": [
+            "Tap it now",
+            "Open the bank app yourself",
+            "Send your password"
+          ],
+          "correctIndex": 1,
+          "explanation": "Use the official app or visit your bank."
+        },
+        {
+          "question": "What should you never share?",
+          "options": [
+            "OTP and PIN",
+            "Your favourite colour",
+            "A public bus route"
+          ],
+          "correctIndex": 0,
+          "explanation": "Keep OTP and PIN private."
+        }
+      ]
+    },
+    {
+      "id": "courier",
+      "title": "Courier scam",
+      "cards": [
+        {
+          "title": "Check the order",
+          "body": "A caller may say a parcel is held. Check with the shop or courier using its official app."
+        },
+        {
+          "title": "Do not install helper apps",
+          "body": "A courier does not need remote-control access to your phone to deliver a parcel."
+        },
+        {
+          "title": "Do not pay under fear",
+          "body": "Do not scan a payment QR or share an OTP because of a threat about a parcel."
+        }
+      ],
+      "questions": [
+        {
+          "question": "A caller says your parcel is held and asks you to install an app. What do you do?",
+          "options": [
+            "Install it",
+            "Do not install; check the official app",
+            "Share your screen"
+          ],
+          "correctIndex": 1,
+          "explanation": "A delivery does not need remote access to your phone."
+        },
+        {
+          "question": "How can you check a parcel claim?",
+          "options": [
+            "Use the official courier app",
+            "Call back any number",
+            "Send an OTP"
+          ],
+          "correctIndex": 0,
+          "explanation": "Check through a source you open yourself."
+        },
+        {
+          "question": "A parcel caller demands an OTP. What is safe?",
+          "options": [
+            "Tell them",
+            "Do not share it",
+            "Post it online"
+          ],
+          "correctIndex": 1,
+          "explanation": "Never share an OTP."
+        }
+      ]
+    },
+    {
+      "id": "loan_app",
+      "title": "Loan app safety",
+      "cards": [
+        {
+          "title": "Check before installing",
+          "body": "Use a trusted app store and check who made the loan app."
+        },
+        {
+          "title": "Do not give phone access",
+          "body": "A loan app should not need your contacts, photos, or messages to lend money."
+        },
+        {
+          "title": "Ask for help",
+          "body": "If an app threatens you or demands money, save the message and seek help from someone you trust."
+        }
+      ],
+      "questions": [
+        {
+          "question": "Before installing a loan app, what should you check?",
+          "options": [
+            "Who made it",
+            "Its bright colour",
+            "A caller’s promise"
+          ],
+          "correctIndex": 0,
+          "explanation": "Check the app maker and use a trusted store."
+        },
+        {
+          "question": "An app asks for all your contacts and photos. What is safer?",
+          "options": [
+            "Allow everything",
+            "Do not give access; stop",
+            "Share your OTP"
+          ],
+          "correctIndex": 1,
+          "explanation": "Do not give unnecessary access to private information."
+        },
+        {
+          "question": "A loan app threatens you. What can you do?",
+          "options": [
+            "Save the message and seek help",
+            "Pay any amount at once",
+            "Give your ATM PIN"
+          ],
+          "correctIndex": 0,
+          "explanation": "Keep evidence and seek trusted help."
+        }
+      ]
+    }
+  ]
+}

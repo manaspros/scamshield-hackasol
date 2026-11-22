@@ -135,7 +135,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T3.2 [sonnet] [UI] Report screen: two paths ("I lost money" / "not yet"), checklist, buttons for 1930 (`ACTION_DIAL`, never auto-call), cybercrime.gov.in, Chakshu; opened by the alert's Report action (`route=report`)
   - **Files**: `lib/screens/report_screen.dart`, `K/HandoffChannel.kt`, `K/MainActivity.kt`  **Depends on**: T3.1, T1.4, T1.7
   - **Done when**: `APP` succeeds; `FT(report_screen_test.dart)` passes `T3_2_prefillsFromEvent`, `T3_2_dialIsDialNotCall`
-- [ ] T3.3 [codex] Lessons data + Dart model: 8 lessons (OTP, UPI PIN, ATM PIN, QR, digital arrest, KYC, courier, loan app), 3 cards + 3 quiz questions each, `en/hi/hne` JSON in `assets/lessons/` (hne drafts `[VERIFY:hne]`)
+- [x] T3.3 [codex] Lessons data + Dart model: 8 lessons (OTP, UPI PIN, ATM PIN, QR, digital arrest, KYC, courier, loan app), 3 cards + 3 quiz questions each, `en/hi/hne` JSON in `assets/lessons/` (hne drafts `[VERIFY:hne]`)
   - **Files**: `assets/lessons/en.json`, `hi.json`, `hne.json`, `lib/lessons/lesson_model.dart`, `test/lessons_test.dart`, `pubspec.yaml` (asset entry)  **Depends on**: none
   - **Done when**: `FT(lessons_test.dart)` passes `T3_3_languageKeyParity`, `T3_3_eightLessons`
 - [ ] T3.4 [codex] Quiz engine + Digital Financial Literacy Score (0-100: mean of per-topic best attempt, untouched topics count 0), persistence behind an injected store interface

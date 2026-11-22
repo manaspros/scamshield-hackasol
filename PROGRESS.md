@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T3.3 [codex] lessons data en/hi/hne (8 lessons) + Dart model — 2026-11-23 — flutter test test/lessons_test.dart (hne drafts await T3.6; flutter pub get under Flutter 3.50.1 updated pubspec.lock and analysis_options.yaml)
 - T0.3/T0.4 [sonnet] Android SDK (platform-tools, android-36, build-tools 36.0.0, + cmdline-tools;latest) at ~/Library/Android/sdk; Flutter 3.50.1 / Dart 3.14.0 — 2026-11-23 — sdkmanager --list_installed, adb version, flutter doctor -v
 - T0.1 [sonnet] imported AB527/scamshield @ 55f2343 into repo root — 2026-11-23 — ls of RuleScorer.kt, try_api_screen.dart, proguard-rules.pro
 - T0.2 [sonnet+human] JDK 17 (user ran the brew cask install) — 2026-11-23 — `/usr/libexec/java_home -v 17 && java -version`
