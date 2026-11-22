@@ -132,7 +132,7 @@
       }
     },
     "finetuned_gemma": {
-      "status": "not run",
+      "status": "future work (not planned for this prototype)",
       "reason": "no --finetuned path given"
     }
   }

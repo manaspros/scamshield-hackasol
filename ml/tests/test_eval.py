@@ -34,7 +34,7 @@ def T1_13_threeSystemsInReport(tmp_path):
     assert set(s) == {"rules", "base_gemma", "finetuned_gemma"}
     assert s["rules"]["coverage"] == pytest.approx(2 / 3) and s["rules"]["overall"]["recall"] == 1.0
     assert s["base_gemma"]["backend"] == "stub"
-    assert s["finetuned_gemma"]["status"] == "not run"
+    assert s["finetuned_gemma"]["status"] == "future work (not planned for this prototype)"
     missing = ev.build_report(rows, "stub", tmp_path / "nope.jsonl", None)["systems"]["rules"]
     assert missing == {"status": "not run", "reason": "rules_preds.jsonl missing"}
 

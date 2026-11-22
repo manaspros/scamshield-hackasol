@@ -45,6 +45,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
 ## Decisions
+- 2026-11-23: User: no fine-tune for the prototype; base Gemma 3 1B SLM is the model; fine-tune is future work.
 - 2026-11-23: T3.5 lesson scores persist via new MethodChannel scamshield/prefs (getString/setString, key lesson_best_v1), because AppSettings only accepts fixed keys; falls back to in-memory until the native handler lands with the next MainActivity task (T1.4/T3.2). Language choice not persisted.
 - 2026-11-23: T1.12 reads its CSV from env RULES_EVAL_CSV (relative to repo root, default data/golden/eval_smoke.csv) at the ML session's request; env var instead of a system property so build.gradle stays unchanged. JSONL lines carry "text" because ml eval_heldout.load_rules_preds joins on text (build output, gitignored).
 - 2026-11-23: DEP1-DEP8 marked `yes` on the user's blanket approval ("u can download anything dont worry about it"). Versions still pinned to newest public >=7 days. DEP5 installs only on the RTX box; DEP8 is a human download.

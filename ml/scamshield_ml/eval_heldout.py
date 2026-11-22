@@ -129,7 +129,7 @@ def build_report(rows: list[Row], backend: str, rules_path: Path, finetuned: str
             "base_gemma": llm_system(backend, MODEL_ID, rows),
             "finetuned_gemma": llm_system(backend, finetuned, rows)
             if finetuned
-            else {"status": "not run", "reason": "no --finetuned path given"},
+            else {"status": "future work (not planned for this prototype)", "reason": "no --finetuned path given"},
         },
     }
 
@@ -147,7 +147,7 @@ def render_md(rep: dict) -> str:
     ]
     for name, s in rep["systems"].items():
         if "overall" not in s:
-            out.append(f"| {name} | - | not run: {s['reason']} | | | | | |")
+            out.append(f"| {name} | - | {s['status']}: {s['reason']} | | | | | |")
             continue
         slices = {"overall": s["overall"], **{f"lang={k}": v for k, v in s["per_language"].items()}}
         for sl, m in slices.items():
