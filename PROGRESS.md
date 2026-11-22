@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T3.5 [sonnet] lessons + quiz screens (hi default, hne/en toggle, scale 2.0) — 2026-11-23 — flutter test test/lessons_screen_test.dart
 - T1.3 [sonnet] Verdict event log (pure) — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*VerdictLogTest*'
 - T1.10 [sonnet] Python prompt/parser port, parity with data/golden/prompt_golden.json (APP T1.2 7c09a0e); synth.py SFT pairs now use the on-device format — 2026-11-23 — cd ml && uv run pytest -q tests/test_prompt_parity.py
 - T1.12 [sonnet] rules-only predictions exporter (RULES_EVAL_CSV override, default data/golden/eval_smoke.csv) — 2026-11-23 — ./gradlew ... --tests '*RulesEvalExportTest*'
@@ -30,6 +31,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
 ## Decisions
+- 2026-11-23: T3.5 lesson scores persist via new MethodChannel scamshield/prefs (getString/setString, key lesson_best_v1), because AppSettings only accepts fixed keys; falls back to in-memory until the native handler lands with the next MainActivity task (T1.4/T3.2). Language choice not persisted.
 - 2026-11-23: T1.12 reads its CSV from env RULES_EVAL_CSV (relative to repo root, default data/golden/eval_smoke.csv) at the ML session's request; env var instead of a system property so build.gradle stays unchanged. JSONL lines carry "text" because ml eval_heldout.load_rules_preds joins on text (build output, gitignored).
 - 2026-11-23: DEP1-DEP8 marked `yes` on the user's blanket approval ("u can download anything dont worry about it"). Versions still pinned to newest public >=7 days. DEP5 installs only on the RTX box; DEP8 is a human download.
 - 2026-11-23: Flutter-dependent tasks with no Depends (T3.3, T3.4) wait for T0.4 since their Done-when needs `flutter test`.

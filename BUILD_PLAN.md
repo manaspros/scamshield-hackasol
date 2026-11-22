@@ -141,7 +141,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T3.4 [codex] Quiz engine + Digital Financial Literacy Score (0-100: mean of per-topic best attempt, untouched topics count 0), persistence behind an injected store interface
   - **Files**: `lib/lessons/quiz_engine.dart`, `test/quiz_engine_test.dart`  **Depends on**: T3.3
   - **Done when**: `FT(quiz_engine_test.dart)` passes `T3_4_scoreBounds`, `T3_4_retryKeepsBest`, `T3_4_perTopic`
-- [ ] T3.5 [sonnet] [UI] Lesson cards + quiz screens, offline, Hindi/Chhattisgarhi first; store impl reuses whatever Settings persists with (verify after import; else native SharedPreferences over the existing channel)
+- [x] T3.5 [sonnet] [UI] Lesson cards + quiz screens, offline, Hindi/Chhattisgarhi first; store impl reuses whatever Settings persists with (verify after import; else native SharedPreferences over the existing channel)
   - **Files**: `lib/screens/lessons_screen.dart`, `lib/screens/quiz_screen.dart`, `lib/lessons/prefs_store.dart`  **Depends on**: T3.4
   - **Done when**: `FT(lessons_screen_test.dart)` passes `T3_5_hindiCardsRender`, `T3_5_quizUpdatesScore` (text scale 2.0, no overflow)
 - [ ] T3.6 [sonnet] [BLOCKED:native Chhattisgarhi speaker] Sign-off of `hne` lessons and prompts
