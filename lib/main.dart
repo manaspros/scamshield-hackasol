@@ -4,6 +4,7 @@ import 'screens/live_feed_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/setup_screen.dart';
 import 'screens/try_api_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() => runApp(const ScamShieldApp());
 
@@ -15,8 +16,9 @@ class ScamShieldApp extends StatelessWidget {
     return MaterialApp(
       title: 'ScamShield',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorSchemeSeed: const Color(0xFF1E3A8A), useMaterial3: true),
-      darkTheme: ThemeData(colorSchemeSeed: const Color(0xFF1E3A8A), brightness: Brightness.dark, useMaterial3: true),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
       home: const HomeShell(),
     );
   }
