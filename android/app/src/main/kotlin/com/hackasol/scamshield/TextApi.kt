@@ -7,6 +7,9 @@ import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.RuleScorer
 import com.hackasol.scamshield.core.Source
 import com.hackasol.scamshield.core.Verdict
+import com.hackasol.scamshield.core.VerdictEvent
+import com.hackasol.scamshield.core.VerdictLog
+import kotlinx.coroutines.withContext
 import android.util.Log
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -27,8 +30,15 @@ object TextApi {
     private val captionQueue = Channel<Pair<ClassifyRequest, (Verdict) -> Unit>>(Channel.CONFLATED)
     @Volatile private var started = false
 
+    /** Shared verdict log; created once in init() (MainActivity and the accessibility service both call it). */
+    @Volatile var verdictLog: VerdictLog? = null
+        private set
+
     fun init(ctx: Context) {
         AppSettings.init(ctx)
+        if (verdictLog == null) synchronized(this) {
+            if (verdictLog == null) verdictLog = SqliteVerdictLog(ctx.applicationContext)
+        }
         if (AppSettings.useLlm) GemmaClassifier.ensureLoaded(ctx)
         ModelDownloader.watch(ctx)   // resume progress tracking of a download started earlier
         if (started) return
@@ -54,7 +64,21 @@ object TextApi {
         captionQueue.trySend(req to onResult)
     }
 
-    suspend fun classify(req: ClassifyRequest): Verdict {
+    suspend fun classify(req: ClassifyRequest): Verdict = classifyUnlogged(req).also { record(it) }
+
+    /** Final results only; the preliminary rules-only caption warning is followed by a final result that is logged. */
+    private suspend fun record(v: Verdict) {
+        val log = verdictLog ?: return
+        try {
+            // scamType is null until T1.15 adds Verdict.scamType.
+            val e = VerdictEvent(0, System.currentTimeMillis(), v.source, v.label, v.confidence, null, v.triggers, v.engine)
+            withContext(Dispatchers.IO) { log.append(e) }
+        } catch (t: Throwable) {
+            Log.e("ScamShield/TextApi", "verdict log append failed", t)
+        }
+    }
+
+    private suspend fun classifyUnlogged(req: ClassifyRequest): Verdict {
         val t0 = SystemClock.elapsedRealtime()
         val rules = RuleScorer.score(req.text)
         val llm = if (AppSettings.useLlm) GemmaClassifier.classify(req.text, req.context) else null

@@ -65,7 +65,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T1.3 [codex] Verdict event log, pure: `VerdictEvent{id, tsMs, source, label, confidence, scamType, triggers, engine}` (no raw text stored), `VerdictLog` interface (`append`, `since`, `latest`, `countsByType`), in-memory impl
   - **Files**: `K/core/VerdictLog.kt`, `KT/core/VerdictLogTest.kt`  **Depends on**: T1.2
   - **Done when**: `KT(VerdictLogTest)` passes `T1_3_countsByType`, `T1_3_sinceFilters`
-- [ ] T1.4 [sonnet] SQLite verdict log persisting every `TextApi` result (all sources); channel methods `verdicts.recent(sinceMs)` and `verdicts.counts`
+- [x] T1.4 [sonnet] SQLite verdict log persisting every `TextApi` result (all sources); channel methods `verdicts.recent(sinceMs)` and `verdicts.counts`
   - **Files**: `K/SqliteVerdictLog.kt`, `K/TextApi.kt`, `K/MainActivity.kt`, `KT/VerdictRowMapperTest.kt`  **Depends on**: T1.3
   - **Done when**: `APP` succeeds; `KT(VerdictRowMapperTest)` passes (row <-> event round trip); `KALL` green
 - [ ] T1.5 [codex] Fusion in one place: move the existing fusion out of `TextApi` into `K/core/Fusion.kt` with a `FusionWeights` object; behaviour unchanged (regression-locked); scam type = SLM type when present, else rule type

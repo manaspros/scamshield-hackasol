@@ -33,7 +33,8 @@ class MainActivity : FlutterActivity() {
     private var pendingImport: MethodChannel.Result? = null
     private var player: MediaPlayer? = null
 
-    companion object { private const val REQ_IMPORT = 4201 }
+    companion object { private const val REQ_IMPORT = 4201
+        private val PREF_KEYS = setOf("lesson_best_v1") }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -46,6 +47,23 @@ class MainActivity : FlutterActivity() {
                     val req = TextApi.requestFromMap(call.arguments as Map<*, *>)
                     try { result.success(TextApi.classify(req).toMap()) }
                     catch (t: Throwable) { result.error("CLASSIFY", "${t.javaClass.simpleName}: ${t.message} / cause: ${t.cause}", null) }
+                }
+                "verdicts.recent" -> scope.launch {
+                    try {
+                        val since = (call.argument<Number>("sinceMs") ?: (call.arguments as? Number) ?: 0L).toLong()
+                        val rows = withContext(Dispatchers.IO) {
+                            TextApi.verdictLog?.since(since).orEmpty().map { VerdictRowMapper.toChannelMap(it) }
+                        }
+                        result.success(rows)
+                    } catch (t: Throwable) { result.error("VERDICTS", t.message, null) }
+                }
+                "verdicts.counts" -> scope.launch {
+                    try {
+                        val counts = withContext(Dispatchers.IO) {
+                            TextApi.verdictLog?.countsByType().orEmpty().mapKeys { it.key.name }
+                        }
+                        result.success(counts)
+                    } catch (t: Throwable) { result.error("VERDICTS", t.message, null) }
                 }
                 "modelStatus" -> result.success(GemmaClassifier.statusMap(this))
                 "loadModel" -> { GemmaClassifier.ensureLoaded(this, force = true); result.success(GemmaClassifier.statusMap(this)) }
@@ -84,6 +102,20 @@ class MainActivity : FlutterActivity() {
                     val svc = CaptionAccessibilityService.instance
                     if (svc == null) result.error("NO_SERVICE", "Accessibility service not running", null)
                     else { svc.demoOverlay(); result.success(true) }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        // Lessons best-score store: private prefs, allowlisted keys only.
+        MethodChannel(messenger, "scamshield/prefs").setMethodCallHandler { call, result ->
+            val key = call.argument<String>("key")
+            val prefs = getSharedPreferences("scamshield_prefs", MODE_PRIVATE)
+            when {
+                key == null || key !in PREF_KEYS -> result.error("BAD_KEY", "key not allowed", null)
+                call.method == "getString" -> result.success(prefs.getString(key, null))
+                call.method == "setString" -> {
+                    prefs.edit().putString(key, call.argument<String>("value")).apply(); result.success(null)
                 }
                 else -> result.notImplemented()
             }
