@@ -56,7 +56,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
   - **Done when**: `bash scripts/check.sh && bash scripts/trace_report.sh` exits 0
 
 ## Phase 1 — Foundation (everything else plugs into this)
-- [ ] T1.1 [codex] Extend TextApi `source` to a `Source` enum (CAPTION, PASTE, SHARE, SMS, WHATSAPP, NOTIFICATION, RECORDING); old string values from `MainActivity`/Dart still parse
+- [x] T1.1 [codex] Extend TextApi `source` to a `Source` enum (CAPTION, PASTE, SHARE, SMS, WHATSAPP, NOTIFICATION, RECORDING); old string values from `MainActivity`/Dart still parse
   - **Files**: `K/core/Models.kt`, `K/TextApi.kt`, `K/MainActivity.kt`, `KT/core/SourceTest.kt`  **Depends on**: T0.5
   - **Done when**: `KT(SourceTest)` passes `T1_1_parsesLegacyStrings`; `KALL` stays green
 - [ ] T1.2 [codex] Scam-type label from the SLM: `ScamType` enum (OTP, KYC, DIGITAL_ARREST, COURIER_CUSTOMS, FAKE_QR, LOAN_APP, INVESTMENT, JOB, MISTAKEN_TRANSFER, OTHER; SAFE has none); extract the few-shot prompt into pure `K/core/GemmaPrompt.kt` with a scam-type output line; extend `LlmOutputParser` to read it (missing/unknown -> OTHER); `RuleScorer` triggers map to a rule-derived type for rules-only mode; Kotlin test writes `data/golden/prompt_golden.json` (prompt text + sample model outputs + parsed result)

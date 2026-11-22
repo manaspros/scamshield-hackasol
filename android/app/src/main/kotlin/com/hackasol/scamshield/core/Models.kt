@@ -13,16 +13,29 @@ enum class Label { SAFE, SUSPICIOUS, SCAM;
     }
 }
 
-enum class Source { CAPTION, MANUAL, SMS, SIGNAL;
+enum class Source { CAPTION, PASTE, SHARE, SMS, WHATSAPP, NOTIFICATION, RECORDING, SIGNAL;
     companion object {
-        fun parse(s: String?) = entries.firstOrNull { it.name.equals(s, ignoreCase = true) } ?: MANUAL
+        /** Parse the string source values sent by older MainActivity/Dart callers. */
+        fun parse(s: String?): Source {
+            val normalized = s?.trim()?.lowercase()?.replace('-', '_')?.replace(' ', '_')
+            return when (normalized) {
+                "caption" -> CAPTION
+                "paste", "manual", "try_api", "tryapi" -> PASTE
+                "share" -> SHARE
+                "sms" -> SMS
+                "whatsapp", "whats_app" -> WHATSAPP
+                "notification", "signal" -> NOTIFICATION
+                "recording" -> RECORDING
+                else -> CAPTION
+            }
+        }
     }
 }
 
 data class ClassifyRequest(
     val text: String,
     val context: List<String> = emptyList(),
-    val source: Source = Source.MANUAL,
+    val source: Source = Source.PASTE,
 )
 
 data class RuleResult(
