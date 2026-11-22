@@ -7,8 +7,14 @@ const DISTRICTS_URL = '../data/districts.json';
 const M1_URL = './m1.json';
 const COLORS = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)'];
 const OTHER = 'Other types';
+const UNCLASSIFIED = 'OTHER';
 
 const label = (t) => t.replace(/_/g, ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase());
+const TYPE_NAMES = {
+  OTP: 'OTP', KYC: 'KYC', DIGITAL_ARREST: 'Digital arrest', COURIER_CUSTOMS: 'Courier or customs', FAKE_QR: 'Fake QR',
+  LOAN_APP: 'Loan app', INVESTMENT: 'Investment', JOB: 'Job offer', MISTAKEN_TRANSFER: 'Mistaken transfer', OTHER: 'Other',
+};
+export const typeName = (t) => TYPE_NAMES[t] ?? label(t);
 const ranked = (counts) => Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 
 // Accepts a bare array or {rows: [...]}; throws TypeError with a readable message.
@@ -30,7 +36,7 @@ export function summarize(rows) {
   const weeks = Object.keys(weekly).sort();
   const top = types.slice(0, 4).map(([t]) => t);
   const series = [...top, OTHER].map((t, i) => ({
-    key: t, name: t === OTHER ? OTHER : label(t), color: i < 4 ? COLORS[i] : 'var(--s5)',
+    key: t, name: t === OTHER ? OTHER : typeName(t), color: i < 4 ? COLORS[i] : 'var(--s5)',
     values: weeks.map((w) => t === OTHER
       ? Object.entries(perWeek[w]).filter(([k]) => !top.includes(k)).reduce((s, [, n]) => s + n, 0)
       : perWeek[w][t] ?? 0),
@@ -43,15 +49,91 @@ export function accuracyText(m1) {
   return accuracyRows(m1).length ? '' : 'not measured';
 }
 
-// Shape-agnostic: collect any nested object carrying precision/recall/fpr/f1 numbers.
-export function accuracyRows(m1, path = []) {
-  if (!m1 || typeof m1 !== 'object') return [];
-  const keys = ['precision', 'recall', 'fpr', 'macro_f1', 'f1'];
-  if (keys.some((k) => typeof m1[k] === 'number')) return [{ name: path.join(' / ') || 'overall', ...m1 }];
-  return Object.entries(m1).flatMap(([k, v]) => accuracyRows(v, [...path, k]));
+const SYSTEM_NAMES = { rules: 'Rules only', base_gemma: 'Base Gemma 3 1B', finetuned_gemma: 'Fine-tuned Gemma' };
+const LANG_NAMES = { en: 'English', hi: 'Hindi', hinglish: 'Hinglish' };
+const METRICS = ['precision', 'recall', 'fpr', 'macro_f1'];
+const hasMetrics = (o) => !!o && METRICS.some((k) => typeof o[k] === 'number');
+
+// Rows follow the data: {name, overall, langs:[{name, m}]} per system in m1.systems, or {name, notRun:true}
+// when a system has no usable metrics. The three known systems always appear so a missing
+// fine-tuned run reads "Not run yet". Falls back to a flat scan for reports without `systems`.
+export function accuracyRows(m1) {
+  const sys = m1 && m1.systems;
+  if (sys && typeof sys === 'object') {
+    const keys = [...new Set([...Object.keys(SYSTEM_NAMES), ...Object.keys(sys)])];
+    const rows = keys.map((k) => {
+      const name = SYSTEM_NAMES[k] ?? label(k);
+      const o = sys[k] && sys[k].overall;
+      if (!hasMetrics(o)) {
+        const st = sys[k] && typeof sys[k].status === 'string' ? sys[k].status.trim() : '';
+        return { name, notRun: true, status: !st || st.toLowerCase() === 'not run' ? 'Not run yet' : st.replace(/^./, (c) => c.toUpperCase()) };
+      }
+      const per = sys[k].per_language || {};
+      return { name, overall: o, langs: Object.keys(per).filter((l) => hasMetrics(per[l]))
+        .map((l) => ({ name: LANG_NAMES[l] ?? label(l), m: per[l] })) };
+    });
+    return rows.some((r) => !r.notRun) ? rows : [];
+  }
+  const flat = (o, path = []) => {
+    if (!o || typeof o !== 'object') return [];
+    if (hasMetrics(o)) return [{ name: path.join(' / ') || 'overall', overall: o, langs: [] }];
+    return Object.entries(o).flatMap(([k, v]) => flat(v, [...path, k]));
+  };
+  return flat(m1);
 }
 
 const pct = (v) => (typeof v === 'number' ? `${(v * 100).toFixed(1)}%` : '-');
+
+// Pure: headline figures for the four summary tiles.
+export function headline(rows) {
+  const total = rows.length;
+  const detected = rows.filter((r) => r.scam_type !== UNCLASSIFIED).length;
+  const weekly = countByWeek(rows);
+  const weeks = Object.keys(weekly).sort();
+  const last = weeks[weeks.length - 1];
+  const prev = weeks[weeks.length - 2];
+  const topType = ranked(countByScamType(rows.filter((r) => r.scam_type !== UNCLASSIFIED)))[0];
+  const dates = rows.map((r) => r.date).sort();
+  return {
+    total, detected, share: total ? detected / total : 0, unclassified: total - detected,
+    lastWeek: last, lastCount: weekly[last], delta: prev ? weekly[last] - weekly[prev] : null,
+    topType: topType ? { name: typeName(topType[0]), n: topType[1] } : null,
+    from: dates[0], to: dates[dates.length - 1],
+  };
+}
+
+// Pure: best overall accuracy, (tp + tn) / n, among systems that report counts; null when none.
+export function modelAccuracy(m1) {
+  const found = accuracyRows(m1)
+    .filter((r) => !r.notRun && r.overall.counts && r.overall.counts.n > 0)
+    .map((r) => ({ system: r.name, value: (r.overall.counts.tp + r.overall.counts.tn) / r.overall.counts.n,
+      recall: r.overall.recall, fp: r.overall.counts.fp, n: r.overall.counts.n }));
+  if (!found.length) return null;
+  const best = found.reduce((a, b) => (b.value > a.value ? b : a));
+  return { ...best, synthetic: m1.data?.headline === 'synthetic' };
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const fmtDate = (iso) => `${Number(iso.slice(8))} ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
+
+// Pure: round the axis top up to a 1/2/5 step so ticks are whole numbers.
+export function niceScale(max) {
+  const raw = Math.max(1, max) / 4;
+  const mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw);
+  const n = Math.ceil(max / step);
+  return { step, top: step * Math.max(n, 1) };
+}
+
+// Pure: push label y positions apart by at least gap, keeping order, within [lo, hi].
+export function spreadLabels(ys, gap, lo, hi) {
+  const order = ys.map((y, i) => [y, i]).sort((a, b) => a[0] - b[0]);
+  const out = [...ys];
+  let prev = lo - gap;
+  for (const [y, i] of order) { prev = Math.max(y, prev + gap); out[i] = prev; }
+  const over = out.reduce((m, y) => Math.max(m, y - hi), 0);
+  return out.map((y) => y - over);
+}
 
 if (typeof document !== 'undefined') {
   const $ = (id) => document.getElementById(id);
@@ -61,24 +143,47 @@ if (typeof document !== 'undefined') {
     if (text !== undefined) n.textContent = text;
     return n;
   };
+  const NS = 'http://www.w3.org/2000/svg';
+  const mk = (tag, attrs, text) => {
+    const e = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    if (text !== undefined) e.textContent = text;
+    return e;
+  };
   let districtNames = [];
   let showAll = false;
   let current = null;
+  let summary = null;
+  let acc = null;
+  let drawnWidth = 0;
 
   const showError = (msg) => { $('error').textContent = msg; $('error').hidden = !msg; };
 
-  function renderTiles(s) {
+  function renderTiles() {
+    if (!current) return;
+    const h = headline(current.rows);
+    const sign = h.delta > 0 ? '+' : h.delta < 0 ? '-' : '';
+    const accTile = acc
+      ? [`Detector accuracy`, `${(acc.value * 100).toFixed(1)}`, '%',
+        `${acc.system}, ${acc.n} ${acc.synthetic ? 'synthetic ' : ''}held-out messages`,
+        `Recall ${pct(acc.recall)}, ${acc.fp} false alarms`]
+      : ['Detector accuracy', 'Not measured', '', 'No held-out result available yet', ''];
     const items = [
-      ['Total reports', String(s.total), ''],
-      ['Top district', s.districts[0][0], `${s.districts[0][1]} reports`],
-      ['Top scam type', label(s.types[0][0]), `${s.types[0][1]} reports`],
-      ['Weeks covered', String(s.weeks.length), `${s.weeks[0]} to ${s.weeks[s.weeks.length - 1]}`],
+      ['Total reports', String(h.total), '', 'Anonymised reports received', h.delta === null ? '' : `${h.lastWeek}: ${h.lastCount} reports, ${h.delta === 0 ? 'same as the week before' : `${sign}${Math.abs(h.delta)} on the week before`}`],
+      ['Scams detected', String(h.detected), '', 'Reports matching a named scam type', h.topType ? `Most common: ${h.topType.name} (${h.topType.n})` : ''],
+      ['Share flagged', String(Math.round(h.share * 100)), '%', `${h.detected} of ${h.total} reports`, `${h.unclassified} not yet classified`],
+      accTile,
     ];
-    $('tiles').replaceChildren(...items.map(([l, v, n]) => {
+    $('tiles').replaceChildren(...items.map(([l, v, unit, cap, ctx]) => {
       const t = el('div', 'tile');
-      t.append(el('div', 'lbl', l), el('div', 'num', v), el('div', 'note', n));
+      const num = el('div', 'num', v);
+      if (unit) num.append(el('small', '', unit));
+      if (v === 'Not measured') num.style.fontSize = '28px';
+      t.append(el('div', 'lbl', l), num, el('div', 'cap', cap));
+      if (ctx) t.append(el('div', 'ctx', ctx));
       return t;
     }));
+    $('period').textContent = `Data ${fmtDate(h.from)} to ${fmtDate(h.to)}`;
   }
 
   function renderRanking(s) {
@@ -86,11 +191,11 @@ if (typeof document !== 'undefined') {
     const list = showAll ? s.districts : s.districts.slice(0, 10);
     $('ranking').replaceChildren(...list.map(([name, n]) => {
       const row = el('div', 'rank');
-      const bar = el('div', 'bar');
-      bar.style.width = `${(n / max) * 100}%`;
+      const fill = el('div', 'bar-fill');
+      fill.style.setProperty('--r', n / max);
       const track = el('div', 'track');
-      track.append(bar);
-      row.append(el('span', 'name', name), track, el('span', 'v', String(n)));
+      track.append(fill, el('span', 'v', String(n)));
+      row.append(el('span', 'name', name), track);
       return row;
     }));
     const more = $('more');
@@ -98,33 +203,39 @@ if (typeof document !== 'undefined') {
     more.textContent = showAll ? 'Show top 10 only' : `Show all ${s.districts.length} districts`;
   }
 
-  function renderTrend(s) {
-    const W = 640, H = 260, L = 34, R = 12, T = 10, B = 28;
+  function renderTrend(full) {
+    const s = { ...full, series: full.series.filter((x) => x.key !== OTHER) };
+    const W = Math.max(280, Math.floor($('trend').clientWidth));
+    drawnWidth = W;
+    const wide = W >= 600;
+    const H = wide ? 340 : 260;
+    const L = 32, T = 28, B = 44, R = wide ? 150 : 16;
     const n = s.weeks.length;
-    const ymax = Math.max(1, ...s.series.flatMap((x) => x.values));
+    const { step, top } = niceScale(Math.max(1, ...s.series.flatMap((x) => x.values)));
     const x = (i) => L + (n === 1 ? (W - L - R) / 2 : (i / (n - 1)) * (W - L - R));
-    const y = (v) => T + (1 - v / ymax) * (H - T - B);
-    const NS = 'http://www.w3.org/2000/svg';
-    const mk = (tag, attrs, text) => {
-      const e = document.createElementNS(NS, tag);
-      for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
-      if (text !== undefined) e.textContent = text;
-      return e;
-    };
+    const y = (v) => T + (1 - v / top) * (H - T - B);
+    const total = s.series.reduce((a, ser) => a + ser.values.reduce((p, q) => p + q, 0), 0);
     const svg = mk('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img',
-      'aria-label': 'Weekly report counts by scam type. A table view follows.' });
-    for (let g = 0; g <= 4; g++) {
-      const v = Math.round((ymax * g) / 4);
+      'aria-label': `Line chart of weekly reports by scam type, ${s.weeks[0]} to ${s.weeks[n - 1]}, ${total} reports in ${s.series.length} series. A data table follows the chart.` });
+    svg.append(mk('title', {}, 'Weekly reports by scam type'));
+    for (let v = 0; v <= top; v += step) {
       svg.append(mk('line', { class: 'grid', x1: L, x2: W - R, y1: y(v), y2: y(v) }),
-        mk('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, v));
+        mk('text', { x: L - 8, y: y(v) + 4, 'text-anchor': 'end' }, v));
     }
-    const step = Math.max(1, Math.ceil(n / 8));
-    s.weeks.forEach((w, i) => { if (i % step === 0) svg.append(mk('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, w.slice(5))); });
+    const every = Math.max(1, Math.ceil(n / Math.floor((W - L - R) / 48)));
+    s.weeks.forEach((w, i) => { if (i % every === 0) svg.append(mk('text', { x: x(i), y: H - B + 18, 'text-anchor': 'middle' }, w.slice(5))); });
+    svg.append(mk('text', { x: (L + W - R) / 2, y: H - 6, 'text-anchor': 'middle' }, `ISO week, ${s.weeks[0].slice(0, 4)}`));
+    svg.append(mk('text', { x: 0, y: 10, 'text-anchor': 'start' }, 'Reports per week'));
     for (const ser of s.series) {
       svg.append(mk('polyline', { class: 'line', stroke: ser.color,
         points: ser.values.map((v, i) => `${x(i)},${y(v)}`).join(' ') }));
       const end = ser.values.length - 1;
-      svg.append(mk('circle', { cx: x(end), cy: y(ser.values[end]), r: 4, fill: ser.color, stroke: 'var(--surface)', 'stroke-width': 2 }));
+      svg.append(mk('circle', { cx: x(end), cy: y(ser.values[end]), r: 4, fill: ser.color, stroke: 'var(--card)', 'stroke-width': 2 }));
+    }
+    if (wide) {
+      const end = n - 1;
+      const ys = spreadLabels(s.series.map((ser) => y(ser.values[end]) + 4), 16, T + 8, H - B);
+      s.series.forEach((ser, k) => svg.append(mk('text', { class: 'endlbl', x: x(end) + 12, y: ys[k] }, ser.name)));
     }
     const cross = mk('line', { class: 'cross', y1: T, y2: H - B, visibility: 'hidden' });
     svg.append(cross);
@@ -136,19 +247,22 @@ if (typeof document !== 'undefined') {
       cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
       tip.replaceChildren(el('strong', '', s.weeks[i]), ...s.series.map((ser) => el('div', '', `${ser.name}: ${ser.values[i]}`)));
       tip.hidden = false;
-      tip.style.left = `${Math.min(e.clientX + 14, window.innerWidth - 240)}px`;
+      tip.style.left = `${Math.min(e.clientX + 14, window.innerWidth - 256)}px`;
       tip.style.top = `${e.clientY + 14}px`;
     };
     svg.addEventListener('pointermove', move);
     svg.addEventListener('pointerleave', () => { tip.hidden = true; cross.setAttribute('visibility', 'hidden'); });
     $('trend').replaceChildren(svg);
+  }
 
-    $('legend').replaceChildren(...s.series.map((ser) => {
+  function renderTrendMeta(s) {
+    const other = s.series.find((x) => x.key === OTHER);
+    $('other-note').textContent = other ? `Other types (not shown): ${other.values.reduce((a, b) => a + b, 0)} reports over the period` : '';
+    $('legend').replaceChildren(...s.series.filter((x) => x.key !== OTHER).map((ser) => {
       const sp = el('span', '', ser.name);
       sp.style.setProperty('--c', ser.color);
       return sp;
     }));
-
     const table = el('table');
     const head = el('tr');
     head.append(el('th', '', 'Week'), ...s.series.map((x2) => el('th', '', x2.name)));
@@ -165,27 +279,44 @@ if (typeof document !== 'undefined') {
     const box = $('accuracy');
     const rows = accuracyRows(m1);
     if (!rows.length) { box.replaceChildren(el('p', 'na', accuracyText(m1))); return; }
-    const cols = ['precision', 'recall', 'fpr', 'macro_f1'].filter((k) => rows.some((r) => typeof r[k] === 'number'));
+    const cols = [['precision', 'Precision'], ['recall', 'Recall'], ['fpr', 'False alarms']];
     const table = el('table');
     const head = el('tr');
-    head.append(el('th', '', 'System / language'), ...cols.map((c) => el('th', '', c === 'fpr' ? 'False positive rate' : label(c))));
+    head.append(el('th', '', 'System and language'), ...cols.map(([c, t]) => { const th = el('th', '', t); if (c === 'fpr') th.title = 'False positive rate: share of genuine messages wrongly flagged as scams'; return th; }));
     table.append(head);
-    for (const r of rows) {
-      const tr = el('tr');
-      tr.append(el('td', '', r.name), ...cols.map((c) => el('td', '', pct(r[c]))));
+    const line = (name, m, cls) => {
+      const first = el('td', '', name);
+      const tr = el('tr', cls);
+      tr.append(first, ...cols.map(([c]) => el('td', '', pct(m[c]))));
       table.append(tr);
+    };
+    for (const r of rows) {
+      if (r.notRun) {
+        const none = el('td', 'notrun', r.status);
+        none.colSpan = cols.length;
+        const tr = el('tr', 'group');
+        tr.append(el('td', 'sysname', r.name), none);
+        table.append(tr);
+        continue;
+      }
+      line(r.name, r.overall, 'group head');
+      for (const l of r.langs) line(l.name, l.m, 'sub');
     }
     const wrap = el('div', 'scroll');
     wrap.append(table);
     box.replaceChildren(wrap);
+    const d = m1.data;
+    if (d && typeof d.synthetic_rows === 'number' && typeof d.real_rows === 'number') {
+      box.append(el('p', 'note-line', `False alarms are the false positive rate: genuine messages wrongly flagged as scams. ${d.headline === 'synthetic' ? 'Synthetic held-out set' : 'Held-out set'}: ${d.synthetic_rows + d.real_rows} rows, ${d.real_rows} real`));
+    }
   }
 
   function render(data) {
     current = data;
     $('banner').hidden = !data.synthetic;
     if (data.synthetic) $('banner').textContent = 'Synthetic sample data. These numbers are not real reports.';
-    const s = summarize(data.rows);
-    renderTiles(s); renderRanking(s); renderTrend(s);
+    summary = summarize(data.rows);
+    renderTiles(); renderRanking(summary); renderTrendMeta(summary); renderTrend(summary);
   }
 
   function load(text) {
@@ -203,7 +334,7 @@ if (typeof document !== 'undefined') {
   drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
   drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); readFile(e.dataTransfer.files[0]); });
-  $('more').addEventListener('click', () => { showAll = !showAll; if (current) renderRanking(summarize(current.rows)); });
+  $('more').addEventListener('click', () => { showAll = !showAll; if (summary) renderRanking(summary); });
   $('theme').addEventListener('click', (e) => {
     const root = document.documentElement;
     const dark = (root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) !== 'dark';
@@ -211,6 +342,8 @@ if (typeof document !== 'undefined') {
     e.target.setAttribute('aria-pressed', String(dark));
     e.target.textContent = dark ? 'Light theme' : 'Dark theme';
   });
+  // Charts are drawn in real pixels, so redraw when the container width changes.
+  new ResizeObserver(() => { if (summary && Math.floor($('trend').clientWidth) !== drawnWidth) renderTrend(summary); }).observe($('trend'));
 
   (async () => {
     try {
@@ -223,6 +356,8 @@ if (typeof document !== 'undefined') {
     }
     let m1 = null;
     try { const r = await fetch(M1_URL); if (r.ok) m1 = await r.json(); } catch { /* not measured */ }
+    acc = modelAccuracy(m1);
     renderAccuracy(m1);
+    renderTiles();
   })();
 }
