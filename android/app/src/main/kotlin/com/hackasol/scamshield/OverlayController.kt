@@ -16,6 +16,9 @@ import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.WindowManager
+import android.view.accessibility.AccessibilityManager
+import android.widget.ScrollView
+import android.os.Build
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -45,6 +48,11 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
     }
 
     private val wm = service.getSystemService(WindowManager::class.java)
+    private val a11y = service.getSystemService(AccessibilityManager::class.java)
+    /** TalkBack (or another touch-exploration reader) is on: it reads the card, so our own TTS stays quiet and the card waits. */
+    private val screenReader get() = try { a11y?.isTouchExplorationEnabled == true } catch (_: Throwable) { false }
+    /** Large system font: buttons stack so "1930 पर कॉल करें" is never cut. */
+    private val largeFont get() = service.resources.configuration.fontScale > 1.15f
     private val handler = Handler(Looper.getMainLooper())
     private val state = AlertOverlayState()
     private var root: LinearLayout? = null
@@ -59,6 +67,8 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
 
     private lateinit var chip: TextView
     private lateinit var card: LinearLayout
+    private lateinit var cardScroll: ScrollView
+    private lateinit var buttons: LinearLayout
     private lateinit var title: TextView
     private lateinit var why: TextView
     private lateinit var primaryBtn: Button
@@ -93,14 +103,18 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
         title = TextView(ctx).apply { setTextColor(Color.WHITE); textSize = 16f; setTypeface(typeface, Typeface.BOLD); maxLines = TITLE_MAX_LINES; ellipsize = android.text.TextUtils.TruncateAt.END }
         why = TextView(ctx).apply { setTextColor(Color.WHITE); textSize = 16f; maxLines = WHY_MAX_LINES; ellipsize = android.text.TextUtils.TruncateAt.END }
         fun btn() = Button(ctx).apply {
-            isAllCaps = false; textSize = 14f; maxLines = 1; minHeight = dp(48); minimumHeight = dp(48); setPadding(dp(8), 0, dp(8), 0)
+            isAllCaps = false; textSize = 16f; maxLines = 2; minHeight = dp(48); minimumHeight = dp(48); setPadding(dp(8), dp(4), dp(8), dp(4))
         }
         primaryBtn = btn()
         dismissBtn = btn().apply { setOnClickListener { closeOrDismiss() } }
-        val buttons = LinearLayout(ctx).apply {
-            orientation = LinearLayout.HORIZONTAL
-            addView(primaryBtn, LinearLayout.LayoutParams(0, dp(48), 1f))
-            addView(dismissBtn, LinearLayout.LayoutParams(0, dp(48), 1f))
+        // Side by side normally; stacked full-width at a large font scale. Heights wrap the text (48 dp minimum).
+        val stacked = largeFont
+        buttons = LinearLayout(ctx).apply {
+            orientation = if (stacked) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
+            fun lp() = if (stacked) LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                else LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            addView(primaryBtn, lp())
+            addView(dismissBtn, lp())
         }
         card = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
@@ -110,12 +124,18 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
             addView(title); addView(why); addView(buttons)
         }
+        // At a large font the card can be taller than the room below the chip: it scrolls instead of running off-screen.
+        val maxCardH = (dm.heightPixels * 0.55f).toInt()
+        cardScroll = object : ScrollView(ctx) {
+            override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) =
+                super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(maxCardH, MeasureSpec.AT_MOST))
+        }.apply { isFillViewport = false; addView(card) }
         // Card width: at most 80% of the screen (and 320 dp), same edge as the chip.
         val cardW = minOf((dm.widthPixels * 0.8f).toInt(), dp(CARD_MAX_WIDTH_DP))
         val layout = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.END
             addView(chip, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
-            addView(card, LinearLayout.LayoutParams(cardW, LinearLayout.LayoutParams.WRAP_CONTENT))
+            addView(cardScroll, LinearLayout.LayoutParams(cardW, LinearLayout.LayoutParams.WRAP_CONTENT))
         }
         val lp = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -165,9 +185,10 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
         if (step.render) render(step.mode)
         // A critical in-call signal ("AnyDesk opened", OTP, screen share) waits for an answer instead of folding away.
         val sticky = prompt == null && signalKind in InCallSignals.CRITICAL_KINDS
-        if (step.armCardTimer && !sticky) {
+        // A screen-reader user is still listening to the card: it waits for a button instead of folding away.
+        if (step.armCardTimer && !sticky && !screenReader) {
             cardTimer?.let(handler::removeCallbacks)
-            cardTimer = Runnable { if (prompt != null) closeOrDismiss() else apply(state.timerCardExpired()) }.also { handler.postDelayed(it, AlertPolicy.CARD_MS) }
+            cardTimer = Runnable { if (prompt != null) closeOrDismiss() else apply(state.timerCardExpired()) }.also { handler.postDelayed(it, cardMs()) }
         }
         if (step.mode != OverlayMode.CARD) cardTimer?.let(handler::removeCallbacks)
         if (step.armChipTimer) {
@@ -176,6 +197,12 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
         } else if (step.mode == OverlayMode.CARD) chipTimer?.let(handler::removeCallbacks)
         if (step.speak && prompt == null && step.mode == OverlayMode.CARD) cue()
     }
+
+    /** 10 s, or longer if the user asked Android for more time to read and act (Accessibility > Time to take action). */
+    private fun cardMs(): Long = if (Build.VERSION.SDK_INT >= 29) try {
+        a11y.getRecommendedTimeoutMillis(AlertPolicy.CARD_MS.toInt(),
+            AccessibilityManager.FLAG_CONTENT_TEXT or AccessibilityManager.FLAG_CONTENT_CONTROLS).toLong().coerceAtLeast(AlertPolicy.CARD_MS)
+    } catch (_: Throwable) { AlertPolicy.CARD_MS } else AlertPolicy.CARD_MS
 
     private fun render(mode: OverlayMode) {
         val view = ensureView()
@@ -195,7 +222,8 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
         } else {
             val kind = signalKind
             val icon = L10n.labelIcon(shown)
-            title.text = prefix + icon + " " + (if (kind != null) L10n.signalTitle(kind, lang) else L10n.cardTitle(shown, lang))
+            val headline = if (kind != null) L10n.signalTitle(kind, lang) else L10n.cardTitle(shown, lang)
+            title.text = prefix + icon + " " + headline
             why.text = if (kind != null) L10n.areYouSure(lang) + " " + L10n.signalAdvice(kind, lang) else L10n.cardWhy(shown, lang)
             if (kind in InCallSignals.LEAVE_APP_KINDS) {
                 primaryBtn.text = L10n.leaveApp(lang)
@@ -205,8 +233,14 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
             }
         }
         dismissBtn.text = if (prompt == null && signalKind != null) L10n.imSure(lang) else L10n.dismiss(lang)
-        card.contentDescription = title.text.toString() + ". " + why.text
-        card.visibility = if (mode == OverlayMode.CARD) View.VISIBLE else View.GONE
+        // Read without the emoji (TalkBack says "no entry sign", often in English inside Hindi speech): word, headline, advice.
+        val spokenTitle = if (p != null) L10n.captionTitle(lang).replace("🛡️", "").trim()
+            else L10n.labelWord(shown, lang) + ". " + title.text.toString().removePrefix(prefix).replace(L10n.labelIcon(shown), "").trim()
+        card.contentDescription = "$spokenTitle. ${why.text}"
+        // A scam interrupts the screen reader; anything else waits its turn.
+        card.accessibilityLiveRegion = if (shown == Label.SCAM) View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE else View.ACCESSIBILITY_LIVE_REGION_POLITE
+        if (Build.VERSION.SDK_INT >= 28) card.accessibilityPaneTitle = if (mode == OverlayMode.CARD) spokenTitle else null
+        cardScroll.visibility = if (mode == OverlayMode.CARD) View.VISIBLE else View.GONE
         chip.visibility = if (mode == OverlayMode.CARD) View.GONE else View.VISIBLE
         view.requestLayout()
     }
@@ -214,10 +248,19 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
     /** Short haptic, plus (if the user kept the setting on) ONE spoken line. SCAM cards only, auto-opened only. */
     private fun cue() {
         card.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)   // honours the user's touch-feedback setting
-        if (AppSettings.readAloud && shown == Label.SCAM) speak(L10n.ttsLine(signalKind, AppSettings.lang))
+        if (screenReader) {
+            // TalkBack reads the card; a second voice (our TTS) would cut it off. Say it once, through TalkBack.
+            @Suppress("DEPRECATION") card.announceForAccessibility(card.contentDescription)
+            return
+        }
+        if (AppSettings.readAloud && shown == Label.SCAM) speak(L10n.ttsLine(signalKind, AppSettings.lang), L10n.ttsLine(signalKind, "en"))
     }
 
-    private fun speak(line: String) {
+    /** [fallback] (English) is spoken when the phone has no voice for the app language: silence would hide the warning. */
+    private var ttsFallback: String? = null
+
+    private fun speak(line: String, fallback: String) {
+        ttsFallback = fallback
         if (ttsReady) { say(line); return }
         ttsPending = line
         if (tts != null) return
@@ -238,8 +281,17 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
         val t = tts ?: return
         try {
             val r = t.setLanguage(Locale.forLanguageTag(L10n.ttsLanguageTag(AppSettings.lang)))
-            // No voice for this language: stay silent rather than read Devanagari with the wrong voice.
-            if (r == TextToSpeech.LANG_MISSING_DATA || r == TextToSpeech.LANG_NOT_SUPPORTED) return
+            // No voice for this language (common for Hindi on budget phones): never read Devanagari with the wrong voice,
+            // but do not go silent either: speak the English line with an English voice.
+            if (r == TextToSpeech.LANG_MISSING_DATA || r == TextToSpeech.LANG_NOT_SUPPORTED) {
+                val en = ttsFallback ?: return
+                val r2 = t.setLanguage(Locale.forLanguageTag("en-IN")).let {
+                    if (it == TextToSpeech.LANG_MISSING_DATA || it == TextToSpeech.LANG_NOT_SUPPORTED) t.setLanguage(Locale.ENGLISH) else it
+                }
+                if (r2 == TextToSpeech.LANG_MISSING_DATA || r2 == TextToSpeech.LANG_NOT_SUPPORTED) return
+                t.speak(en, TextToSpeech.QUEUE_FLUSH, null, "scamshield-warning")
+                return
+            }
             t.speak(line, TextToSpeech.QUEUE_FLUSH, null, "scamshield-warning")
         } catch (_: Throwable) {}
     }

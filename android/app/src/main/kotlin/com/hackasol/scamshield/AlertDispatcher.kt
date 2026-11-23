@@ -8,6 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.LocaleSpan
+import java.util.Locale
 import com.hackasol.scamshield.core.AlertNotificationMapper
 import com.hackasol.scamshield.core.AlertPlan
 import com.hackasol.scamshield.core.AlertPolicy
@@ -42,6 +46,11 @@ object MainScheduler : Scheduler {
     override fun postDelayed(delayMs: Long, r: Runnable) { handler.postDelayed(r, delayMs) }
 }
 
+/** [s] with a hi-IN LocaleSpan when it contains Devanagari; plain otherwise. */
+internal fun localeTagged(s: String): CharSequence =
+    if (s.none { it in '\u0900'..'\u097F' }) s
+    else SpannableString(s).apply { setSpan(LocaleSpan(Locale.forLanguageTag("hi-IN")), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE) }
+
 /** Builds the real Notification from a spec. Main thread only. */
 class AndroidNotificationPoster(private val ctx: Context) : NotificationPoster {
     private val nm = ctx.getSystemService(NotificationManager::class.java)
@@ -51,11 +60,14 @@ class AndroidNotificationPoster(private val ctx: Context) : NotificationPoster {
         if (channels.add(spec.channelId)) nm.createNotificationChannel(NotificationChannel(spec.channelId,
             L10n.channelName(spec.priorityHigh, AppSettings.lang),
             if (spec.priorityHigh) NotificationManager.IMPORTANCE_HIGH else NotificationManager.IMPORTANCE_LOW))
+        // Tag Hindi text as Hindi: TalkBack then reads it with a Hindi voice instead of spelling Devanagari with an English one.
+        val title = localeTagged(spec.title)
+        val text = localeTagged(spec.text)
         val b = Notification.Builder(ctx, spec.channelId)
-            .setSmallIcon(ctx.applicationInfo.icon)
-            .setContentTitle(spec.title)
-            .setContentText(spec.text)
-            .setStyle(Notification.BigTextStyle().bigText(spec.text))
+            .setSmallIcon(R.drawable.ic_stat_shield)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(Notification.BigTextStyle().bigText(text))
             .setCategory(if (spec.messageCategory) Notification.CATEGORY_MESSAGE else Notification.CATEGORY_STATUS)
             .setOnlyAlertOnce(spec.onlyAlertOnce)
             .setAutoCancel(true)

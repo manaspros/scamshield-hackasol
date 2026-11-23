@@ -35,7 +35,7 @@ object GemmaClassifier {
     @Volatile var message: String = ""; private set
     @Volatile var modelPath: String? = null; private set
 
-    private var llm: LlmInference? = null
+    @Volatile private var llm: LlmInference? = null
     private val mutex = Mutex()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO +
         CoroutineExceptionHandler { _, t -> Log.e(TAG, "uncaught", t) })
@@ -141,10 +141,13 @@ object GemmaClassifier {
 
     /** Returns null if the model isn't ready or the output couldn't be parsed. */
     suspend fun classify(text: String, context: List<String>, contextLabel: String = GemmaPrompt.CALL_CONTEXT_LABEL): LlmResult? {
-        val engine = llm ?: return null
-        if (status != Status.READY) return null
+        if (llm == null || status != Status.READY) return null
         return withContext(Dispatchers.IO) {
             mutex.withLock {
+                // Read the engine under the lock: a reload closes the old engine inside this same lock, and a session on a
+                // closed native engine crashes the process (no catch can stop it).
+                val engine = llm ?: return@withLock null
+                if (status != Status.READY) return@withLock null
                 var session: LlmInferenceSession? = null
                 try {
                     val sOpts = LlmInferenceSession.LlmInferenceSessionOptions.builder()
@@ -172,10 +175,13 @@ object GemmaClassifier {
      * it is wrapped in Gemma's chat turn. Returns null if the model isn't ready or inference fails.
      */
     suspend fun generate(prompt: String, temperature: Float = 0.8f, topK: Int = 40): String? {
-        val engine = llm ?: return null
-        if (status != Status.READY) return null
+        if (llm == null || status != Status.READY) return null
         return withContext(Dispatchers.IO) {
             mutex.withLock {
+                // Read the engine under the lock: a reload closes the old engine inside this same lock, and a session on a
+                // closed native engine crashes the process (no catch can stop it).
+                val engine = llm ?: return@withLock null
+                if (status != Status.READY) return@withLock null
                 var session: LlmInferenceSession? = null
                 try {
                     val sOpts = LlmInferenceSession.LlmInferenceSessionOptions.builder()

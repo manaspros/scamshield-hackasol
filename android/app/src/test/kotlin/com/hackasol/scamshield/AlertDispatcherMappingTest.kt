@@ -28,7 +28,7 @@ class AlertDispatcherMappingTest {
         assertEquals("scam_suspicious", f.channelId)
         assertFalse(f.priorityHigh)
         assertEquals(listOf("report"), f.actions.map { it.route })
-        assertTrue(f.title.contains("SCAM"))
+        assertEquals("ठगी की चेतावनी", f.title)   // one script: TalkBack reads a mixed "(SCAM)" with the wrong voice
         assertTrue(f.text.contains("OTP ठगी"))
         assertTrue(f.text.contains("OTP bata dijiye"))
     }
@@ -49,7 +49,7 @@ class AlertDispatcherMappingTest {
 
     @Test fun T1_7_noTriggerNoTypeStillShort() {
         val f = fields(v(Label.SCAM, Source.PASTE, emptyList()))!!
-        assertEquals("OTP/PIN/पैसे न दें", f.text)
+        assertEquals("OTP, PIN या पैसे न दें", f.text)
     }
 
     @Test fun T1_7_longTriggerTruncated() {

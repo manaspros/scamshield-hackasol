@@ -174,4 +174,30 @@ class AlertDispatcherR3Test {
         dispatcher("[DEMO] ").dispatch(v(Label.SUSPICIOUS, Source.SMS), Label.SUSPICIOUS, Label.SUSPICIOUS, 0.5)
         assertTrue(posted.single().title.startsWith("[DEMO] "))
     }
+
+    // ---- no overlay to draw on: a live warning must still be seen ----
+
+    @Test fun R3_ALERT_liveScamWithoutOverlayIsHeadsUp() {
+        // Listener-only fallback (accessibility service off): no sink at all.
+        val d = AlertDispatcher(null, { posted += it }, "", sched, { "en" })
+        val otp = InCallSignals.toVerdict(InCallSignals.fromNotification("Your OTP is 482913")!!)
+        d.dispatch(otp, Label.SCAM, Label.SCAM, 0.93, InCallSignals.KIND_OTP)
+        val f = posted.single()
+        assertEquals(AlertNotificationMapper.CHANNEL_ID_ALERTS, f.channelId)
+        assertTrue(f.priorityHigh)
+        assertTrue("asks, and names what happened", f.text.startsWith("Are you sure?") && f.title.contains("OTP"))
+        assertFalse("never the code", f.title.contains("482913") || f.text.contains("482913"))
+    }
+
+    @Test fun R3_ALERT_overlaySwitchedOffFallsBackToNotification() {
+        val d = AlertDispatcher(sink, { posted += it }, "", sched, { "en" }, overlayOn = { false })
+        d.dispatch(v(Label.SCAM, Source.CAPTION), Label.SCAM, Label.SCAM, 0.9)
+        assertEquals(AlertNotificationMapper.CHANNEL_ID_ALERTS, posted.single().channelId)
+        d.dispatch(v(Label.SUSPICIOUS, Source.CAPTION), Label.SUSPICIOUS, Label.SUSPICIOUS, 0.5)
+        assertEquals(AlertNotificationMapper.CHANNEL_ID_SILENT, posted.last().channelId)
+        // Preliminary (rules-only, model pending) still never notifies.
+        d.dispatch(v(Label.SCAM, Source.CAPTION, prelim = true), Label.SUSPICIOUS, Label.SUSPICIOUS, 0.5)
+        assertEquals(2, posted.size)
+    }
 }
+

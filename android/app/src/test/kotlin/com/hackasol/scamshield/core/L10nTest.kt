@@ -33,7 +33,7 @@ class L10nTest {
     @Test fun L10N_notificationEnglish() {
         val f = fields(Label.SCAM, ScamType.OTP, "en")
         assertEquals("Scam warning", f.title)
-        assertEquals("OTP scam · \"$quote\" · Do not share OTP/PIN/money", f.text)
+        assertEquals("OTP scam · \"$quote\" · Do not share OTP, PIN or money", f.text)
         assertEquals("Report", f.actions.single().label)
         assertEquals("report", f.actions.single().route)
         assertFalse(deva.containsMatchIn(f.title + f.text.replace(quote, "") + f.actions[0].label))
@@ -46,8 +46,8 @@ class L10nTest {
 
     @Test fun L10N_notificationHindiAndDefault() {
         val f = fields(Label.SCAM, ScamType.OTP, "hi")
-        assertEquals("स्कैम की चेतावनी (SCAM)", f.title)
-        assertTrue(f.text.contains("OTP ठगी") && f.text.contains("OTP/PIN/पैसे न दें"))
+        assertEquals("ठगी की चेतावनी", f.title)
+        assertTrue(f.text.contains("OTP ठगी") && f.text.contains("OTP, PIN या पैसे न दें"))
         assertEquals("रिपोर्ट करें (Report)", f.actions.single().label)
         assertEquals(f, fields(Label.SCAM, ScamType.OTP, null))
         assertEquals(f, fields(Label.SCAM, ScamType.OTP, "xx"))
@@ -92,7 +92,7 @@ class L10nTest {
         assertEquals("This may be a scam — do not share OTP / PIN / money", L10n.overlayLine(Label.SCAM, "en"))
         assertEquals("यह धोखाधड़ी हो सकती है — OTP / PIN / पैसे न दें", L10n.overlayLine(Label.SCAM, "hi"))
         assertEquals("Why: ", L10n.why("en")); assertEquals("Heard: ", L10n.heard("en")); assertEquals("Engine: ", L10n.engine("en"))
-        assertEquals("Overall call: SCAM risk 80%", L10n.overallCall(Label.SCAM, 80, "en"))
+        assertEquals("Overall call: Scam, risk 80%", L10n.overallCall(Label.SCAM, 80, "en"))
         assertEquals("Call 1930", L10n.call1930("en"))
         assertTrue(deva.containsMatchIn(L10n.why("hi") + L10n.overallCall(Label.SCAM, 80, "hne")))
         for (l in Label.values()) assertFalse(deva.containsMatchIn(L10n.overlayLine(l, "en")))
