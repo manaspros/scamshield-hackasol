@@ -1,0 +1,193 @@
+text,label,lang,scam_type,template_id,source
+India Post: Your parcel could not be delivered. Download AnyDesk apk to reschedule delivery and enter card details for the Rs 2 fee,SCAM,en,COURIER_CUSTOMS,v2_en_courier_customs_05,synthetic
+India Post: Your parcel could not be delivered. Download QuickSupport apk to reschedule delivery and enter card details for the Rs 2 fee,SCAM,en,COURIER_CUSTOMS,v2_en_courier_customs_05,synthetic
+India Post: Your parcel could not be delivered. Download TeamViewer apk to reschedule delivery and enter card details for the Rs 2 fee,SCAM,en,COURIER_CUSTOMS,v2_en_courier_customs_05,synthetic
+"Hi, courier from Flipkart here, one parcel in your name came back from Hyderabad, are you available to confirm some details?",SUSPICIOUS,en,COURIER_CUSTOMS,v2_en_courier_customs_14,synthetic
+"Hi, courier from TCS here, one parcel in your name came back from Indore, are you available to confirm some details?",SUSPICIOUS,en,COURIER_CUSTOMS,v2_en_courier_customs_14,synthetic
+"Hi, courier from TCS here, one parcel in your name came back from Patna, are you available to confirm some details?",SUSPICIOUS,en,COURIER_CUSTOMS,v2_en_courier_customs_14,synthetic
+"I am DCP Priya from Delhi police, we are tracking a hawala racket, your account is the main suspect, deposit ₹1,250 as bail guarantee in the account I give you",SCAM,en,DIGITAL_ARREST,v2_en_digital_arrest_07,synthetic
+"I am DCP Sunita from Kolkata police, we are tracking a hawala racket, your account is the main suspect, deposit ₹49,999 as bail guarantee in the account I give you",SCAM,en,DIGITAL_ARREST,v2_en_digital_arrest_07,synthetic
+"I am DCP Sunita from Mumbai police, we are tracking a hawala racket, your account is the main suspect, deposit ₹499 as bail guarantee in the account I give you",SCAM,en,DIGITAL_ARREST,v2_en_digital_arrest_07,synthetic
+i am dcp sunita from mumbai police we are tracking a hawala racket your account is the main suspect deposit ₹499 as bail guarantee in the account i give you,SCAM,en,DIGITAL_ARREST,v2_en_digital_arrest_07,synthetic
+"sir your name has come up in an enquiry, it is just an enquiry for now, I will connect you to the senior officer",SUSPICIOUS,en,DIGITAL_ARREST,v2_en_digital_arrest_17,synthetic
+sir your name has come up in an enquiry it is just an enquiry for now i will connect you to the senior officer,SUSPICIOUS,en,DIGITAL_ARREST,v2_en_digital_arrest_17,synthetic
+"Your ICICI Bank reward: scan QR below to receive Rs 1,20,000 in account. Enter UPI PIN to authorise credit. Offer valid today",SCAM,en,FAKE_QR,v2_en_fake_qr_06,synthetic
+"Your ICICI Bank reward: scan QR below to receive Rs 2,999 in account. Enter UPI PIN to authorise credit. Offer valid today",SCAM,en,FAKE_QR,v2_en_fake_qr_06,synthetic
+"Your SBI reward: scan QR below to receive Rs 5,000 in account. Enter UPI PIN to authorise credit. Offer valid today",SCAM,en,FAKE_QR,v2_en_fake_qr_06,synthetic
+You have received a payment request. Check your QuickSupport app to view the details.,SUSPICIOUS,en,FAKE_QR,v2_en_fake_qr_13,synthetic
+You have received a payment request. Check your RupeeFast app to view the details.,SUSPICIOUS,en,FAKE_QR,v2_en_fake_qr_13,synthetic
+"Welcome to VIP stock group! Today's tip: buy now, 100% sure profit. Invest min Rs 1,20,000 through the QuickSupport app, link india-post-track.xyz",SCAM,en,INVESTMENT,v2_en_investment_01,synthetic
+"Welcome to VIP stock group! Today's tip: buy now, 100% sure profit. Invest min Rs 9,800 through the QuickSupport app, link india-post-track.xyz",SCAM,en,INVESTMENT,v2_en_investment_01,synthetic
+"Welcome to VIP stock group! Today's tip: buy now, 100% sure profit. Invest min Rs 9,800 through the TeamViewer app, link parcel-release.co",SCAM,en,INVESTMENT,v2_en_investment_01,synthetic
+"Hello, I got your number from a finance group, want to learn how to earn daily income from the market?",SUSPICIOUS,en,INVESTMENT,v2_en_investment_13,synthetic
+"madam this is HR of Amazon, interview is done online, you need to pay security deposit of ₹499 for laptop and send your Aadhaar and bank passbook photo",SCAM,en,JOB,v2_en_job_04,synthetic
+"madam this is HR of Flipkart, interview is done online, you need to pay security deposit of ₹2,999 for laptop and send your Aadhaar and bank passbook photo",SCAM,en,JOB,v2_en_job_04,synthetic
+"madam this is HR of TCS, interview is done online, you need to pay security deposit of ₹49,999 for laptop and send your Aadhaar and bank passbook photo",SCAM,en,JOB,v2_en_job_04,synthetic
+madam this is hr of tcs interview is done online you need to pay security deposit of ₹49 999 for laptop and send your aadhaar and bank passbook photo,SCAM,en,JOB,v2_en_job_04,synthetic
+"Hello Neha, I am a recruiter from Airtel. Your CV matches a role. Would you like to know the salary?",SUSPICIOUS,en,JOB,v2_en_job_15,synthetic
+"Hello Pooja, I am a recruiter from Infosys. Your CV matches a role. Would you like to know the salary?",SUSPICIOUS,en,JOB,v2_en_job_15,synthetic
+"Hello Sunita, I am a recruiter from Delhivery. Your CV matches a role. Would you like to know the salary?",SUSPICIOUS,en,JOB,v2_en_job_15,synthetic
+"ji your mobile connection KYC has expired, press 1 and then enter your Aadhaar number and the OTP",SCAM,en,KYC,v2_en_kyc_10,synthetic
+ji your mobile connection kyc has expired press 1 and then enter your aadhaar number and the otp,SCAM,en,KYC,v2_en_kyc_10,synthetic
+"sir we are doing a re-verification drive for all account holders, may I confirm your name and address please",SUSPICIOUS,en,KYC,v2_en_kyc_15,synthetic
+sir we are doing a re-verification drive for all account holders may i confirm your name and address please,SUSPICIOUS,en,KYC,v2_en_kyc_15,synthetic
+"sir you took loan from our app, interest is high now, pay ₹1,20,000 immediately, I have your contact list and I will call everyone in it",SCAM,en,LOAN_APP,v2_en_loan_app_05,synthetic
+"sir you took loan from our app, interest is high now, pay ₹5,000 immediately, I have your contact list and I will call everyone in it",SCAM,en,LOAN_APP,v2_en_loan_app_05,synthetic
+sir you took loan from our app interest is high now pay ₹5 000 immediately i have your contact list and i will call everyone in it,SCAM,en,LOAN_APP,v2_en_loan_app_05,synthetic
+"You are eligible for a pre-approved loan up to Rs 3,00,000. Reply YES to know more.",SUSPICIOUS,en,LOAN_APP,v2_en_loan_app_13,synthetic
+"ALERT: Rs 1,250 credited wrongly to your A/c. Refund within 2 hrs to support.desk@ibl to avoid FIR",SCAM,en,MISTAKEN_TRANSFER,v2_en_mistaken_transfer_10,synthetic
+"ALERT: Rs 2,999 credited wrongly to your A/c. Refund within 2 hrs to refund.help@okaxis to avoid FIR",SCAM,en,MISTAKEN_TRANSFER,v2_en_mistaken_transfer_10,synthetic
+ALERT: Rs 499 credited wrongly to your A/c. Refund within 2 hrs to pay.verify@ybl to avoid FIR,SCAM,en,MISTAKEN_TRANSFER,v2_en_mistaken_transfer_10,synthetic
+"madam please check your messages, some money may have come in by mistake, I will call back",SUSPICIOUS,en,MISTAKEN_TRANSFER,v2_en_mistaken_transfer_15,synthetic
+madam please check your messages some money may have come in by mistake i will call back,SUSPICIOUS,en,MISTAKEN_TRANSFER,v2_en_mistaken_transfer_15,synthetic
+"hello beta, this is your cousin, I had an accident and lost my phone, this is a new number, send ₹1,250 urgently to this UPI and don't tell mummy",SCAM,en,OTHER,v2_en_other_06,synthetic
+"hello beta, this is your cousin, I had an accident and lost my phone, this is a new number, send ₹49,999 urgently to this UPI and don't tell mummy",SCAM,en,OTHER,v2_en_other_06,synthetic
+hello beta this is your cousin i had an accident and lost my phone this is a new number send ₹49 999 urgently to this upi and don t tell mummy,SCAM,en,OTHER,v2_en_other_06,synthetic
+Hello! You have been selected in a lucky draw for a gift. Reply to know more,SUSPICIOUS,en,OTHER,v2_en_other_14,synthetic
+"Sir I am sending money for your sofa from OLX, you will get an OTP, please share that code so that the payment reaches you",SCAM,en,OTP,v2_en_otp_05,synthetic
+A security check is pending on your account. Our executive will contact you shortly.,SUSPICIOUS,en,OTP,v2_en_otp_16,synthetic
+"Rs 1,20,000 credited to your A/c XX1234 by Pooja. Available balance updated. -SBI",SAFE,en,,v2_en_safe_bank_alert_02,synthetic
+"Rs 15,000 credited to your A/c XX1234 by Sunita. Available balance updated. -Axis Bank",SAFE,en,,v2_en_safe_bank_alert_02,synthetic
+"Rs 49,999 credited to your A/c XX1234 by Vikram. Available balance updated. -SBI",SAFE,en,,v2_en_safe_bank_alert_02,synthetic
+Dear customer your DTH recharge expires on Friday. Recharge using your usual app or from any shop.,SAFE,en,,v2_en_safe_bill_26,synthetic
+"Madam this is Axis Bank, we are calling to inform that your locker rent is due, you can pay at the branch whenever you visit, no hurry",SAFE,en,,v2_en_safe_real_bank_call_29,synthetic
+"Madam this is Bank of Baroda, we are calling to inform that your locker rent is due, you can pay at the branch whenever you visit, no hurry",SAFE,en,,v2_en_safe_real_bank_call_29,synthetic
+"Madam this is SBI, we are calling to inform that your locker rent is due, you can pay at the branch whenever you visit, no hurry",SAFE,en,,v2_en_safe_real_bank_call_29,synthetic
+madam this is sbi we are calling to inform that your locker rent is due you can pay at the branch whenever you visit no hurry,SAFE,en,,v2_en_safe_real_bank_call_29,synthetic
+"Good evening, HDFC Bank customer feedback call, how was your experience at the branch today, you can rate from one to five",SAFE,en,,v2_en_safe_real_bank_call_33,synthetic
+"Good evening, PNB customer feedback call, how was your experience at the branch today, you can rate from one to five",SAFE,en,,v2_en_safe_real_bank_call_33,synthetic
+"Good evening, SBI customer feedback call, how was your experience at the branch today, you can rate from one to five",SAFE,en,,v2_en_safe_real_bank_call_33,synthetic
+good evening sbi customer feedback call how was your experience at the branch today you can rate from one to five,SAFE,en,,v2_en_safe_real_bank_call_33,synthetic
+"Hi Rahul, please send the invoice for last month by Friday so that accounts can process the payment",SAFE,en,,v2_en_safe_work_48,synthetic
+"Hi Vikram, please send the invoice for last month by Friday so that accounts can process the payment",SAFE,en,,v2_en_safe_work_48,synthetic
+Your leave application for 5th to 7th has been approved by your manager.,SAFE,en,,v2_en_safe_work_52,synthetic
+"Sir your mobile is repaired, you can collect it from the shop, the bill will be Rs 1,250, pay when you come",SAFE,en,,v2_en_safe_merchant_57,synthetic
+"Sir your mobile is repaired, you can collect it from the shop, the bill will be Rs 9,800, pay when you come",SAFE,en,,v2_en_safe_merchant_57,synthetic
+sir your mobile is repaired you can collect it from the shop the bill will be rs 9 800 pay when you come,SAFE,en,,v2_en_safe_merchant_57,synthetic
+"The weather is nice today, shall we go for a walk in the park in the evening?",SAFE,en,,v2_en_safe_other_74,synthetic
+the weather is nice today shall we go for a walk in the park in the evening,SAFE,en,,v2_en_safe_other_74,synthetic
+"India Post: पैकेज डिलीवर नहीं हो सका। दोबारा डिलीवरी हेतु ₹1,20,000 का भुगतान करें quickloan-apk.top और कार्ड विवरण भरें।",SCAM,hi,COURIER_CUSTOMS,v2_hi_courier_customs_03,synthetic
+"India Post: पैकेज डिलीवर नहीं हो सका। दोबारा डिलीवरी हेतु ₹15,000 का भुगतान करें india-post-track.xyz और कार्ड विवरण भरें।",SCAM,hi,COURIER_CUSTOMS,v2_hi_courier_customs_03,synthetic
+"India Post: पैकेज डिलीवर नहीं हो सका। दोबारा डिलीवरी हेतु ₹9,800 का भुगतान करें kyc-update-help.in.net और कार्ड विवरण भरें।",SCAM,hi,COURIER_CUSTOMS,v2_hi_courier_customs_03,synthetic
+"सर आपके नाम से बाहर से एक गिफ्ट बॉक्स आया है, कृपया अपना पूरा पता और आधार नंबर भेजें।",SUSPICIOUS,hi,COURIER_CUSTOMS,v2_hi_courier_customs_14,synthetic
+"ट्राई से बोल रहे हैं, आपका नंबर दो घंटे में बंद हो जाएगा क्योंकि इस पर शिकायतें हैं, पुलिस अफसर से कनेक्ट कर रहा हूं, लाइन पर बने रहिए",SCAM,hi,DIGITAL_ARREST,v2_hi_digital_arrest_03,synthetic
+ट्राई से बोल रहे हैं आपका नंबर दो घंटे में बंद हो जाएगा क्योंकि इस पर शिकायतें हैं पुलिस अफसर से कनेक्ट कर रहा हूं लाइन पर बने रहिए,SCAM,hi,DIGITAL_ARREST,v2_hi_digital_arrest_03,synthetic
+"TRAI सूचना: आपके नंबर के खिलाफ शिकायतें मिली हैं, सेवा बंद हो सकती है।",SUSPICIOUS,hi,DIGITAL_ARREST,v2_hi_digital_arrest_17,synthetic
+"अंकल जी रिसीव करने के लिए पिन डालना ही पड़ेगा, ये क्यूआर स्कैन करके जल्दी डाल दो, मुझे ट्रेन पकड़नी है",SCAM,hi,FAKE_QR,v2_hi_fake_qr_05,synthetic
+अंकल जी रिसीव करने के लिए पिन डालना ही पड़ेगा ये क्यूआर स्कैन करके जल्दी डाल दो मुझे ट्रेन पकड़नी है,SCAM,hi,FAKE_QR,v2_hi_fake_qr_05,synthetic
+"आपके AnyDesk अकाउंट पर रिवॉर्ड बाकी है, कृपया जल्दी क्लेम करें।",SUSPICIOUS,hi,FAKE_QR,v2_hi_fake_qr_17,synthetic
+"आपके QuickSupport अकाउंट पर रिवॉर्ड बाकी है, कृपया जल्दी क्लेम करें।",SUSPICIOUS,hi,FAKE_QR,v2_hi_fake_qr_17,synthetic
+"आपके TeamViewer अकाउंट पर रिवॉर्ड बाकी है, कृपया जल्दी क्लेम करें।",SUSPICIOUS,hi,FAKE_QR,v2_hi_fake_qr_17,synthetic
+"शेयर मार्केट टिप्स VIP ग्रुप! पहले दिन से कमाई। जॉइन फीस ₹1,250 भेजें rk.sharma21@paytm और स्क्रीनशॉट भेजें।",SCAM,hi,INVESTMENT,v2_hi_investment_01,synthetic
+"शेयर मार्केट टिप्स VIP ग्रुप! पहले दिन से कमाई। जॉइन फीस ₹49,999 भेजें rk.sharma21@paytm और स्क्रीनशॉट भेजें।",SCAM,hi,INVESTMENT,v2_hi_investment_01,synthetic
+"शेयर मार्केट टिप्स VIP ग्रुप! पहले दिन से कमाई। जॉइन फीस ₹5,000 भेजें rk.sharma21@paytm और स्क्रीनशॉट भेजें।",SCAM,hi,INVESTMENT,v2_hi_investment_01,synthetic
+क्रिप्टो में आज का बड़ा मौका! जानकारी के लिए india-post-track.xyz देखें।,SUSPICIOUS,hi,INVESTMENT,v2_hi_investment_17,synthetic
+क्रिप्टो में आज का बड़ा मौका! जानकारी के लिए parcel-release.co देखें।,SUSPICIOUS,hi,INVESTMENT,v2_hi_investment_17,synthetic
+"भाई तुम्हारी जॉब लग गई है, कंपनी को बैंक खाता वेरिफाई करना है, वेरिफिकेशन के लिए एक हजार भेजो, बाद में लौटा देंगे",SCAM,hi,JOB,v2_hi_job_08,synthetic
+भाई तुम्हारी जॉब लग गई है कंपनी को बैंक खाता वेरिफाई करना है वेरिफिकेशन के लिए एक हजार भेजो बाद में लौटा देंगे,SCAM,hi,JOB,v2_hi_job_08,synthetic
+"लाइक और शेयर करके कमाई करें। ऐप जुड़ें, पैसा खाते में आएगा, जल्दी करें।",SUSPICIOUS,hi,JOB,v2_hi_job_15,synthetic
+"डियर यूजर, आपका CashNow वॉलेट KYC के बिना बंद होगा। 499 रुपये वेरिफिकेशन फीस भेजें refund.help@okaxis",SCAM,hi,KYC,v2_hi_kyc_09,synthetic
+"डियर यूजर, आपका CashNow वॉलेट KYC के बिना बंद होगा। 9,800 रुपये वेरिफिकेशन फीस भेजें support.desk@ibl",SCAM,hi,KYC,v2_hi_kyc_09,synthetic
+"डियर यूजर, आपका RupeeFast वॉलेट KYC के बिना बंद होगा। 49,999 रुपये वेरिफिकेशन फीस भेजें pay.verify@ybl",SCAM,hi,KYC,v2_hi_kyc_09,synthetic
+"नमस्ते, मैं बैंक का एजेंट हूं। आपका खाता रिव्यू में आया है, कृपया अपना अकाउंट नंबर भेजें।",SUSPICIOUS,hi,KYC,v2_hi_kyc_15,synthetic
+मैडम आपका लोन पास हो गया है लेकिन पहले इंश्योरेंस के नाम पर दो हजार रुपये जमा करने होंगे तभी पैसा खाते में आएगा,SCAM,hi,LOAN_APP,v2_hi_loan_app_04,synthetic
+आपकी CashNow लोन किस्त अगले हफ्ते देय है। विवरण के लिए ऐप देखें।,SUSPICIOUS,hi,LOAN_APP,v2_hi_loan_app_17,synthetic
+"भाई साहब गलती से मेरे 1,20,000 रुपये आपके खाते में चले गए हैं, प्लीज वापस भेज दो, मेरी बीवी अस्पताल में है",SCAM,hi,MISTAKEN_TRANSFER,v2_hi_mistaken_transfer_00,synthetic
+"भाई साहब गलती से मेरे 499 रुपये आपके खाते में चले गए हैं, प्लीज वापस भेज दो, मेरी बीवी अस्पताल में है",SCAM,hi,MISTAKEN_TRANSFER,v2_hi_mistaken_transfer_00,synthetic
+"भाई साहब गलती से मेरे 9,800 रुपये आपके खाते में चले गए हैं, प्लीज वापस भेज दो, मेरी बीवी अस्पताल में है",SCAM,hi,MISTAKEN_TRANSFER,v2_hi_mistaken_transfer_00,synthetic
+भाई साहब गलती से मेरे 9 800 रुपये आपके खाते में चले गए हैं प्लीज वापस भेज दो मेरी बीवी अस्पताल में है,SCAM,hi,MISTAKEN_TRANSFER,v2_hi_mistaken_transfer_00,synthetic
+आपके CashNow खाते में ₹499 प्राप्त हुए। भेजने वाले ने इसे गलत बताया है।,SUSPICIOUS,hi,MISTAKEN_TRANSFER,v2_hi_mistaken_transfer_14,synthetic
+"आपके QuickSupport खाते में ₹15,000 प्राप्त हुए। भेजने वाले ने इसे गलत बताया है।",SUSPICIOUS,hi,MISTAKEN_TRANSFER,v2_hi_mistaken_transfer_14,synthetic
+"आपके QuickSupport खाते में ₹2,999 प्राप्त हुए। भेजने वाले ने इसे गलत बताया है।",SUSPICIOUS,hi,MISTAKEN_TRANSFER,v2_hi_mistaken_transfer_14,synthetic
+"हेलो मामा जी, मैं बोल रहा हूं, मेरा एक्सीडेंट हो गया है, पापा को मत बताना, अभी 1,250 रुपये भेज दो प्लीज़",SCAM,hi,OTHER,v2_hi_other_05,synthetic
+"हेलो मामा जी, मैं बोल रहा हूं, मेरा एक्सीडेंट हो गया है, पापा को मत बताना, अभी 49,999 रुपये भेज दो प्लीज़",SCAM,hi,OTHER,v2_hi_other_05,synthetic
+"हेलो मामा जी, मैं बोल रहा हूं, मेरा एक्सीडेंट हो गया है, पापा को मत बताना, अभी 9,800 रुपये भेज दो प्लीज़",SCAM,hi,OTHER,v2_hi_other_05,synthetic
+हेलो मामा जी मैं बोल रहा हूं मेरा एक्सीडेंट हो गया है पापा को मत बताना अभी 9 800 रुपये भेज दो प्लीज़,SCAM,hi,OTHER,v2_hi_other_05,synthetic
+"हेलो चाचा, पहचाना? मैं बोल रहा हूं, नया नंबर है, पुराना खो गया",SUSPICIOUS,hi,OTHER,v2_hi_other_15,synthetic
+हेलो चाचा पहचाना मैं बोल रहा हूं नया नंबर है पुराना खो गया,SUSPICIOUS,hi,OTHER,v2_hi_other_15,synthetic
+"आपके Canara Bank खाते में ₹49,999 का इनाम है। पाने के लिए लिंक खोलें quickloan-apk.top और OTP डालें।",SCAM,hi,OTP,v2_hi_otp_06,synthetic
+"आपके HDFC Bank खाते में ₹1,20,000 का इनाम है। पाने के लिए लिंक खोलें parcel-release.co और OTP डालें।",SCAM,hi,OTP,v2_hi_otp_06,synthetic
+"आपके Kotak Bank खाते में ₹2,999 का इनाम है। पाने के लिए लिंक खोलें kyc-update-help.in.net और OTP डालें।",SCAM,hi,OTP,v2_hi_otp_06,synthetic
+"जी आपके नाम से एक नए क्रेडिट कार्ड की रिक्वेस्ट आई है, क्या आपने अप्लाई किया था?",SUSPICIOUS,hi,OTP,v2_hi_otp_16,synthetic
+जी आपके नाम से एक नए क्रेडिट कार्ड की रिक्वेस्ट आई है क्या आपने अप्लाई किया था,SUSPICIOUS,hi,OTP,v2_hi_otp_16,synthetic
+आपका रिटर्न पार्सल उठा लिया गया है। रिफंड 5-7 कार्य दिवस में आपके खाते में आएगा।,SAFE,hi,,v2_hi_safe_delivery_19,synthetic
+गैस सिलेंडर की बुकिंग सफल रही। डिलीवरी दो दिन में होगी।,SAFE,hi,,v2_hi_safe_bill_22,synthetic
+आपके DTH रिचार्ज की वैधता तीन दिन में खत्म होगी। AnyDesk से रिचार्ज करें।,SAFE,hi,,v2_hi_safe_bill_24,synthetic
+आपके DTH रिचार्ज की वैधता तीन दिन में खत्म होगी। RupeeFast से रिचार्ज करें।,SAFE,hi,,v2_hi_safe_bill_24,synthetic
+आपके DTH रिचार्ज की वैधता तीन दिन में खत्म होगी। TeamViewer से रिचार्ज करें।,SAFE,hi,,v2_hi_safe_bill_24,synthetic
+"नमस्कार, आपके लोन की किस्त की तारीख पांच है, बस याद दिलाने के लिए फोन किया, भुगतान अपने ऐप या शाखा में कर सकते हैं",SAFE,hi,,v2_hi_safe_real_bank_call_31,synthetic
+नमस्कार आपके लोन की किस्त की तारीख पांच है बस याद दिलाने के लिए फोन किया भुगतान अपने ऐप या शाखा में कर सकते हैं,SAFE,hi,,v2_hi_safe_real_bank_call_31,synthetic
+"दादी जी आप दवाई टाइम से ले लेना, मैं शनिवार को गांव आ रहा हूं",SAFE,hi,,v2_hi_safe_family_38,synthetic
+दादी जी आप दवाई टाइम से ले लेना मैं शनिवार को गांव आ रहा हूं,SAFE,hi,,v2_hi_safe_family_38,synthetic
+"Pooja भैया, शादी का कार्ड भेज रहा हूं, बारह तारीख को जरूर आना, पूरे परिवार के साथ आइए",SAFE,hi,,v2_hi_safe_family_45,synthetic
+"Ramesh भैया, शादी का कार्ड भेज रहा हूं, बारह तारीख को जरूर आना, पूरे परिवार के साथ आइए",SAFE,hi,,v2_hi_safe_family_45,synthetic
+"Sunita भैया, शादी का कार्ड भेज रहा हूं, बारह तारीख को जरूर आना, पूरे परिवार के साथ आइए",SAFE,hi,,v2_hi_safe_family_45,synthetic
+"जी हां मैडम, इंटरव्यू के लिए आपका नाम शॉर्टलिस्ट हुआ है, सोमवार को हमारे ऑफिस आइए, किसी पैसे की जरूरत नहीं",SAFE,hi,,v2_hi_safe_work_49,synthetic
+जी हां मैडम इंटरव्यू के लिए आपका नाम शॉर्टलिस्ट हुआ है सोमवार को हमारे ऑफिस आइए किसी पैसे की जरूरत नहीं,SAFE,hi,,v2_hi_safe_work_49,synthetic
+"पापा मेरी दोस्त के साथ कूरियर वाली धोखाधड़ी हुई, उसने पुलिस में रिपोर्ट कर दी और 1930 पर भी फोन किया",SAFE,hi,,v2_hi_safe_user_about_scam_72,synthetic
+पापा मेरी दोस्त के साथ कूरियर वाली धोखाधड़ी हुई उसने पुलिस में रिपोर्ट कर दी और 1930 पर भी फोन किया,SAFE,hi,,v2_hi_safe_user_about_scam_72,synthetic
+"sir aapke naam se Thailand ko ek parcel book hua he jisme MDMA he, abhi mumbai crime branch se baat kijiye, pehle apna Aadhaar bhej do",SCAM,hinglish,COURIER_CUSTOMS,v2_hinglish_courier_customs_06,synthetic
+sir aapke naam se thailand ko ek parcel book hua he jisme mdma he abhi mumbai crime branch se baat kijiye pehle apna aadhaar bhej do,SCAM,hinglish,COURIER_CUSTOMS,v2_hinglish_courier_customs_06,synthetic
+"sir aapka ek international parcel customs me aaya he, kya aap kisi se kuch mangwaya tha",SUSPICIOUS,hinglish,COURIER_CUSTOMS,v2_hinglish_courier_customs_12,synthetic
+sir aapka ek international parcel customs me aaya he kya aap kisi se kuch mangwaya tha,SUSPICIOUS,hinglish,COURIER_CUSTOMS,v2_hinglish_courier_customs_12,synthetic
+"dekhiye Priya ji aapke Aadhaar ka misuse hua he, hum aapko bachana chahte hain, bas apna saara paisa jaanch ke liye is government account me daal do, jaanch ke baad wapas",SCAM,hinglish,DIGITAL_ARREST,v2_hinglish_digital_arrest_06,synthetic
+"dekhiye Rahul ji aapke Aadhaar ka misuse hua he, hum aapko bachana chahte hain, bas apna saara paisa jaanch ke liye is government account me daal do, jaanch ke baad wapas",SCAM,hinglish,DIGITAL_ARREST,v2_hinglish_digital_arrest_06,synthetic
+"dekhiye Vikram ji aapke Aadhaar ka misuse hua he, hum aapko bachana chahte hain, bas apna saara paisa jaanch ke liye is government account me daal do, jaanch ke baad wapas",SCAM,hinglish,DIGITAL_ARREST,v2_hinglish_digital_arrest_06,synthetic
+dekhiye vikram ji aapke aadhaar ka misuse hua he hum aapko bachana chahte hain bas apna saara paisa jaanch ke liye is government account me daal do jaanch ke baad wapas,SCAM,hinglish,DIGITAL_ARREST,v2_hinglish_digital_arrest_06,synthetic
+Aapke SIM ke khilaf TRAI me complaint darj hui he. Number 2 ghante me deactivate ho sakta he.,SUSPICIOUS,hinglish,DIGITAL_ARREST,v2_hinglish_digital_arrest_15,synthetic
+"Aapka electricity refund ₹1,250 ready he. QR scan karein aur UPI PIN dalkar claim karein.",SCAM,hinglish,FAKE_QR,v2_hinglish_fake_qr_04,synthetic
+"Aapka electricity refund ₹2,999 ready he. QR scan karein aur UPI PIN dalkar claim karein.",SCAM,hinglish,FAKE_QR,v2_hinglish_fake_qr_04,synthetic
+Aapka electricity refund ₹499 ready he. QR scan karein aur UPI PIN dalkar claim karein.,SCAM,hinglish,FAKE_QR,v2_hinglish_fake_qr_04,synthetic
+madam aapko payment receive karna he na? hum QR bhej rahe hain,SUSPICIOUS,hinglish,FAKE_QR,v2_hinglish_fake_qr_16,synthetic
+madam aapko payment receive karna he na hum qr bhej rahe hain,SUSPICIOUS,hinglish,FAKE_QR,v2_hinglish_fake_qr_16,synthetic
+"dekhiye sir mutual fund se kahin zyada return he hamari scheme me, ghar baithe paise, aaj hi ₹15,000 rupye bhejiye aur app download kijiye RupeeFast",SCAM,hinglish,INVESTMENT,v2_hinglish_investment_09,synthetic
+"dekhiye sir mutual fund se kahin zyada return he hamari scheme me, ghar baithe paise, aaj hi ₹15,000 rupye bhejiye aur app download kijiye TeamViewer",SCAM,hinglish,INVESTMENT,v2_hinglish_investment_09,synthetic
+"dekhiye sir mutual fund se kahin zyada return he hamari scheme me, ghar baithe paise, aaj hi ₹499 rupye bhejiye aur app download kijiye TeamViewer",SCAM,hinglish,INVESTMENT,v2_hinglish_investment_09,synthetic
+dekhiye sir mutual fund se kahin zyada return he hamari scheme me ghar baithe paise aaj hi ₹499 rupye bhejiye aur app download kijiye teamviewer,SCAM,hinglish,INVESTMENT,v2_hinglish_investment_09,synthetic
+"Earn 50,000 per month with simple online investment. Limited seats, join now.",SUSPICIOUS,hinglish,INVESTMENT,v2_hinglish_investment_13,synthetic
+"Congratulations! Amazon me aapka interview clear. Laptop courier ke liye ₹9,800 bhejein, laptop aapko mil jayega",SCAM,hinglish,JOB,v2_hinglish_job_07,synthetic
+"Congratulations! Infosys me aapka interview clear. Laptop courier ke liye ₹15,000 bhejein, laptop aapko mil jayega",SCAM,hinglish,JOB,v2_hinglish_job_07,synthetic
+"Congratulations! Reliance Jio me aapka interview clear. Laptop courier ke liye ₹1,250 bhejein, laptop aapko mil jayega",SCAM,hinglish,JOB,v2_hinglish_job_07,synthetic
+"Sir aapka resume humne naukri portal par dekha, aapke liye ek acchi job he, interested hain",SUSPICIOUS,hinglish,JOB,v2_hinglish_job_12,synthetic
+sir aapka resume humne naukri portal par dekha aapke liye ek acchi job he interested hain,SUSPICIOUS,hinglish,JOB,v2_hinglish_job_12,synthetic
+"Aapka SIM card ka KYC adhura he, 2 ghante me band ho jayega. Is number par call karke Aadhaar ki photo bhejein 88XXXXXX03",SCAM,hinglish,KYC,v2_hinglish_kyc_03,synthetic
+"Aapka SIM card ka KYC adhura he, 2 ghante me band ho jayega. Is number par call karke Aadhaar ki photo bhejein 91XXXXXX77",SCAM,hinglish,KYC,v2_hinglish_kyc_03,synthetic
+"Aapka SIM card ka KYC adhura he, 2 ghante me band ho jayega. Is number par call karke Aadhaar ki photo bhejein 98XXXXXX12",SCAM,hinglish,KYC,v2_hinglish_kyc_03,synthetic
+Axis Bank alert: KYC verification ke liye hamari team aapse sampark karegi. Kripya taiyar rahein.,SUSPICIOUS,hinglish,KYC,v2_hinglish_kyc_13,synthetic
+Canara Bank alert: KYC verification ke liye hamari team aapse sampark karegi. Kripya taiyar rahein.,SUSPICIOUS,hinglish,KYC,v2_hinglish_kyc_13,synthetic
+ICICI Bank alert: KYC verification ke liye hamari team aapse sampark karegi. Kripya taiyar rahein.,SUSPICIOUS,hinglish,KYC,v2_hinglish_kyc_13,synthetic
+"Pre-approved loan for you. Install RupeeFast from quickloan-apk.top, insurance fee pehle bharna hoga ₹49,999, uske baad paisa milega",SCAM,hinglish,LOAN_APP,v2_hinglish_loan_app_04,synthetic
+"Pre-approved loan for you. Install TeamViewer from india-post-track.xyz, insurance fee pehle bharna hoga ₹2,999, uske baad paisa milega",SCAM,hinglish,LOAN_APP,v2_hinglish_loan_app_04,synthetic
+"Pre-approved loan for you. Install TeamViewer from quickloan-apk.top, insurance fee pehle bharna hoga ₹15,000, uske baad paisa milega",SCAM,hinglish,LOAN_APP,v2_hinglish_loan_app_04,synthetic
+"Dost tujhe urgent paise chahiye to ek app he jisme turant loan milta he, naam yaad nahi",SUSPICIOUS,hinglish,LOAN_APP,v2_hinglish_loan_app_16,synthetic
+"Aapke account me galti se Rs 1,250 credit hue. Wapas karne ke liye turant refund.help@okaxis par pay karein.",SCAM,hinglish,MISTAKEN_TRANSFER,v2_hinglish_mistaken_transfer_07,synthetic
+"Aapke account me galti se Rs 15,000 credit hue. Wapas karne ke liye turant rk.sharma21@paytm par pay karein.",SCAM,hinglish,MISTAKEN_TRANSFER,v2_hinglish_mistaken_transfer_07,synthetic
+"Aapke account me galti se Rs 9,800 credit hue. Wapas karne ke liye turant support.desk@ibl par pay karein.",SCAM,hinglish,MISTAKEN_TRANSFER,v2_hinglish_mistaken_transfer_07,synthetic
+"Hi sorry galat number lag gaya, kya aapko ek payment mila?",SUSPICIOUS,hinglish,MISTAKEN_TRANSFER,v2_hinglish_mistaken_transfer_14,synthetic
+"sir aapki LIC policy ka bonus ₹1,20,000 atka he, release karne ke liye GST fee abhi bhejiye aur bank ka OTP bata dijiye",SCAM,hinglish,OTHER,v2_hinglish_other_09,synthetic
+"sir aapki LIC policy ka bonus ₹49,999 atka he, release karne ke liye GST fee abhi bhejiye aur bank ka OTP bata dijiye",SCAM,hinglish,OTHER,v2_hinglish_other_09,synthetic
+sir aapki lic policy ka bonus ₹49 999 atka he release karne ke liye gst fee abhi bhejiye aur bank ka otp bata dijiye,SCAM,hinglish,OTHER,v2_hinglish_other_09,synthetic
+"madam aapke SIM ki validity khatam hone wali he, kya aap abhi baat kar sakti hain",SUSPICIOUS,hinglish,OTHER,v2_hinglish_other_17,synthetic
+madam aapke sim ki validity khatam hone wali he kya aap abhi baat kar sakti hain,SUSPICIOUS,hinglish,OTHER,v2_hinglish_other_17,synthetic
+"sir card ka CVV aur peeche likha number bata dijiye, main aapka limit badha deta hu, 2 minute ka kaam hai",SCAM,hinglish,OTP,v2_hinglish_otp_06,synthetic
+sir card ka cvv aur peeche likha number bata dijiye main aapka limit badha deta hu 2 minute ka kaam hai,SCAM,hinglish,OTP,v2_hinglish_otp_06,synthetic
+"hello ji main bank se bol raha hu, aapke naam se ek naya credit card apply hua he, aapne kiya tha kya",SUSPICIOUS,hinglish,OTP,v2_hinglish_otp_16,synthetic
+hello ji main bank se bol raha hu aapke naam se ek naya credit card apply hua he aapne kiya tha kya,SUSPICIOUS,hinglish,OTP,v2_hinglish_otp_16,synthetic
+"Dear consumer, aapka bijli bill ₹1,20,000 generate hua he, due date 20th. Official app ya nazdeeki counter se bharein.",SAFE,hinglish,,v2_hinglish_safe_bill_20,synthetic
+"Dear consumer, aapka bijli bill ₹15,000 generate hua he, due date 20th. Official app ya nazdeeki counter se bharein.",SAFE,hinglish,,v2_hinglish_safe_bill_20,synthetic
+"Dear consumer, aapka bijli bill ₹5,000 generate hua he, due date 20th. Official app ya nazdeeki counter se bharein.",SAFE,hinglish,,v2_hinglish_safe_bill_20,synthetic
+"Your mobile bill of Rs 2,999 is due on 15th. Pay via the official Flipkart app or website.",SAFE,hinglish,,v2_hinglish_safe_bill_21,synthetic
+Your mobile bill of Rs 499 is due on 15th. Pay via the official Bluedart app or website.,SAFE,hinglish,,v2_hinglish_safe_bill_21,synthetic
+"Your mobile bill of Rs 5,000 is due on 15th. Pay via the official Bluedart app or website.",SAFE,hinglish,,v2_hinglish_safe_bill_21,synthetic
+"Reminder: aapka gas cylinder booking confirm hui, delivery 2 din me hogi. Zyada jaankari company app me dekhein.",SAFE,hinglish,,v2_hinglish_safe_bill_22,synthetic
+"Madam aapke locker ka annual kiraya due he, aap branch aake kabhi bhi bhar sakti hain, koi jaldi nahi",SAFE,hinglish,,v2_hinglish_safe_real_bank_call_29,synthetic
+madam aapke locker ka annual kiraya due he aap branch aake kabhi bhi bhar sakti hain koi jaldi nahi,SAFE,hinglish,,v2_hinglish_safe_real_bank_call_29,synthetic
+"Namaste, Axis Bank se bol rahe hain. Aapke home loan ki EMI date change karni ho to branch aa jaiye ya app me dekh lijiye. Hum phone par koi detail nahi mangte.",SAFE,hinglish,,v2_hinglish_safe_real_bank_call_32,synthetic
+"Namaste, HDFC Bank se bol rahe hain. Aapke home loan ki EMI date change karni ho to branch aa jaiye ya app me dekh lijiye. Hum phone par koi detail nahi mangte.",SAFE,hinglish,,v2_hinglish_safe_real_bank_call_32,synthetic
+"Namaste, ICICI Bank se bol rahe hain. Aapke home loan ki EMI date change karni ho to branch aa jaiye ya app me dekh lijiye. Hum phone par koi detail nahi mangte.",SAFE,hinglish,,v2_hinglish_safe_real_bank_call_32,synthetic
+namaste icici bank se bol rahe hain aapke home loan ki emi date change karni ho to branch aa jaiye ya app me dekh lijiye hum phone par koi detail nahi mangte,SAFE,hinglish,,v2_hinglish_safe_real_bank_call_32,synthetic
+"Team, project ki deadline Monday tak extend ho gayi he. Updates group me daal dena.",SAFE,hinglish,,v2_hinglish_safe_work_49,synthetic
+"Boss ne bola he report aaj shaam tak chahiye, tum draft bhej dena, main review kar leta hu",SAFE,hinglish,,v2_hinglish_safe_work_50,synthetic
+boss ne bola he report aaj shaam tak chahiye tum draft bhej dena main review kar leta hu,SAFE,hinglish,,v2_hinglish_safe_work_50,synthetic
+"Doctor sahab ne kaha he ki report kal mil jayegi, aap lab me aake collect kar lijiye",SAFE,hinglish,,v2_hinglish_safe_other_74,synthetic
+doctor sahab ne kaha he ki report kal mil jayegi aap lab me aake collect kar lijiye,SAFE,hinglish,,v2_hinglish_safe_other_74,synthetic

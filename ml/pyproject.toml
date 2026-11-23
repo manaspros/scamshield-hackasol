@@ -18,8 +18,16 @@ dev = [
     "pytest==9.2.0",
 ]
 hf = [
+    "accelerate>=1.10",
+    "datasets>=4.0",
+    "flash-linear-attention>=0.6.0",
+    "peft>=0.18",
     "torch>=2.15.0",
     "transformers>=5.23.0",
+    "trl>=0.25",
+]
+viz = [
+    "matplotlib>=3.10",
 ]
 
 [tool.pytest.ini_options]

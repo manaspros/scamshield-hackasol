@@ -1,0 +1,65 @@
+# Candidate on-device models and the systems the benchmark runs.
+#
+# models.<key>.device: published on-device numbers from the model card (NOT measured by us). They feed the
+# "estimated phone latency" column only; every such number is labelled as an estimate in docs/benchmark.md.
+# Replace with our own measurements once the on-device benchmark (Phase 4) exists.
+#   ref:      device and backend the numbers come from
+#   prefill / decode: tokens per second
+#   ram_mb:   peak memory reported on the card
+#   file_mb:  size of the on-device file
+models:
+  gemma3-270m:
+    name: Gemma 3 270M
+    hf_id: google/gemma-3-270m-it
+    licence: Gemma terms
+    device: {ref: "card does not publish phone numbers", file_mb: 318, format: ".task / .litertlm (q8)",
+             source: "https://huggingface.co/litert-community/gemma-3-270m-it"}
+  gemma3-1b:
+    name: Gemma 3 1B (shipped)
+    hf_id: google/gemma-3-1b-it
+    licence: Gemma terms
+    device: {ref: "Galaxy S24 Ultra, CPU", prefill: 322, decode: 47, ram_mb: 1100, file_mb: 529,
+             format: ".task / .litertlm (int4 QAT)", source: "https://huggingface.co/litert-community/Gemma3-1B-IT"}
+  qwen3.5-0.8b:
+    name: Qwen3.5 0.8B
+    hf_id: Qwen/Qwen3.5-0.8B
+    licence: Apache-2.0
+    # Hybrid model: 18 of 24 layers are linear attention (in_proj_qkv/in_proj_z/out_proj), 6 are full attention.
+    lora_targets: [q_proj, k_proj, v_proj, o_proj, in_proj_qkv, in_proj_z, out_proj, gate_proj, up_proj, down_proj]
+    device: {ref: "Galaxy S25 Ultra, CPU", prefill: 146, decode: 46, ram_mb: 1300, file_mb: 487,
+             format: ".litertlm (mixed48)", source: "https://huggingface.co/litert-community/Qwen3.5-0.8B"}
+  qwen3-0.6b:
+    name: Qwen3 0.6B
+    hf_id: Qwen/Qwen3-0.6B
+    licence: Apache-2.0
+    device: {ref: "no published LiteRT-LM numbers", format: "export via litert-torch export_hf"}
+  gemma4-e2b:
+    name: Gemma 4 E2B
+    hf_id: google/gemma-4-E2B-it
+    licence: Apache-2.0
+    # Loads with vision/audio towers; a regex keeps LoRA on the language model only.
+    lora_targets: '.*language_model.*\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)'
+    device: {ref: "Galaxy S26 Ultra, CPU", prefill: 557, decode: 47, ram_mb: 1733, file_mb: 2580,
+             format: ".litertlm", source: "https://developers.google.com/edge/litert-lm/models/gemma-4"}
+
+# A system = model + prompt (fewshot = shipped GemmaPrompt, short = SHORT_HEADER) + template
+# (raw = text fed as-is like GemmaClassifier.kt; chat = the tokenizer's chat template) + optional LoRA adapter.
+systems:
+  gemma3-1b/fewshot/raw:     {model: gemma3-1b, prompt: fewshot, template: raw, baseline: true}
+  gemma3-1b/fewshot/chat:    {model: gemma3-1b, prompt: fewshot, template: chat}
+  gemma3-270m/fewshot/raw:   {model: gemma3-270m, prompt: fewshot, template: raw}
+  gemma3-270m/fewshot/chat:  {model: gemma3-270m, prompt: fewshot, template: chat}
+  qwen3.5-0.8b/fewshot/raw:  {model: qwen3.5-0.8b, prompt: fewshot, template: raw}
+  qwen3.5-0.8b/fewshot/chat: {model: qwen3.5-0.8b, prompt: fewshot, template: chat}
+  qwen3-0.6b/fewshot/chat:   {model: qwen3-0.6b, prompt: fewshot, template: chat}
+  gemma4-e2b/fewshot/raw:    {model: gemma4-e2b, prompt: fewshot, template: raw}
+  gemma4-e2b/fewshot/chat:   {model: gemma4-e2b, prompt: fewshot, template: chat}
+  # Fine-tuned (LoRA, ml/configs/lora/<model>.yaml). Trained on both prompts, so both are scored.
+  gemma3-270m+ft/fewshot/raw:  {model: gemma3-270m, prompt: fewshot, template: raw, adapter: out/lora/gemma3-270m}
+  gemma3-270m+ft/short/raw:    {model: gemma3-270m, prompt: short, template: raw, adapter: out/lora/gemma3-270m}
+  gemma3-1b+ft/fewshot/raw:    {model: gemma3-1b, prompt: fewshot, template: raw, adapter: out/lora/gemma3-1b}
+  gemma3-1b+ft/short/raw:      {model: gemma3-1b, prompt: short, template: raw, adapter: out/lora/gemma3-1b}
+  qwen3.5-0.8b+ft/fewshot/raw: {model: qwen3.5-0.8b, prompt: fewshot, template: raw, adapter: out/lora/qwen3.5-0.8b}
+  qwen3.5-0.8b+ft/short/raw:   {model: qwen3.5-0.8b, prompt: short, template: raw, adapter: out/lora/qwen3.5-0.8b}
+  gemma4-e2b+ft/fewshot/raw:   {model: gemma4-e2b, prompt: fewshot, template: raw, adapter: out/lora/gemma4-e2b}
+  gemma4-e2b+ft/short/raw:     {model: gemma4-e2b, prompt: short, template: raw, adapter: out/lora/gemma4-e2b}

@@ -1,0 +1,1327 @@
+{
+ "lang": "en",
+ "scam": {
+  "OTP": [
+   {
+    "text": "madam I am from {bank} fraud team only, a transaction of {amount} is pending, you will get one code on your phone, please read it out to me so I can stop it",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "sir don't cut the call, the six digit number that just came on your mobile, tell me that number fast otherwise your account will be blocked",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "ji actually your card is getting upgraded, I need the OTP which is coming now, please say it slowly",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Dear customer, to cancel the debit of Rs {amount} reply to this message with the OTP you receive. Do it within 5 mins.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "URGENT: Your {bank} account will be suspended today. Send the OTP received on your number to {phone} to keep it active.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Sir I am sending money for your sofa from OLX, you will get an OTP, please share that code so that the payment reaches you",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "this is {company} refund team, to credit your refund of {amount} please tell the OTP and also your card PIN",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "sir for verification I need your ATM PIN and the CVV on back of the card, madam you are not cooperating, your account will freeze",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "your gas subsidy {amount} is stuck sir, one OTP has come on your phone, give me that and money will come in your account now",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Redeem your {bank} reward points worth Rs {amount} TODAY. Reply with the OTP you get on your phone to claim.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "I am from the SIM company madam, to continue your number please share the OTP sent to you, takes only one minute",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "hi bro, my code came to your number by mistake, pls forward the 6 digit code you got just now, very urgent",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "good afternoon sir I am calling from {bank} customer care, there was some unusual activity on your card",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "{bank}: Unusual login detected on your netbanking account. Your account may be at risk.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "Hello sir, we noticed a problem with your card verification, may I know a good time to talk?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam your debit card is due for renewal, can I confirm your full name and date of birth first",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "A security check is pending on your account. Our executive will contact you shortly.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "sir your reward points are about to expire, madam I will explain the redemption, are you free right now",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   }
+  ],
+  "KYC": [
+   {
+    "text": "sir your {bank} account will be blocked today at 5 pm if KYC is not updated, I will send you a link, open it and enter your card number and OTP",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Dear customer your {bank} KYC has EXPIRED. Update immediately at {domain} else account will be blocked within 24 hrs",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "PAN card update pending! Click {domain} and enter your netbanking ID and password to avoid penalty",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Dear sir please install {app} from the file I am sending, it is for KYC verification, then enter your debit card details",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam Aadhaar KYC for your wallet is expired, give me the OTP that comes for e-KYC and I will complete it from my side",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "I am bank manager speaking, we are closing inactive accounts, to retain yours transfer {amount} as minimum balance verification to this UPI id {upi}",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Your {app} wallet KYC expires tonight. Complete full KYC now at {domain}, enter Aadhaar and OTP",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir see you have to download the QuickSupport application so I can do your video KYC remotely, please install it now",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Your SIM KYC is incomplete, number will be deactivated in 2 hours. Share your Aadhaar number and OTP here to continue",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "{bank} NET BANKING: YOUR ACCOUNT IS LOCKED DUE TO KYC. LOGIN AT {domain} WITH CUSTOMER ID AND PIN TO UNLOCK",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "ji your mobile connection KYC has expired, press 1 and then enter your Aadhaar number and the OTP",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Sir this is {name} from {bank} head office. Send photo of your PAN card, Aadhaar and your ATM PIN for re-KYC, very urgent",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "hello madam, regarding your {bank} account, some documents are missing in our records, I will tell you in detail",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Dear customer, as per RBI guidelines your account KYC is due. Kindly update at the earliest.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "Hi, your wallet KYC validity is about to end. Visit the app to know more.",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir we are doing a re-verification drive for all account holders, may I confirm your name and address please",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "{bank}: Your PAN is not linked with your account. Contact our executive to avoid inconvenience.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "Sir your Aadhaar seems not linked to your mobile number, our team will guide you, reply YES if you want help",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   }
+  ],
+  "DIGITAL_ARREST": [
+   {
+    "text": "this is Inspector {name} from {city} cyber crime branch, a money laundering case is registered on your Aadhaar, you must stay on this video call and not disconnect",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "sir ED has seized a bank account opened in your name, to prove you are innocent you need to transfer {amount} to the RBI safe account for verification, it will be refunded",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "madam TRAI is calling, your mobile number will be disconnected in two hours because of 17 complaints, press 9 to connect to the police officer",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "you have been found with MDMA sent in a parcel under your name, narcotics bureau will arrest you, do not tell anyone in family or you will be treated as accomplice",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "NOTICE from Supreme Court of India: arrest warrant issued against your name. Pay {amount} settlement within 1 hour to avoid arrest. Do not discuss with anyone",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir switch on your camera, I am verifying your identity as per the court order, you are under investigation and cannot leave the room or hang up till my officer clears you",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "your Aadhaar number has been used for human trafficking, officer {name} will take your statement now, keep your phone on and do not talk to anyone else, sir this is a confidential case",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "I am DCP {name} from {city} police, we are tracking a hawala racket, your account is the main suspect, deposit {amount} as bail guarantee in the account I give you",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Cyber police {city}: Your WhatsApp number is linked to obscene calls. Join video call now on {domain} to give statement or FIR will be filed tonight",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir your SIM card was used for threatening a minister, we will arrest you within the hour unless you cooperate and transfer your savings to the secure government account for audit",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "ji I am a Sub Inspector, the case file is ready, only way to close it is you stay on Skype with me, show your bank balance and pay the verification amount",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "FINAL WARNING from ED: Your accounts will be frozen & you will be arrested. Send {amount} to {upi} now to get a clearance certificate",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir this is {city} police station, a case has been registered with your Aadhaar number, an officer will call you for the details",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "TRAI NOTICE: Your mobile number has been reported for illegal activity and may be disconnected.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "Namaste, I am from the narcotics control office, a parcel booked using your documents was intercepted, we need to know if you sent it",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam there is a complaint against you in the cyber cell, I cannot say more on phone, are you at home right now",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Legal notice: A case under the money laundering act has been filed in your name. Reference no {track}.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "sir your name has come up in an enquiry, it is just an enquiry for now, I will connect you to the senior officer",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   }
+  ],
+  "COURIER_CUSTOMS": [
+   {
+    "text": "madam your parcel from Dubai is held at {city} customs because of undeclared gold, pay {amount} clearance fee on this UPI {upi} to release it",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "{company} COURIER: Package {track} on hold, address incomplete. Update address and pay Rs {amount} redelivery fee at {domain} today",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir this is {company} courier, a parcel in your name has passports and many ATM cards, stay on the line and I will transfer you to the narcotics officer, do not hang up",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Your parcel {track} is stuck at warehouse. Pay Rs {amount} customs duty now using {upi} or it will be returned and a case filed",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam I am calling about a gift parcel from your friend in UK, it has jewellery and foreign currency, you have to pay import tax {amount} through UPI before we deliver",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "India Post: Your parcel could not be delivered. Download {app} apk to reschedule delivery and enter card details for the Rs 2 fee",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir the parcel you sent to Malaysia contains fake passports, we will connect you to cyber crime, and for now give me your Aadhaar number and bank details to verify",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Dear customer your {company} shipment is blocked at customs. Send Rs {amount} via {upi}, share screenshot to release. Tracking {track}",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir your courier is in the customs godown, one time security deposit of {amount} has to be paid today, I will send you our officer's account number on WhatsApp",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "PARCEL ALERT {track}: delivery failed 3 times. Pay Rs {amount} storage charges at {domain} within 12 hrs else returned to sender",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "hello sir, from {company} international desk, a box in your name has been scanned and found with banned items, pay penalty {amount} immediately to avoid jail",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Hello this is from the courier office. Install the tracking app {app} from this file to see your parcel, and key in your UPI PIN to confirm address",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir you have a parcel from abroad waiting at the customs office, did you order anything from outside India",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Your package {track} is held for verification. Our team will contact you.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "Hi, courier from {company} here, one parcel in your name came back from {city}, are you available to confirm some details?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "{company}: We tried to deliver but address not found. Please reply with your full address.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam there is some problem with the parcel booked in your name, customs department will call you in some time",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Customs notice: A consignment with your KYC documents is being inspected, ref {track}.",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   }
+  ],
+  "FAKE_QR": [
+   {
+    "text": "sir I will send you a QR code, you just scan it and enter your UPI PIN, the {amount} will be received in your account",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Sir I have sent advance for your bike. Scan this QR with {app} and put your PIN to accept the money, that's how it works",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Congrats! You have won cashback of Rs {amount}. Scan the attached QR code and enter your UPI PIN to claim",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "madam for the refund you have to scan the barcode I am sharing on WhatsApp and press approve, then enter six digit PIN, money comes instantly",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Rent advance sent. Just scan this QR & enter PIN to receive, my CA told me this is how it works pls hurry",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "ji the delivery charge is only {amount}, scan this QR which I have messaged you and pay through UPI to confirm the order",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Your {bank} reward: scan QR below to receive Rs {amount} in account. Enter UPI PIN to authorise credit. Offer valid today",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir to get your insurance claim credited, open the app, tap scan, scan the QR I am sending, and approve the request that comes",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Your electricity refund is ready. Scan this QR code and approve the collect request of Rs {amount} using your PIN",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam the QR code on the sticker is our new one, scan that and enter amount {amount} and PIN, it is for registering your gas booking",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Bro payment sent, just scan this QR and enter your PIN to receive. Fast, I have to go",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Free recharge of Rs {amount} for loyal customers! Scan QR, enter UPI PIN to activate. Hurry limited slots",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Hello sir I want to buy your item, I will pay through a QR code, is that ok?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "You have received a payment request. Check your {app} app to view the details.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "sir I am sending you the refund, I will share a code on WhatsApp, please keep your payment app open",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Hi, got your ad. I'll pay advance by UPI, can you tell me when you are free?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Cashback of Rs {amount} is waiting for you. Open the picture for details.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam we have a new payment method for your bookings, our executive will come to explain QR scanning",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   }
+  ],
+  "LOAN_APP": [
+   {
+    "text": "sir you are pre-approved for a personal loan of five lakh, no documents, just pay {amount} processing fee on this UPI and money will come in 10 minutes",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Instant loan Rs 50,000 in 5 mins! Download {app} apk now, allow access to contacts and gallery. No CIBIL needed",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Your loan is sanctioned. To disburse, pay insurance charges Rs {amount} to {upi}. Pay in 30 mins else cancelled",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "madam your loan repayment is overdue and I am calling from the recovery team, if you don't pay {amount} today we will send your morphed photos to all your contacts",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "{name}, pay the loan of Rs {amount} today or we will message your family and office that you are a fraud. Last warning",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir you took loan from our app, interest is high now, pay {amount} immediately, I have your contact list and I will call everyone in it",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Congrats, loan approved Rs 2,00,000 at 0% interest. Install {app} and upload Aadhaar, PAN and a selfie holding your ID. Pay Rs {amount} file charge",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir for the loan to be released you must transfer {amount} as GST first, the amount will be adjusted in your first EMI",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "URGENT LOAN OFFER: Get Rs 1 lakh without paperwork. Send OTP received to confirm and pay refundable deposit Rs {amount}",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam I am from the bank loan department, your CIBIL score is low so you have to deposit {amount} as security in our agent account, then loan is guaranteed",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "your loan EMI is pending. Pay Rs {amount} at {upi} NOW or legal action and your photos will be circulated",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Loan pre-approved! Install {app}, grant camera and SMS permission, and pay Rs {amount} verification fee to get funds",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir do you need urgent money, we give loans without much paperwork, shall I explain",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "You are eligible for a pre-approved loan up to Rs 3,00,000. Reply YES to know more.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "Hello, low interest loan available for you, interested? Our agent will explain the process",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam you have a pending payment on a loan app, I am calling to inform you",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Need cash? Get instant loan with minimal documents. Call back for details.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "Hi sir your loan application is under review, please wait for our executive's call",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   }
+  ],
+  "INVESTMENT": [
+   {
+    "text": "sir our SEBI registered analyst gives guaranteed 30 percent returns every month, deposit {amount} in this trading account today and you will see profit by evening",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Welcome to VIP stock group! Today's tip: buy now, 100% sure profit. Invest min Rs {amount} through the {app} app, link {domain}",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Hi, I am {name}, I made 4 lakh last week in crypto with this platform. Join, deposit {amount} in the wallet {upi} and I will guide you",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam IPO allotment is certain with our institutional quota, transfer {amount} today to apply, it is a limited slot",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "DOUBLE your money in 15 days! Invest Rs {amount} in our crypto scheme, withdraw anytime. Register at {domain}",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir your trading account shows a profit of three lakh, to withdraw you need to pay twenty percent tax first, send {amount} to our company account",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Task done, profit credited. To unlock your withdrawal pay Rs {amount} as service fee. Deposit now, only 2 hours left",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "I am calling from {company} wealth management, we have a private pre-IPO deal, only for selected clients, please transfer {amount} by evening to block your shares",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Gold scheme: Invest Rs {amount} per month, get 3x in 6 months guaranteed. Pay to {upi} to enrol today",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Join our WhatsApp trading class by a famous mentor, free for 3 days. Then deposit Rs {amount} in {app} to start copy trading",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "ji real estate plot at {city}, price will double next month, give me booking amount {amount} on UPI today only, I will WhatsApp the papers later",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Forex robot gives 5% daily! Send Rs {amount} to start. Withdraw profit every day. Apply {domain}",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir do you invest in stocks, I have a very good scheme with high returns, can I tell you about it",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Hello, I got your number from a finance group, want to learn how to earn daily income from the market?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Earn up to 20% monthly returns. Exclusive scheme for select clients. Call for info.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam I am from an investment firm, we have an opportunity that is giving returns better than bank FD, may I take two minutes",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Hi, our mentor is conducting a free webinar on crypto profits, interested?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Your friend {name} referred you to our wealth club. Limited seats.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   }
+  ],
+  "JOB": [
+   {
+    "text": "Hi {name}, part-time job: like YouTube videos and earn Rs 500 per task. First deposit Rs {amount} to activate your account, refundable with commission",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir your resume is selected in {company}, to confirm the joining you have to pay registration fee of {amount} to this account, it will be refunded in first salary",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "WORK FROM HOME. Earn Rs 5000 daily. Pay Rs {amount} for the starter kit via {upi} and start tonight",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Dear candidate, you are selected for airline ground staff. Pay Rs {amount} for uniform and ID card at {upi} to confirm",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "madam this is HR of {company}, interview is done online, you need to pay security deposit of {amount} for laptop and send your Aadhaar and bank passbook photo",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Task 3 of 5 done! To receive commission you must recharge Rs {amount} into the merchant account. Pay now to continue and avoid losing the earnings",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir for the data entry job first you have to buy the software license for {amount}, I will send you the account number, work will start after payment",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Online shopping reviewer needed! Earn Rs 200 per review. Deposit Rs {amount} first to be listed. Join {domain}",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "ji we have a job for you in Dubai, visa is ready, send {amount} as medical and visa fee today else the slot will go to another candidate",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Congrats you cleared the hotel rating job. Send the OTP you just got to verify your account and then pay Rs {amount} to start tasks",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "{company} hiring typists. No exam. Pay Rs {amount} refundable training fee to {upi}. Hurry last 5 seats",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir I am from placement agency, your offer letter is ready, I only need {amount} for the police verification and the letter will be mailed to you",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Hi, we found your profile online. You have been shortlisted for a part-time role, can I explain the details?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam we have vacancies for work from home, you can earn good money in spare time, are you interested?",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Job opportunity: Earn Rs 30,000 per month from home. Reply for details.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "Hello {name}, I am a recruiter from {company}. Your CV matches a role. Would you like to know the salary?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir I got your number from a job portal, there is an opening in our firm, are you looking for a change",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Part time earning opportunity. Daily payment. Message us to know how.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   }
+  ],
+  "MISTAKEN_TRANSFER": [
+   {
+    "text": "hello sir sorry to disturb, I sent {amount} to your number by mistake, please send it back to this other number right now, I am in big trouble",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Sir I accidentally sent Rs {amount} to your account. Please return it at {upi}, it is for hospital, very urgent",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam you have received {amount} in your account na, that is my money, I am going to complain to the police if you don't return it now",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Hi, it was my money, wrong UPI. Please refund Rs {amount} asap, I'm sending you my account number. Don't ignore",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Dear user, Rs {amount} was credited to your account by mistake. Kindly return to {upi} immediately or legal action will be taken",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "I am calling from {bank} recovery, an amount of {amount} was wrongly credited to your account, you must transfer it back to this account number now",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Sir please don't block me. My son sent money to wrong number, it's yours. Please give back, send to this UPI {upi}. God bless you",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir I have sent you the money for the mobile, but sent extra by mistake, accept the collect request and send back the extra {amount}",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "I just sent you Rs {amount} wrongly. Please approve the request I am sending to return it, enter your PIN there",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "ji actually {name} here, from the shop nearby, I did a wrong transfer to you of {amount}, please give me back by UPI, my number is {phone}",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "ALERT: Rs {amount} credited wrongly to your A/c. Refund within 2 hrs to {upi} to avoid FIR",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Hi I am a student, paid my fees to wrong number. It's yours. Pls pay back {amount}, if not I will tell my father to file a complaint",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "hello sir, did you receive some payment on your phone just now? I think I sent to the wrong number",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Hi, I might have sent a payment to you by mistake. Can you check your account?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Notice: A transaction to your account is under review due to a possible wrong credit.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam please check your messages, some money may have come in by mistake, I will call back",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Sorry sir wrong number? I was trying to pay someone, can you tell me your name?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "{bank}: A wrongly credited amount has been noticed. Our officer will contact you.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   }
+  ],
+  "OTHER": [
+   {
+    "text": "sir your electricity will be disconnected tonight at 9:30 because last bill not updated, pay {amount} to our officer on UPI {upi} immediately",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Dear consumer, power will be cut tonight 9.30 pm due to unpaid bill. Pay Rs {amount} at {upi} and send the screenshot to {phone}",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "congratulations madam you have won twenty five lakh in the KBC lucky draw, to receive the prize you must pay {amount} as tax and share your bank account number",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "KBC LOTTERY WINNER! Rs 25,00,000. Contact {name} and deposit Rs {amount} processing fee to {upi}. Do not tell anyone",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "hello sir this is {company} customer care, I am helping you with your refund, please download AnyDesk and tell me the nine digit code",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "I have your private video. Pay Rs {amount} to {upi} within 2 hours or I will send it to all your contacts and post it on social media",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "hello beta, this is your cousin, I had an accident and lost my phone, this is a new number, send {amount} urgently to this UPI and don't tell mummy",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Papa this is my new number, I am in trouble, my card is blocked, please send Rs {amount} to my friend's UPI {upi} right now, will explain later",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam your insurance policy has matured, bonus is ready, pay GST of {amount} in this account first to release it",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Your SIM will be blocked in 24 hours. For 5G upgrade, reply with the OTP received and the last 6 digits of your SIM card number",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir your FASTag is blocked, to reactivate please install the app {app} from the link I am sending and enter your card details and OTP",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Dear customer, your income tax refund of Rs {amount} is approved. Submit card details & OTP at {domain} to receive credit today",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir I am calling from the electricity board, there is a problem in your connection, please keep your last bill handy",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Dear customer, your power connection is under review for non-payment. Please contact the office.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "Hello! You have been selected in a lucky draw for a gift. Reply to know more",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam this is customer care, we received a complaint from your number, I would like to verify your account",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Hi sir, new number, it's {name}. Save it. Are you free for a minute?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Your insurance policy bonus is pending collection. Call back to know details.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   }
+  ]
+ },
+ "safe": [
+  {
+   "text": "{otp} is your OTP for transaction of Rs {amount} at {company}. Do not share it with anyone, including bank staff. -{bank}",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Rs {amount} debited from A/c XX1234 on 12-Nov via UPI to {name}. If not you, call the number on the back of your card. -{bank}",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Rs {amount} credited to your A/c XX1234 by {name}. Available balance updated. -{bank}",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Dear customer, {bank} never asks for your OTP, PIN, CVV or password on call, SMS or WhatsApp. Stay alert.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Your {bank} credit card statement for this month is generated. Total due Rs {amount}, pay by due date via the {bank} mobile app.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "{otp} is the OTP to login to {bank} netbanking. Valid for 10 minutes. Never share this with anyone.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Alert: Card ending 4321 used for Rs {amount} at {company}. Not you? Block the card from the {bank} app or visit your nearest branch.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Your OTP for adding a new payee is {otp}. {bank} will never call you to ask for this code. Do not share.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Your fixed deposit of Rs {amount} has been renewed successfully for 12 months. -{bank}",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "ATM withdrawal of Rs {amount} from your account at {city} done. Check balance in the app. -{bank}",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Your {bank} account KYC is complete. No further action is needed. Thank you for banking with us.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Beware of fake calls. {bank} staff will never ask you to install any app like AnyDesk or share your screen.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Your order {track} is out for delivery today. Our delivery partner {name} will call you on arrival.",
+   "category": "delivery",
+   "channel": "sms"
+  },
+  {
+   "text": "Sir I am downstairs with your parcel, please tell me the delivery OTP that came on your phone from {company}",
+   "category": "delivery",
+   "channel": "call"
+  },
+  {
+   "text": "Your package {track} has been delivered and left with the security guard. Rate your experience in the {company} app.",
+   "category": "delivery",
+   "channel": "sms"
+  },
+  {
+   "text": "Delivery OTP {otp} for order {track}. Share only with the delivery executive at your door. -{company}",
+   "category": "delivery",
+   "channel": "sms"
+  },
+  {
+   "text": "Sir your parcel is in the {city} hub, delivery expected day after tomorrow. Please keep your phone reachable",
+   "category": "delivery",
+   "channel": "call"
+  },
+  {
+   "text": "Hi, this is the delivery person, I could not find your flat, can you share the landmark?",
+   "category": "delivery",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Order {track} placed successfully. Track in the app. Cash on delivery amount Rs {amount} to be paid at the door.",
+   "category": "delivery",
+   "channel": "sms"
+  },
+  {
+   "text": "Your return pickup for order {track} is scheduled tomorrow. Please keep the item packed with the original tag.",
+   "category": "delivery",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Dear consumer, your electricity bill of Rs {amount} for October is generated. Due date 20th. Pay through the official app or the nearest office.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Your postpaid mobile bill of Rs {amount} is ready. Pay by the due date using the {app} app or at the company store.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Reminder: gas cylinder booking is due. You can book through the official app or by dialling the number printed on your passbook.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Water tax of Rs {amount} for your property is pending. Pay at the municipal office or official portal. Last date 30th.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Your broadband bill is due in 3 days. Auto pay is enabled so no action is needed.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Hello sir calling from the electricity office, the meter reader will come tomorrow morning, please keep the meter room open",
+   "category": "bill",
+   "channel": "call"
+  },
+  {
+   "text": "Dear customer your DTH recharge expires on Friday. Recharge using your usual app or from any shop.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Society maintenance for this quarter is Rs {amount}. Please pay at the society office or by the usual transfer to the society account. -Secretary",
+   "category": "bill",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Good morning sir, I am calling from {bank} branch, your cheque book is ready, you can collect it from the branch any working day with your ID",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Madam this is {bank}, we are calling to inform that your locker rent is due, you can pay at the branch whenever you visit, no hurry",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Hello sir from {bank} branch {city}, your passbook is ready for update, please come to the branch when you are free",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Sir this is {bank} service call, your debit card has been dispatched to your registered address and will reach in five working days, nothing is needed from you",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Namaste madam, branch manager here, you had asked about a home loan, you are welcome to visit the branch with your documents and we will explain, please do not share anything on phone",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Good evening, {bank} customer feedback call, how was your experience at the branch today, you can rate from one to five",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Sir your fixed deposit is maturing next week, please visit the branch if you wish to renew or withdraw, we will not ask any details on call",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Hello madam, {bank} here, we have received your request to change address, please visit the branch with the proof, the staff will help you there",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Beta please get some atta, dal and vegetables on your way home, I will give you the money when you come",
+   "category": "family",
+   "channel": "call"
+  },
+  {
+   "text": "Beta, can you send Rs {amount} for the vegetable vendor, I forgot my purse at home. No hurry, give it back tonight",
+   "category": "family",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Did you reach home safely? Call me when you are free.",
+   "category": "family",
+   "channel": "call"
+  },
+  {
+   "text": "Papa, my cousin's wedding is on Sunday in {city}. Should I book the train tickets tonight?",
+   "category": "family",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Dadi wants to talk to you after dinner, please keep the phone nearby",
+   "category": "family",
+   "channel": "call"
+  },
+  {
+   "text": "Happy birthday bhaiya! Many happy returns of the day. When is the party?",
+   "category": "family",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Arre listen, the gas man is coming at 4, I am at the temple, can you stay at home",
+   "category": "family",
+   "channel": "call"
+  },
+  {
+   "text": "Madam the school parent meeting is on Friday at 10, do come with Rahul's report card",
+   "category": "family",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "I have sent Rs {amount} to your account for your fees, check once it reaches and tell me",
+   "category": "family",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Aunty has made your favourite kheer, come over in the evening with the kids",
+   "category": "family",
+   "channel": "call"
+  },
+  {
+   "text": "Team, the meeting is shifted to 3 pm today. Please join using the usual link from the calendar invite.",
+   "category": "work",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Sir your salary for this month has been credited, please check your payslip on the HR portal.",
+   "category": "work",
+   "channel": "sms"
+  },
+  {
+   "text": "Hi {name}, please send the invoice for last month by Friday so that accounts can process the payment",
+   "category": "work",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Good morning ma'am, I am from {company}, calling to confirm your interview slot tomorrow at 11 at our {city} office, please carry your resume and ID",
+   "category": "work",
+   "channel": "call"
+  },
+  {
+   "text": "Reminder: submit your timesheet before end of day. -HR",
+   "category": "work",
+   "channel": "sms"
+  },
+  {
+   "text": "Sir the client wants a call tomorrow at ten about the delivery schedule, shall I set it up",
+   "category": "work",
+   "channel": "call"
+  },
+  {
+   "text": "Your leave application for 5th to 7th has been approved by your manager.",
+   "category": "work",
+   "channel": "sms"
+  },
+  {
+   "text": "Boss, I will be late today, bus is stuck in traffic. Will reach by 10:30",
+   "category": "work",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Received Rs {amount} from {name} on {app}. Transaction successful.",
+   "category": "merchant",
+   "channel": "sms"
+  },
+  {
+   "text": "Thank you for shopping at {company}. Your bill of Rs {amount} is paid. Visit again!",
+   "category": "merchant",
+   "channel": "sms"
+  },
+  {
+   "text": "Cashback of Rs {amount} has been credited to your {app} wallet for your last recharge.",
+   "category": "merchant",
+   "channel": "sms"
+  },
+  {
+   "text": "Sir your mobile is repaired, you can collect it from the shop, the bill will be Rs {amount}, pay when you come",
+   "category": "merchant",
+   "channel": "call"
+  },
+  {
+   "text": "Madam your blouse stitching is ready, you can pick up anytime tomorrow",
+   "category": "merchant",
+   "channel": "call"
+  },
+  {
+   "text": "Payment of Rs {amount} to {company} successful via {app}. UPI Ref no {track}.",
+   "category": "merchant",
+   "channel": "sms"
+  },
+  {
+   "text": "Your table for four at {company} is booked for 8 pm tonight. Reply CANCEL if you cannot come.",
+   "category": "merchant",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Sir the vegetable vendor here, today tomatoes are fresh, should I keep one kilo for you",
+   "category": "merchant",
+   "channel": "call"
+  },
+  {
+   "text": "Under the PM Kisan scheme, eligible farmers receive support in their accounts. Check your status on the official portal or at your nearest Common Service Centre.",
+   "category": "government",
+   "channel": "sms"
+  },
+  {
+   "text": "Your ration card has been renewed. Collect the new card from the taluka office with your old card and Aadhaar. No fee is charged.",
+   "category": "government",
+   "channel": "sms"
+  },
+  {
+   "text": "The pension camp will be held at the panchayat office on Monday from 10 to 4. Bring your Aadhaar and bank passbook. No money is taken.",
+   "category": "government",
+   "channel": "call"
+  },
+  {
+   "text": "To update the address in your Aadhaar, visit the official UIDAI portal or an Aadhaar centre. Beware of agents who ask for extra fees.",
+   "category": "government",
+   "channel": "sms"
+  },
+  {
+   "text": "Last date for filing income tax return is 31st July. File on the official income tax portal. Do not click on unknown links asking for refunds.",
+   "category": "government",
+   "channel": "sms"
+  },
+  {
+   "text": "Voter list revision: check your name on the Election Commission website or contact your booth level officer.",
+   "category": "government",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Beware, someone called me pretending to be police and said my Aadhaar is used in a crime. I cut the call. Do not believe such calls.",
+   "category": "user_about_scam",
+   "channel": "call"
+  },
+  {
+   "text": "Ramesh uncle lost 40 thousand because he shared an OTP with a fake bank caller. Never tell anyone your OTP.",
+   "category": "user_about_scam",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Beta did you hear about the digital arrest fraud? They keep you on video call and ask for money. If anyone calls like that, just hang up and tell me.",
+   "category": "user_about_scam",
+   "channel": "call"
+  },
+  {
+   "text": "Got a message saying I won a lottery in KBC. I know it is a scam, I did not reply, I reported it on the cyber crime portal.",
+   "category": "user_about_scam",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Madam, I want to complain, a person called saying my KYC will expire and asked for an OTP. I did not give it. What should I do?",
+   "category": "user_about_scam",
+   "channel": "call"
+  },
+  {
+   "text": "Group warning: fake loan app people are sending threats. Don't install any apk that comes on WhatsApp. Forward to everyone.",
+   "category": "user_about_scam",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "The weather is nice today, shall we go for a walk in the park in the evening?",
+   "category": "other",
+   "channel": "call"
+  },
+  {
+   "text": "Doctor's clinic: your appointment with Dr {name} is confirmed tomorrow at 5 pm. Please come ten minutes early.",
+   "category": "other",
+   "channel": "sms"
+  },
+  {
+   "text": "Your train ticket PNR {track} is confirmed. Coach S4, berth 23. Have a safe journey.",
+   "category": "other",
+   "channel": "sms"
+  },
+  {
+   "text": "Hello, I am calling from the school office, tomorrow is a holiday due to the festival, classes resume on Monday.",
+   "category": "other",
+   "channel": "call"
+  },
+  {
+   "text": "The plumber will come at 11 tomorrow to fix the leak. Please keep the kitchen free.",
+   "category": "other",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Your library book is due on Saturday. Please return or renew it at the counter.",
+   "category": "other",
+   "channel": "sms"
+  }
+ ]
+}

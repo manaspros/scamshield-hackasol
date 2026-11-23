@@ -62,3 +62,7 @@ __pycache__/
 .pytest_cache/
 android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
 android/.gradle/
+
+# ML benchmark artefacts (model cache, checkpoints, converted models)
+ml/.cache/
+ml/out/

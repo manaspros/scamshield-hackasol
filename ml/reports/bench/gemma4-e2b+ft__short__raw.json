@@ -1,0 +1,109 @@
+{
+  "system": "gemma4-e2b+ft/short/raw",
+  "model": "gemma4-e2b",
+  "prompt": "short",
+  "template": "raw",
+  "adapter": "out/lora/gemma4-e2b",
+  "hf_id": "google/gemma-4-E2B-it",
+  "licence": "Apache-2.0",
+  "rows": 325,
+  "binary": {
+    "overall": {
+      "precision": 0.9727272727272728,
+      "recall": 0.9861751152073732,
+      "fpr": 0.05555555555555555,
+      "macro_f1": 0.9176739370624538,
+      "counts": {
+        "n": 325,
+        "tp": 214,
+        "fp": 6,
+        "fn": 3,
+        "tn": 102
+      },
+      "unparsed": 0
+    },
+    "per_language": {
+      "en": {
+        "precision": 0.9629629629629629,
+        "recall": 1.0,
+        "fpr": 0.08571428571428572,
+        "macro_f1": 0.8871042992095625,
+        "counts": {
+          "n": 113,
+          "tp": 78,
+          "fp": 3,
+          "fn": 0,
+          "tn": 32
+        },
+        "unparsed": 0
+      },
+      "hi": {
+        "precision": 0.972972972972973,
+        "recall": 0.9863013698630136,
+        "fpr": 0.05714285714285714,
+        "macro_f1": 0.9766666666666668,
+        "counts": {
+          "n": 108,
+          "tp": 72,
+          "fp": 2,
+          "fn": 1,
+          "tn": 33
+        },
+        "unparsed": 0
+      },
+      "hinglish": {
+        "precision": 0.9846153846153847,
+        "recall": 0.9696969696969697,
+        "fpr": 0.02631578947368421,
+        "macro_f1": 0.8747585747585749,
+        "counts": {
+          "n": 104,
+          "tp": 64,
+          "fp": 1,
+          "fn": 2,
+          "tn": 37
+        },
+        "unparsed": 0
+      }
+    }
+  },
+  "labels": {
+    "accuracy": 0.9692307692307692,
+    "macro_f1": 0.9616797187219722,
+    "scam_missed_rate": 0.0,
+    "confusion": {
+      "SAFE": {
+        "SAFE": 102,
+        "SCAM": 4,
+        "SUSPICIOUS": 2,
+        "UNPARSED": 0
+      },
+      "SCAM": {
+        "SAFE": 0,
+        "SCAM": 164,
+        "SUSPICIOUS": 0,
+        "UNPARSED": 0
+      },
+      "SUSPICIOUS": {
+        "SAFE": 3,
+        "SCAM": 1,
+        "SUSPICIOUS": 49,
+        "UNPARSED": 0
+      }
+    }
+  },
+  "cost": {
+    "prompt_tokens_mean": 68.3323076923077,
+    "output_tokens_mean": 28.021538461538462,
+    "eos_rate": 1.0,
+    "phone_ms_estimate": 718.8821339476445,
+    "phone_ref": "Galaxy S26 Ultra, CPU",
+    "file_mb": 2580,
+    "ram_mb": 1733,
+    "params_m": 5104,
+    "host_batch_s": 12.3,
+    "host_single_ms_median": 477,
+    "host_device": "cuda"
+  },
+  "split": "test"
+}
