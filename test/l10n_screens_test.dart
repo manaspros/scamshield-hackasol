@@ -28,7 +28,9 @@ void _fakeNative() {
   final m = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   m.setMockMethodCallHandler(const MethodChannel('scamshield/family'), (c) async => {'paired': false});
   m.setMockMethodCallHandler(const MethodChannel('scamshield/demo'), (c) async => c.method == 'demo.scenarios' ? <Object?>[] : false);
+  m.setMockMethodCallHandler(const MethodChannel('scamshield/recording'), (c) async => c.method == 'recording.status' ? {'modelReady': false} : false);
   addTearDown(() {
+    m.setMockMethodCallHandler(const MethodChannel('scamshield/recording'), null);
     m.setMockMethodCallHandler(const MethodChannel('scamshield/family'), null);
     m.setMockMethodCallHandler(const MethodChannel('scamshield/demo'), null);
   });
@@ -42,7 +44,7 @@ void main() {
     final cases = <String, (Widget Function(), String, String)>{
       'report': (() => const ReportScreen(), 'No money lost yet', 'I lost money'), // title lives in the shell bar
       'family': (() => const FamilyScreen(), 'Show my code', 'Enter family code'),
-      'recording': (_recording, 'Pick a recording', 'Open a call recording saved on this phone.'),
+      'recording': (_recording, 'First, get the speech model', 'Get speech model'), // native says: no speech model yet
       'demo': (() => const DemoLabScreen(), 'No demos yet', 'No demo stories were found in this build'),
       'lessons': (_lessons, 'Start', 'Take a quiz to find your weak spots'),
     };
@@ -54,7 +56,7 @@ void main() {
         expect(find.textContaining(e.value.$2), findsWidgets);
         expect(find.textContaining(e.value.$3), findsWidgets);
         // the demo's empty state has no chips; Learn and Report follow the top-bar language only
-        if (e.key != 'demo' && e.key != 'lessons' && e.key != 'report') expect(find.byWidgetPredicate((w) => w is ChoiceChip && w.key == const Key('lang_en') && w.selected), findsOneWidget);
+        if (e.key != 'demo' && e.key != 'lessons' && e.key != 'report' && e.key != 'recording') expect(find.byWidgetPredicate((w) => w is ChoiceChip && w.key == const Key('lang_en') && w.selected), findsOneWidget);
       });
     }
   });

@@ -8,7 +8,6 @@ import '../l10n/strings_home.dart';
 import '../l10n/strings_settings.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
-import '../widgets/a11y.dart';
 import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
 import '../widgets/island.dart';
@@ -17,7 +16,11 @@ import '../api/model_catalog.dart';
 import '../l10n/strings_profile.dart';
 import '../theme/theme_controller.dart';
 import '../widgets/premium.dart';
+import '../widgets/segmented.dart';
+import '../api/speech_models.dart';
 import 'model_picker_screen.dart';
+import 'recording_screen.dart' show RecordingApi;
+import 'speech_model_screen.dart';
 import 'page_route.dart';
 import 'setup_screen.dart';
 import '../widgets/shield_logo.dart';
@@ -67,8 +70,11 @@ const _districtKey = 'district';
 /// Settings: four short groups (appearance, protection, AI model, privacy & more). Debug options live on their
 /// own Advanced page and the scam-count export on its own page, so this screen stays simple.
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key, this.models = const ModelApi()});
+  const SettingsScreen({super.key, this.models = const ModelApi(), this.recording});
   final ModelApi models;
+
+  /// Speech-model status; tests inject a fake.
+  final RecordingApi? recording;
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
@@ -77,6 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Map<Object?, Object?> _s = {};
   String? _district;
   ModelState? _model;
+  ({bool ready, String? sttId}) _stt = (ready: false, sttId: null);
   bool _loaded = false, _failed = false;
   int _versionTaps = 0;
 
@@ -108,6 +115,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
       final m = await widget.models.state().timeout(const Duration(seconds: 2), onTimeout: () => const ModelState());
       if (!mounted) return;
+      _loadStt();
       setState(() {
         _s = s;
         _district = kDistricts.contains(d) ? d : null;
@@ -119,6 +127,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } on MissingPluginException {
       if (mounted) setState(() => _failed = true);
     }
+  }
+
+  /// Speech-model status arrives on its own so a slow recording channel never holds up the page.
+  Future<void> _loadStt() async {
+    final stt = await (widget.recording ?? RecordingApi()).status();
+    if (mounted) setState(() => _stt = stt);
   }
 
   Future<void> _set(String key, Object? value) async {
@@ -183,7 +197,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ]),
                 const SizedBox(height: Sp.m),
-                _Segmented(
+                Segmented(
                   value: mode,
                   onChanged: ThemeController.set,
                   items: [
@@ -230,6 +244,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Flexible(
                         child: Text(m?.ready == true ? _t('model_ready') : _t('model_get'),
                             style: th.textTheme.bodySmall?.copyWith(color: m?.ready == true ? st.safe : p.muted, fontWeight: FontWeight.w600, fontSize: 14)),
+                      ),
+                    ]),
+                  ]),
+                ),
+                Text(_t('change'), style: th.textTheme.titleSmall?.copyWith(color: p.accent)),
+              ]),
+            ),
+          ),
+          Divider(height: 1, color: p.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF0F0F2)),
+          InkWell(
+            key: const Key('settings_speech_model'),
+            onTap: () => _open(SpeechStrings.t(lang, 'title'), const SpeechModelScreen()),
+            child: Padding(
+              padding: const EdgeInsets.all(Sp.l),
+              child: Row(children: [
+                IconBadge(icon: Icons.graphic_eq_rounded, color: p.onAccent, tint: p.accent, size: 44, iconSize: 24),
+                const SizedBox(width: Sp.m + 2),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(SpeechStrings.t(lang, 'title'), style: th.textTheme.bodySmall?.copyWith(color: p.muted, fontWeight: FontWeight.w600)),
+                    Text(_stt.ready ? SpeechStrings.t(lang, sttById(_stt.sttId).id) : _t('stt_none'),
+                        style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                    Row(children: [
+                      Container(width: 8, height: 8, decoration: BoxDecoration(color: _stt.ready ? st.safe : p.muted, shape: BoxShape.circle)),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(_stt.ready ? _t('model_ready') : _t('stt_get'),
+                            style: th.textTheme.bodySmall?.copyWith(color: _stt.ready ? st.safe : p.muted, fontWeight: FontWeight.w600, fontSize: 14)),
                       ),
                     ]),
                   ]),
@@ -461,62 +503,6 @@ class SettingSwitch extends StatelessWidget {
 }
 
 /// iOS-style segmented control (theme picker).
-class _Segmented<T> extends StatelessWidget {
-  const _Segmented({required this.value, required this.onChanged, required this.items});
-  final T value;
-  final ValueChanged<T> onChanged;
-  final List<(T, String, IconData, Key)> items;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = palOf(context);
-    final th = Theme.of(context);
-    // At large text the segments stack, so each label keeps its full size and words.
-    final stacked = MediaQuery.textScalerOf(context).scale(16) > 24;
-    final segs = [
-        for (final (v, label, icon, key) in items)
-            Semantics(
-              selected: v == value,
-              button: true,
-              child: GestureDetector(
-                key: key,
-                behavior: HitTestBehavior.opaque,
-                onTap: () => onChanged(v),
-                child: AnimatedContainer(
-                  duration: motion(context, const Duration(milliseconds: 200)),
-                  curve: Curves.easeOutCubic,
-                  constraints: const BoxConstraints(minHeight: kTouch),
-                  decoration: BoxDecoration(
-                    color: v == value ? (p.isDark ? const Color(0xFF48484A) : Colors.white) : Colors.transparent,
-                    borderRadius: BorderRadius.circular(11),
-                    boxShadow: v == value ? const [BoxShadow(color: Color(0x1F000000), blurRadius: 3, offset: Offset(0, 1))] : null,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: Sp.xs, vertical: Sp.s),
-                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(icon, size: 16, color: v == value ? p.ink : p.muted),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(label,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: th.textTheme.labelMedium?.copyWith(fontSize: 16, color: v == value ? p.ink : p.muted, fontWeight: FontWeight.w600)),
-                    ),
-                  ]),
-                ),
-              ),
-            ),
-    ];
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: p.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEEEEF1), borderRadius: BorderRadius.circular(14)),
-      child: stacked
-          ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: segs)
-          : Row(children: [for (final s in segs) Expanded(child: s)]),
-    );
-  }
-}
-
 /// Settings → Share scam counts: district, what is shared, and the export.
 class ShareCountsScreen extends StatefulWidget {
   const ShareCountsScreen({super.key});

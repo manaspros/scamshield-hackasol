@@ -422,7 +422,9 @@ void main() {
       _Native(graph: graph).install(t);
       await _show(t, const KnowledgeScreen());
       expect(find.text('Examplebank'), findsWidgets);
+      await t.scrollUntilVisible(find.text('Money received 3'), 200);
       expect(find.text('Money received 3'), findsOneWidget);
+      await t.scrollUntilVisible(find.text('AX-EXMPBK'), 200);
       expect(find.text('AX-EXMPBK'), findsOneWidget);
       expect(find.text('5 messages'), findsOneWidget);
       await t.scrollUntilVisible(find.text('4 phone numbers'), 200);

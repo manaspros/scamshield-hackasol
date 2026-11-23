@@ -69,12 +69,26 @@ object ModelCatalog {
     }
 }
 
-/** Offline STT (Vosk Hindi) model download. Pure: no Android deps. */
+/** One offline speech (Vosk) model the user can pick in Settings › Speech model. */
+data class SttSpec(val id: String, val name: String, val url: String, val zipName: String, val zipBytes: Long, val minRamMb: Long)
+
+/** Offline STT (Vosk) model downloads. Pure: no Android deps. */
 object SttModelConfig {
-    const val URL = "https://alphacephei.com/vosk/models/vosk-model-small-hi-0.22.zip"
-    const val ZIP_NAME = "vosk-model-small-hi-0.22.zip"
-    /** Zip is 44,458,845 bytes (~42 MB); unzipped it is roughly 2x that. */
-    const val ZIP_BYTES = 44_458_845L
-    /** Directory under filesDir the zip is extracted into. */
+    val all = listOf(
+        SttSpec("vosk-small-hi", "Hindi · Small", "https://alphacephei.com/vosk/models/vosk-model-small-hi-0.22.zip",
+            "vosk-model-small-hi-0.22.zip", 44_458_845L, 0),
+        SttSpec("vosk-small-en-in", "Indian English · Small", "https://alphacephei.com/vosk/models/vosk-model-small-en-in-0.4.zip",
+            "vosk-model-small-en-in-0.4.zip", 36_000_000L, 0),
+        SttSpec("vosk-hi", "Hindi · Large", "https://alphacephei.com/vosk/models/vosk-model-hi-0.22.zip",
+            "vosk-model-hi-0.22.zip", 1_500_000_000L, 8000),
+    )
+    val default = all.first()
+    fun byId(id: String?): SttSpec = all.firstOrNull { it.id == id } ?: default
+
+    // Kept for older callers: the default model.
+    val URL = default.url
+    val ZIP_NAME = default.zipName
+    val ZIP_BYTES = default.zipBytes
+    /** Directory under filesDir the active model is extracted into (one model installed at a time). */
     const val DIR_NAME = "vosk-hi"
 }
