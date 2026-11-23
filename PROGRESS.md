@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T0.6 [sonnet] scripts/check.sh (Kotlin/Flutter/pytest/node; skips missing; writable GRADLE_USER_HOME fallback; -PskipDependencyChecks) + scripts/trace_report.sh (task ID -> pass/fail/not-run/blocked from JUnit XML, flutter json, pytest -rA, node TAP) — 2026-11-23 — bash scripts/check.sh && bash scripts/trace_report.sh
 - QA emulator fixes [sonnet] lottery/prize fee-for-release now SCAM typed OTHER (new prize_fee rule; loan's processing-fee match requires 'loan' nearby); Hindi KYC message typed KYC (scamType priority: OTP-share/PIN > KYC > bare OTP); Demo Lab lottery_fee scenario — 2026-11-23 — ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest (354/354); golden + heldout export unchanged
 - T7.1 [sonnet] ARCHITECTURE.md (<120 lines, Mermaid pipeline, sections cite FINAL_PLAN) — 2026-11-23 — wc -l ARCHITECTURE.md
 - T7.2 [sonnet] DEMO.md (Demo Lab backbone, every step names its task, [phone] marks, fallbacks, Q&A) — 2026-11-23 — grep -c "T[0-9]" DEMO.md

@@ -51,7 +51,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T0.5 [sonnet] Baseline green; record Kotlin and Dart test counts and the real test-source path in `PROGRESS.md`
   - **Files**: `PROGRESS.md`  **Depends on**: T0.1, T0.4
   - **Done when**: `KALL` exits 0 with 24 tests; `flutter test` exits 0; `APP` produces `build/app/outputs/flutter-apk/app-debug.apk`
-- [ ] T0.6 [sonnet] `scripts/check.sh` (runs every suite that exists, prints skipped) and `scripts/trace_report.sh` (task ID -> pass/fail/not-run/blocked from JUnit XML, pytest `-rA`, node, flutter output)
+- [x] T0.6 [sonnet] `scripts/check.sh` (runs every suite that exists, prints skipped) and `scripts/trace_report.sh` (task ID -> pass/fail/not-run/blocked from JUnit XML, pytest `-rA`, node, flutter output)
   - **Files**: `scripts/check.sh`, `scripts/trace_report.sh`  **Depends on**: T0.5
   - **Done when**: `bash scripts/check.sh && bash scripts/trace_report.sh` exits 0
 
