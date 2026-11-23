@@ -41,7 +41,7 @@ class MainActivity : FlutterActivity() {
     companion object { private const val REQ_IMPORT = 4201
         private const val REQ_NOTIF = 4203
         private val PREF_KEYS = setOf("lesson_best_v1", "district", "lang_v1", "captions_ack_v1", "demo_mode", "onboarded_v1",
-            "theme_v1", "profile_v1", "family_contacts_v1", "learn_v2", "models_v1") }
+            "theme_v1", "profile_v1", "family_contacts_v1", "learn_v2", "models_v1", "report_history_v1") }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
@@ -259,6 +259,10 @@ class MainActivity : FlutterActivity() {
     private fun startImport(result: MethodChannel.Result) {
         pendingImport = result
         val i = Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*")
+        // Open the picker in Downloads/ScamShield, where in-app downloads land: after a reinstall the user taps the
+        // .task file there once instead of downloading it again.
+        i.putExtra(android.provider.DocumentsContract.EXTRA_INITIAL_URI, android.provider.DocumentsContract.buildDocumentUri(
+            "com.android.externalstorage.documents", "primary:Download/${ModelDownloader.SHARED_FOLDER}"))
         @Suppress("DEPRECATION")
         startActivityForResult(i, REQ_IMPORT)
     }
@@ -284,6 +288,7 @@ class MainActivity : FlutterActivity() {
                     contentResolver.openInputStream(uri)!!.use { input -> tmp.outputStream().use { input.copyTo(it, 1 shl 20) } }
                     val dest = File(dir, fname)
                     dest.delete(); tmp.renameTo(dest)
+                    GemmaClassifier.setPreferred(this@MainActivity, fname)
                     fname
                 }
                 GemmaClassifier.ensureLoaded(this@MainActivity, force = true)

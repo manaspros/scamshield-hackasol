@@ -3,6 +3,8 @@ package com.hackasol.scamshield
 import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.os.StatFs
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -24,8 +26,10 @@ import java.util.zip.ZipInputStream
 
 /**
  * In-app model download via Android's DownloadManager (background, resumable, notification,
- * survives app kill). Writes to models/<name>.download and renames on success, so a half-finished
- * file is never picked up by GemmaClassifier.findModel().
+ * survives app kill). Android 11+: saved to the public Downloads/ScamShield folder so uninstalling and
+ * reinstalling the app never forces a new download (the model screen re-imports it from there);
+ * older Android: app storage models/<name>.download, renamed on success. A half-finished file is never
+ * picked up by GemmaClassifier.findModel() (see [isDownloading]).
  *
  * Source: public GitHub release (no login/token needed).
  */
@@ -41,10 +45,28 @@ object ModelDownloader {
 
     private fun prefs(ctx: Context) = ctx.getSharedPreferences("scamshield", Context.MODE_PRIVATE)
     private fun dm(ctx: Context) = ctx.getSystemService(DownloadManager::class.java)
-    private fun modelsDir(ctx: Context) = File(ctx.getExternalFilesDir(null), "models").apply { mkdirs() }
+
+    /** Android 11+: models go to the public Downloads/ScamShield folder, which survives uninstalling the app. */
+    private val shared get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+
+    /** Downloads/ScamShield (Android 11+), shown to the user so a reinstall can reuse the file instead of downloading it. */
+    fun sharedModelsDir(): File? =
+        if (shared) File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), SHARED_FOLDER) else null
+    const val SHARED_FOLDER = "ScamShield"
+
+    /** App-private models/ folder (Vosk zip staging; Gemma on Android 10 and older). */
+    private fun appModelsDir(ctx: Context) = File(ctx.getExternalFilesDir(null), "models").apply { mkdirs() }
+
+    private fun modelsDir(ctx: Context): File =
+        (sharedModelsDir() ?: File(ctx.getExternalFilesDir(null), "models")).apply { mkdirs() }
     /** File name of the model being downloaded (the default until a download picks another). */
     private fun fileOf(ctx: Context) = prefs(ctx).getString("downloadFile", null) ?: FILE_NAME
-    private fun partFile(ctx: Context) = File(modelsDir(ctx), "${fileOf(ctx)}.download")
+    // Public storage: written straight to its final name (renaming in shared storage is not reliable), so
+    // GemmaClassifier skips it via [isDownloading] until finish() checks it. App storage keeps the .download suffix.
+    private fun partFile(ctx: Context) = File(modelsDir(ctx), if (shared) fileOf(ctx) else "${fileOf(ctx)}.download")
+
+    /** True while [name] is still being written by a download (never load a half file). */
+    fun isDownloading(ctx: Context, name: String) = idOf(ctx) >= 0 && fileOf(ctx) == name
 
     private fun idOf(ctx: Context) = prefs(ctx).getLong("downloadId", -1L)
     private fun setId(ctx: Context, id: Long) = prefs(ctx).edit().putLong("downloadId", id).apply()
@@ -67,9 +89,10 @@ object ModelDownloader {
                 .setTitle("AI model")
                 .setDescription("${spec.name} (~${spec.sizeMb} MB)")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationInExternalFilesDir(app, null, "models/${spec.file}.download")
                 .setAllowedOverMetered(!wifiOnly)
                 .setAllowedOverRoaming(false)
+            if (shared) req.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "$SHARED_FOLDER/${spec.file}")
+            else req.setDestinationInExternalFilesDir(app, null, "models/${spec.file}.download")
             val id = dm(app).enqueue(req)
             setId(app, id)
             Log.i(TAG, "enqueued id=$id model=${spec.id} wifiOnly=$wifiOnly")
@@ -156,8 +179,7 @@ object ModelDownloader {
             EventBus.emit("download", mapOf("status" to "FAILED", "message" to "Downloaded file is too small — wrong URL?"))
             return
         }
-        dest.delete()
-        part.renameTo(dest)
+        if (part != dest) { dest.delete(); part.renameTo(dest) }
         GemmaClassifier.setPreferred(ctx, name)
         EventBus.emit("download", mapOf("status" to "INSTALLED", "message" to "Model downloaded — loading…"))
         GemmaClassifier.ensureLoaded(ctx, force = true)
@@ -176,7 +198,7 @@ object ModelDownloader {
     fun voskDir(ctx: Context) = File(ctx.filesDir, SttModelConfig.DIR_NAME)
     /** The dir only appears after a full, successful unzip (extracted to a .tmp dir first, then renamed). */
     fun voskReady(ctx: Context) = voskDir(ctx).isDirectory
-    private fun voskZip(ctx: Context) = File(modelsDir(ctx), "${SttModelConfig.ZIP_NAME}.download")
+    private fun voskZip(ctx: Context) = File(appModelsDir(ctx), "${SttModelConfig.ZIP_NAME}.download")
     private fun voskId(ctx: Context) = prefs(ctx).getLong("voskDownloadId", -1L)
     private fun setVoskId(ctx: Context, id: Long) = prefs(ctx).edit().putLong("voskDownloadId", id).apply()
 
@@ -186,7 +208,7 @@ object ModelDownloader {
         try {
             cancelVosk(app)
             val needed = SttModelConfig.ZIP_BYTES * 4 // zip + extracted copy + headroom
-            val free = StatFs(modelsDir(app).absolutePath).availableBytes
+            val free = StatFs(appModelsDir(app).absolutePath).availableBytes
             if (free < needed) return@withContext err("Not enough storage: need ~${needed / (1024 * 1024)} MB free, have ${free / (1024 * 1024)} MB")
             reachability(SttModelConfig.URL)?.let { return@withContext err(it) }
             voskZip(app).delete()

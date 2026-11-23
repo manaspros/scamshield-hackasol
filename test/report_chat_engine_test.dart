@@ -38,6 +38,14 @@ class _Llm implements LlmClient {
   }
 }
 
+class _Slow implements LlmClient {
+  @override
+  Future<bool> ready() async => true;
+  @override
+  Future<String?> generate(String prompt, {double temperature = 0.8}) =>
+      Future.delayed(const Duration(seconds: 5), () => '{}');
+}
+
 void main() {
   group('persona', () {
     test('senior, student, woman and low tech are read from the profile', () {
@@ -97,7 +105,7 @@ void main() {
       expect(r.nextSlot(), Slot.confirm);
       r.answer(Slot.confirm, 'yes', label: 'Yes, this one');
       expect(r.scamType, 'DIGITAL_ARREST');
-      expect(r.nextSlot(), Slot.scammerId);
+      expect(r.nextSlot(), Slot.when);
     });
 
     test('free words fill the number and amount on the way, so those questions are skipped', () {
@@ -106,7 +114,7 @@ void main() {
       r.answer(Slot.channel, 'paid Rs 8,500 to earnfast@ybl on telegram');
       expect(r.answers[Slot.scammerId], 'earnfast@ybl');
       expect(r.answers[Slot.amount], '8500');
-      expect(r.nextSlot(), Slot.payApp);
+      expect(r.nextSlot(), Slot.when);
     });
 
     test('attachments answer the proof question; fields feed the evidence ZIP', () {
@@ -155,24 +163,111 @@ void main() {
     });
   });
 
-  group('gemma', () {
-    const t = BotTurn(slot: Slot.amount, text: 'How much money was lost in total?');
-
-    test('a good JSON reply replaces the wording; the prompt carries persona but no name', () async {
-      final llm = _Llm('Sure! {"question": "Roughly how many rupees did you lose?"}');
-      final out = await ReportChatLlm(client: llm).rephrase(t, 'en', 'age 67 (senior citizen), female', const {});
-      expect(out, 'Roughly how many rupees did you lose?');
-      expect(llm.lastPrompt, contains('senior citizen'));
-      expect(llm.lastPrompt, contains('English'));
+  group('gemma drives the interview', () {
+    test('the prompt lists the missing facts, what is known, the chat and the person (no name)', () async {
+      final r = ReportInterview(lost: true, persona: _p(age: 67));
+      r.answer(Slot.scamType, 'KYC', label: 'Bank / KYC');
+      final llm = _Llm('{"ask": "channel", "question": "How did they reach you?", "options": ["Call", "SMS"]}');
+      await ReportChatLlm(client: llm).next(r, 'en', 'age 67 (senior citizen), female', [(false, 'Hi'), (true, 'bank call')]);
+      final p = llm.lastPrompt!;
+      expect(p, contains('- amount:'));
+      expect(p, contains('- utr:'));
+      expect(p, isNot(contains('- scam_type:'))); // already known
+      expect(p, contains('scam_type: Bank / KYC'));
+      expect(p, contains('Person: bank call'));
+      expect(p, contains('senior citizen'));
+      expect(p, contains('simple English'));
+      expect(p, contains('Never ask for an OTP, PIN'));
     });
 
-    test('bad JSON, wrong script, no model or a timeout all keep the scripted question', () async {
-      expect(await ReportChatLlm(client: _Llm('not json')).rephrase(t, 'en', 'x', const {}), isNull);
-      expect(await ReportChatLlm(client: _Llm('{"question": "कितने रुपये?"}')).rephrase(t, 'en', 'x', const {}), isNull);
-      expect(await ReportChatLlm(client: _Llm('{"question": "How much?"}')).rephrase(t, 'hi', 'x', const {}), isNull);
-      expect(await ReportChatLlm(client: _Llm('{"question": "x"}', isReady: false)).rephrase(t, 'en', 'x', const {}), isNull);
-      expect(await const ReportChatLlm(client: NoLlm()).rephrase(t, 'en', 'x', const {}), isNull);
+    test('a good reply gives its own question + options and the facts it read', () async {
+      final r = ReportInterview(lost: true);
+      final llm = _Llm('Sure! {"extracted": {"amount": "8500", "scammer_id": "earnfast@ybl"}, '
+          '"ask": "payment_app", "question": "Which app did you pay with?", "options": ["Google Pay", "PhonePe"]}');
+      final t = await ReportChatLlm(client: llm).next(r, 'en', 'x', const []);
+      expect(t!.ask, Slot.payApp);
+      expect(t.question, 'Which app did you pay with?');
+      expect(t.options, ['Google Pay', 'PhonePe']);
+      r.applyExtracted(t.extracted);
+      expect(r.answers[Slot.amount], '8500');
+      expect(r.answers[Slot.scammerId], 'earnfast@ybl');
+      expect(r.missingData, isNot(contains(Slot.amount)));
     });
+
+    test('a question for a known fact, in the wrong script, or asking for the OTP itself is dropped; facts are kept', () {
+      final missing = {Slot.amount, Slot.utr};
+      expect(ReportChatLlm.parseTurn('{"ask": "scam_type", "question": "What scam?"}', 'en', missing)!.hasQuestion, isFalse);
+      expect(ReportChatLlm.parseTurn('{"ask": "amount", "question": "कितने रुपये?"}', 'en', missing)!.hasQuestion, isFalse);
+      expect(ReportChatLlm.parseTurn('{"ask": "amount", "question": "How much?"}', 'hi', missing)!.hasQuestion, isFalse);
+      expect(ReportChatLlm.parseTurn('{"ask": "utr", "question": "Please tell me the OTP you got"}', 'en', missing)!.hasQuestion,
+          isFalse);
+      final keep = ReportChatLlm.parseTurn('{"extracted": {"amount": "500"}, "ask": "nope", "question": "?"}', 'en', missing)!;
+      expect(keep.hasQuestion, isFalse);
+      expect(keep.extracted, {Slot.amount: '500'});
+      expect(ReportChatLlm.parseTurn('not json', 'en', missing), isNull);
+    });
+
+    test('extracted facts never overwrite an answer and "unknown" only settles optional ids', () {
+      final r = ReportInterview(lost: true);
+      r.answer(Slot.amount, '1000');
+      r.applyExtracted({Slot.amount: '9999', Slot.utr: 'unknown', Slot.payApp: 'unknown', Slot.sharedOtp: 'haan'});
+      expect(r.answers[Slot.amount], '1000');
+      expect(r.answers[Slot.utr], 'none');
+      expect(r.answers.containsKey(Slot.payApp), isFalse);
+      expect(r.answers[Slot.sharedOtp], 'yes');
+    });
+
+    test('tapped model options are normalised (scam type, yes/no, amount)', () {
+      final r = ReportInterview(lost: true);
+      r.answer(Slot.scamType, 'Fake police / CBI call', label: 'Fake police / CBI call');
+      r.answer(Slot.sharedOtp, 'नहीं', label: 'नहीं');
+      r.answer(Slot.amount, '15 हज़ार', label: '15 हज़ार');
+      expect(r.scamType, 'DIGITAL_ARREST');
+      expect(r.answers[Slot.sharedOtp], 'no');
+      expect(r.answers[Slot.amount], '15000');
+    });
+
+    test('no model, not ready, or a timeout -> null (the script asks)', () async {
+      final r = ReportInterview(lost: true);
+      expect(await const ReportChatLlm(client: NoLlm()).next(r, 'en', 'x', const []), isNull);
+      expect(await ReportChatLlm(client: _Llm('{}', isReady: false)).next(r, 'en', 'x', const []), isNull);
+      expect(await ReportChatLlm(client: _Slow(), timeout: const Duration(milliseconds: 10)).next(r, 'en', 'x', const []),
+          isNull);
+    });
+  });
+
+  group('classify', () {
+    test('scam type from own words', () {
+      expect(classifyScamType('they said CBI will arrest me'), 'DIGITAL_ARREST');
+      expect(classifyScamType('टेलीग्राम पर टास्क जॉब'), 'JOB');
+      expect(classifyScamType('loan app harassment'), 'LOAN_APP');
+      expect(classifyScamType('bank KYC update'), 'KYC');
+      expect(classifyScamType('something weird'), 'OTHER');
+      expect(normalizeYesNo('Haan bataya'), 'yes');
+      expect(normalizeYesNo('nahi'), 'no');
+      expect(normalizeYesNo('maybe'), 'unsure');
+    });
+
+    test('own words for an unlisted scam show in the summary', () {
+      final r = ReportInterview(lost: false);
+      r.answer(Slot.scamType, 'fake army officer selling a car');
+      expect(r.scamType, 'OTHER');
+      expect(r.summary('en').first.$2, 'fake army officer selling a car');
+    });
+  });
+
+  test('an interview survives a save / load round trip', () {
+    final r = ReportInterview(lost: true);
+    r.answer(Slot.scamType, 'JOB', label: 'Task job');
+    r.answer(Slot.amount, '₹8,500');
+    r.addAttachments(const [ChatAttachment(path: '/f/a.png', name: 'a.png', mime: 'image/png')]);
+    final back = ReportInterview.fromJson(r.toJson());
+    expect(back.lost, isTrue);
+    expect(back.scamType, 'JOB');
+    expect(back.answers[Slot.amount], '8500');
+    expect(back.labels[Slot.scamType], 'Task job');
+    expect(back.attachments.single.name, 'a.png');
+    expect(back.nextSlot(), r.nextSlot());
   });
 
   test('every Hindi chat string has an English one without Devanagari', () {

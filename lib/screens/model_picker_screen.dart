@@ -343,8 +343,16 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
           Icon(Icons.wifi_rounded, size: 18, color: p.muted),
           const SizedBox(width: Sp.xs),
           Expanded(child: Text(_t(_wifiOnly ? 'm_wifi' : 'm_any'), style: th.textTheme.bodySmall?.copyWith(color: p.muted))),
-          TextButton(key: const Key('mp_import'), onPressed: _import, child: Text(_t('m_import'))),
+          Flexible(child: TextButton(key: const Key('mp_import'), onPressed: _import, child: Text(_t('m_import'), textAlign: TextAlign.end))),
         ]),
+        Padding(
+          padding: const EdgeInsets.only(top: Sp.xs),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(Icons.folder_outlined, size: 18, color: p.muted),
+            const SizedBox(width: Sp.xs),
+            Expanded(child: Text(_t('m_saved_to'), style: th.textTheme.bodySmall?.copyWith(color: p.muted))),
+          ]),
+        ),
       ],
     );
   }
