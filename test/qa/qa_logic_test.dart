@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -162,7 +163,9 @@ void main() {
       await t.enterText(find.byType(TextField), 'hello');
       await tapVisible(t, find.byType(FilledButton));
       await t.pumpAndSettle();
-      expect(find.textContaining('model not loaded'), findsOneWidget);
+      expect(find.text('जाँच नहीं हो पाई, फिर कोशिश करें'), findsOneWidget);
+      expect(find.text('दोबारा जाँचें'), findsOneWidget); // retry action
+      expect(find.textContaining('model not loaded'), findsNothing); // raw detail never shown
       expect(find.byType(VerdictCard), findsNothing);
       expect(t.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNotNull);
     });
@@ -177,19 +180,19 @@ void main() {
         await tapVisible(t, find.byType(FilledButton));
         await t.pumpAndSettle();
       }
-      // newest (2nd call, SAFE) must sit above the older SCAM check, whether that one is a card or a history row
-      final newest = find.text('सुरक्षित');
-      final older = find.textContaining('धोखाधड़ी');
-      await reveal(t, older);
-      expect(newest, findsOneWidget);
-      expect(t.getTopLeft(newest).dy, lessThan(t.getTopLeft(older).dy));
+      final cards = find.byType(VerdictCard);
+      expect(cards, findsNWidgets(2));
+      expect(find.descendant(of: cards.at(0), matching: find.text('सुरक्षित')), findsOneWidget); // newest (2nd call) first
+      expect(find.descendant(of: cards.at(1), matching: find.textContaining('धोखाधड़ी')), findsWidgets); // older SCAM below
     });
 
-    testWidgets('QA_tryApi_oneTapExample_fillsField', (t) async {
+    testWidgets('QA_tryApi_sampleChip_fillsField', (t) async {
+      // exact expected text comes from the product's own sample list, not a copy in the test
+      final src = File('lib/screens/try_api_screen.dart').readAsStringSync();
+      final expected = RegExp(r"'(Beta khana kha liya[^']*)'").firstMatch(src)!.group(1)!;
       await pump(t, (c) async => _v('SAFE'));
-      final example = find.byKey(const Key('try_example'));
-      await tapVisible(t, example);
-      expect(t.widget<TextField>(find.byType(TextField)).controller!.text, isNotEmpty);
+      await tapVisible(t, find.textContaining('Beta khana kha liya'));
+      expect(t.widget<TextField>(find.byType(TextField)).controller!.text, expected);
     });
   });
 
