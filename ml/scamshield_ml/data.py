@@ -41,6 +41,8 @@ def validate_row(values: dict[str, str], line: int | None = None) -> Row:
     if set(values) != set(COLUMNS):
         raise ValueError(f"expected columns {COLUMNS}{where}")
 
+    if any(values[column] is None for column in COLUMNS):  # csv.DictReader fills short rows with None
+        raise ValueError(f"missing fields{where}")
     row = {column: values[column].strip() for column in COLUMNS}
     if not row["text"]:
         raise ValueError(f"text must not be empty{where}")
