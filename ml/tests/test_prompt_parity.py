@@ -39,9 +39,10 @@ def T1_10_promptShape():
 
 def T1_10_goldenParity():
     golden = json.loads(GOLDEN.read_text(encoding="utf-8"))
-    assert len(golden) == 19
+    assert len(golden) == 21
     for e in golden:
-        assert build_prompt(e["input_text"], e.get("context") or []) == e["prompt"], e["id"]
+        label = e.get("context_label", "Earlier in this call")
+        assert build_prompt(e["input_text"], e.get("context") or [], label) == e["prompt"], e["id"]
         assert parse_output(e["model_output"]) == e["parsed"], e["id"]
 
 

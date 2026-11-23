@@ -36,12 +36,12 @@ def _take(s: str, n: int) -> str:
     return s.encode("utf-16-le")[: 2 * n].decode("utf-16-le", errors="surrogatepass")
 
 
-def build_prompt(text: str, context: Sequence[str] = ()) -> str:
+def build_prompt(text: str, context: Sequence[str] = (), context_label: str = "Earlier in this call") -> str:
     """Byte-exact port of Kotlin `GemmaPrompt.build` (last 2 non-blank context lines, 150/300 char caps; Kotlin counts UTF-16 units)."""
     parts = [HEADER]
     ctx = [c for c in list(context)[-2:] if c.strip()]
     if ctx:
-        parts.append("\nEarlier in this call: " + " | ".join(f'"{_take(c, 150)}"' for c in ctx) + "\n")
+        parts.append(f"\n{context_label}: " + " | ".join(f'"{_take(c, 150)}"' for c in ctx) + "\n")
     parts.append('STATEMENT: "' + _take(text, 300).replace('"', "'") + '"\n')
     return "".join(parts)
 
