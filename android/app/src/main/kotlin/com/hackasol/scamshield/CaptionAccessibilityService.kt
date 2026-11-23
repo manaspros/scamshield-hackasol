@@ -109,7 +109,10 @@ class CaptionAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) = safe("event") {
         if (event == null || event.packageName == packageName) return@safe
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)
-            event.packageName?.toString()?.let { gate.noteForeground(it, SystemClock.elapsedRealtime()) }
+            event.packageName?.toString()?.let { pkg ->
+                gate.noteForeground(pkg, SystemClock.elapsedRealtime())
+                bg.post { safe("payGuard") { ForegroundHook.onForeground(this, pkg, System.currentTimeMillis()) } }
+            }
         if (inCall && AppSettings.inCallSignals) checkSignals(event)
         if (event.eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED) return@safe
         if (scanPending) return@safe

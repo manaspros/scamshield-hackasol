@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../api/family_share.dart';
 import '../api/home_api.dart';
 import '../l10n/app_language.dart';
 import '../l10n/strings_home.dart';
@@ -152,6 +154,23 @@ class AlertDetail extends StatelessWidget {
         onPressed: () => pushTitled(context, t('ev_title'), EvidenceScreen(api: api, alertId: alert.id)),
         icon: const Icon(Icons.inventory_2, size: 28),
         label: Text(t('al_make'), textAlign: TextAlign.center),
+      ),
+      const SizedBox(height: Sp.m),
+      OutlinedButton.icon(
+        key: const Key('alert_tell_family'),
+        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
+        onPressed: () async {
+          try {
+            await const MethodChannel('scamshield/share')
+                .invokeMethod<void>('share.text', {'text': familyShareText(lang, scamTypeNameIn(alert.scamType, lang), alert.tsMs)});
+          } on PlatformException {
+            // share sheet unavailable: nothing to recover
+          } on MissingPluginException {
+            // tests / non-Android
+          }
+        },
+        icon: const Icon(Icons.family_restroom, size: 28),
+        label: Text(t('fam_tell'), textAlign: TextAlign.center),
       ),
       const SizedBox(height: Sp.m),
       for (final safe in const [true, false])

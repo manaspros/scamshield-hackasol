@@ -125,3 +125,6 @@ class ScamNotificationListener : NotificationListenerService() {
 
     private companion object { const val TAG = "ScamShield/NotifListener" }
 }
+        if (info.pkg != packageName && !info.ongoing) scope.launch {
+            safe("payGuard") { ForegroundHook.onNotification(this@ScamNotificationListener, info.pkg, info.title, info.text, System.currentTimeMillis()) }
+        }

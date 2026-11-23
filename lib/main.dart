@@ -96,6 +96,9 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     } else if (route == 'recording') {
       Navigator.of(context).popUntil((r) => r.isFirst);
       _push('recording_title', const RecordingScreen());
+    } else if (route == 'family') {
+      Navigator.of(context).popUntil((r) => r.isFirst);
+      _push('family', const FamilyScreen());
     }
   }
 

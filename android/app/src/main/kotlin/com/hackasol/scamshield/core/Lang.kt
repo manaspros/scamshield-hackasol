@@ -252,3 +252,12 @@ object L10n {
         pick(lang, "Tap below, then press the captions button in the volume panel.", "Tap below, then press the captions button in the volume panel.")
     fun openVolumePanel(lang: String) = pick(lang, "Open volume panel", "Open volume panel")
 }
+    // Payment-moment guard (hne first draft: [VERIFY] with a native speaker).
+    fun payGuardTitle(lang: String) = pick(lang, "Stop.", "रुकिए।", "रुकव।")
+    fun payGuardText(lang: String) = pick(lang,
+        "Receiving money never needs your PIN. Ask family first",
+        "पैसे लेने के लिए PIN कभी नहीं लगता। पहले परिवार से पूछें",
+        "पइसा लेबर बर PIN कभु नइ लगय। पहिली परिवार ले पूछव")
+    fun callFamily(lang: String) = pick(lang, "Call family", "परिवार को फ़ोन करें", "परिवार ला फ़ोन करव")
+    fun payGuardChannel(lang: String) = pick(lang, "Payment safety", "भुगतान सुरक्षा", "भुगतान सुरक्षा")
+
