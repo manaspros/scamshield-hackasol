@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../api/text_api.dart';
+import '../l10n/app_language.dart';
+import '../l10n/strings_setup.dart';
 import '../lessons/prefs_store.dart';
 import '../models/verdict.dart';
 import '../theme/tokens.dart';
@@ -32,8 +34,6 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   final _expanded = <String>{}; // done steps the user opened again
   bool _failed = false;
   final _prefs = PrefsStrings();
-  String? _lang; // null until the user picks one: that is the first-run state
-  bool _langLoaded = false;
   bool _captionsOn = false; // no native check for Live Caption, so the user confirms it
 
   @override
@@ -62,14 +62,8 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _loadPrefs() async {
-    final lang = await _prefs.get(PrefsStrings.langKey);
     final caps = await _prefs.get(PrefsStrings.captionsKey);
-    if (mounted) setState(() { _lang = lang; _captionsOn = caps == '1'; _langLoaded = true; });
-  }
-
-  void _pickLang(String code) {
-    setState(() => _lang = code);
-    _prefs.set(PrefsStrings.langKey, code);
+    if (mounted) setState(() => _captionsOn = caps == '1');
   }
 
   void _confirmCaptions() {
@@ -94,12 +88,18 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
     if (mounted) setState(() { _loaded = true; _failed = false; _nlAccess = nl; _service = s; _model = m; _mic = mic; _notif = notif; if (dl['status'] != 'IDLE' || _dl.isEmpty) _dl = dl; });
   }
 
+  /// Text in the app language; works in callbacks (the build-time dependency comes from [build]).
+  String _t(String key, [Map<String, Object?> args = const {}]) => setupT(AppLanguage.code, key, args);
+
+  /// The small English second line: only in Hindi / Chhattisgarhi mode.
+  String? _secondary(String key) => AppLanguage.code == 'en' ? null : _t(key);
+
   Future<void> _import() async {
     setState(() => _importing = true);
     try {
       await TextApi.importModel();
     } on PlatformException catch (e) {
-      _snack('Import failed: ${e.message}');
+      _snack(_t('import_failed', {'e': e.message}));
     } finally {
       if (mounted) setState(() => _importing = false);
       _refresh();
@@ -157,7 +157,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
             Expanded(
               child: Wrap(spacing: Sp.s, runSpacing: Sp.xs, crossAxisAlignment: WrapCrossAlignment.center, children: [
                 Text(title, style: t.textTheme.titleMedium),
-                const StatusChip(label: RiskLabel.safe, text: 'हो गया'),
+                StatusChip(label: RiskLabel.safe, text: _t('done')),
               ]),
             ),
             Icon(open ? Icons.expand_less : Icons.expand_more, size: 32, color: cs.onSurfaceVariant),
@@ -178,7 +178,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
             Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(Icons.radio_button_unchecked, size: 24, color: cs.onSurfaceVariant),
               const SizedBox(width: Sp.s),
-              Flexible(child: Text('बाकी है', style: t.textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant))),
+              Flexible(child: Text(_t('todo'), style: t.textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant))),
             ]),
           ]);
     return Card(
@@ -190,7 +190,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
             Semantics(
               button: true,
               expanded: open,
-              label: '$title, हो गया',
+              label: _t('done_sem', {'title': title}),
               excludeSemantics: true,
               onTap: () => setState(() => open ? _expanded.remove(title) : _expanded.add(title)),
               child: InkWell(
@@ -206,12 +206,14 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
     );
   }
 
-  /// Hindi label with the English wording as a smaller second line.
-  Widget _lbl(String hi, String en) {
+  /// Label in the app language; in hi/hne the English wording follows as a smaller second line.
+  Widget _lbl(String key) {
     final small = Theme.of(context).textTheme.bodySmall;
+    final sec = _secondary('${key}_s');
+    if (sec == null) return Text(_t(key), textAlign: TextAlign.center);
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      Text(hi, textAlign: TextAlign.center),
-      Text(en,
+      Text(_t(key), textAlign: TextAlign.center),
+      Text(sec,
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: small?.fontSize, fontWeight: FontWeight.w400)),
     ]);
@@ -230,6 +232,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    AppLanguage.of(context); // rebuild when the language changes; strings read it via _t
     final serviceOn = _service['enabled'] == true && _service['connected'] == true;
     final modelStatus = '${_model['status'] ?? '…'}';
     final modelReady = modelStatus == 'READY';
@@ -239,18 +242,18 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
 
     // One primary action: the next required step that is still pending.
     final Widget primary = !serviceOn
-        ? _primary(Icons.accessibility_new, 'कॉल सुरक्षा चालू करें', TextApi.openAccessibilitySettings)
+        ? _primary(Icons.accessibility_new, _t('call_title'), TextApi.openAccessibilitySettings)
         : !_captionsOn
-            ? _primary(Icons.closed_caption, 'मैंने लाइव कैप्शन चालू कर लिया', _confirmCaptions)
+            ? _primary(Icons.closed_caption, _t('prim_cap'), _confirmCaptions)
             : !_notif
-                ? _primary(Icons.notifications_active, 'सूचनाएँ चालू करें', () async {
+                ? _primary(Icons.notifications_active, _t('notif_enable'), () async {
                     await _api.invokeMethod('perm.requestNotifications');
                     _refresh();
                   })
                 : !_nlAccess
-                    ? _primary(Icons.mark_email_unread, 'मैसेज सुरक्षा चालू करें',
+                    ? _primary(Icons.mark_email_unread, _t('msg_title'),
                         () => _api.invokeMethod('perm.openNotificationAccess'))
-                    : _primary(Icons.chat_bubble_outline, 'चेतावनी बबल जाँचें', () async {
+                    : _primary(Icons.chat_bubble_outline, _t('bub_title'), () async {
                         try { await TextApi.testOverlay(); } on PlatformException catch (e) { _snack('${e.message}'); }
                       });
 
@@ -259,9 +262,9 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
       steps = [
         StateMessage(
           icon: Icons.cloud_off,
-          title: 'सेटअप की स्थिति नहीं मिल सकी',
-          subtitle: 'फिर कोशिश करें',
-          actionLabel: 'फिर कोशिश करें',
+          title: _t('fail_title'),
+          subtitle: _t('fail_sub'),
+          actionLabel: _t('retry'),
           onAction: () {
             setState(() => _failed = false);
             _refresh();
@@ -269,7 +272,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
         ),
       ];
     } else if (!_loaded) {
-      steps = const [StateMessage(loading: true, title: 'स्थिति जाँची जा रही है…')];
+      steps = [StateMessage(loading: true, title: _t('checking'))];
     } else {
       steps = [
         if (_whyNext(serviceOn) case final why?) _prePermissionCard(why),
@@ -288,15 +291,12 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
               Padding(
                 padding: const EdgeInsets.only(bottom: Sp.m),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  Text('$doneCount / 4 ज़रूरी कदम पूरे',
+                  Text(_t('count', {'n': doneCount}),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   const SizedBox(height: Sp.s),
                   LinearProgressIndicator(value: doneCount / 4, minHeight: 6, borderRadius: BorderRadius.circular(Rad.pill)),
                 ]),
               ),
-            // First run: the language choice comes first so it is not pushed off-screen
-            // at large text sizes; the privacy line follows directly.
-            if (_langLoaded && _lang == null) _languageCard(),
             _privacyLine(),
             ...steps,
           ]),
@@ -309,43 +309,37 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   List<Widget> _steps(bool serviceOn) => [
         _step(
           icon: Icons.accessibility_new,
-          title: 'कॉल सुरक्षा चालू करें',
-          subtitle: 'Turn on call protection',
+          title: _t('call_title'),
+          subtitle: _secondary('call_s'),
           done: serviceOn,
-          body: 'Settings → Accessibility → ScamShield call protection → On.\n'
-              'ScamShield only reads on-screen caption text. No audio is recorded and nothing leaves your phone.',
+          body: _t('call_body'),
           actions: [
             OutlinedButton.icon(
               onPressed: TextApi.openAccessibilitySettings,
               icon: const Icon(Icons.settings),
-              label: _lbl('एक्सेसिबिलिटी खोलें', 'Open Accessibility'),
+              label: _lbl('open_acc'),
             ),
           ],
         ),
         _step(
           icon: Icons.closed_caption,
-          title: 'लाइव कैप्शन चालू करें',
-          subtitle: 'Turn on Live Caption (once, it stays on)',
+          title: _t('cap_title'),
+          subtitle: _secondary('cap_s'),
           done: _captionsOn,
-          body: 'वॉल्यूम बटन दबाएँ, नीचे कैप्शन का निशान दबाएँ।\n'
-              'Press a volume key, tap the captions icon.\n'
-              'Pixel: Settings → Sound → Live Caption (also turn on "Caption calls").\n'
-              'Samsung: Settings → Accessibility → Hearing enhancements → Live Caption.\n'
-              'ScamShield checks every call and tries to switch it on automatically if it is off.',
+          body: _t('cap_body'),
           actions: [
             OutlinedButton.icon(
               onPressed: TextApi.openCaptionSettings,
               icon: const Icon(Icons.settings),
-              label: _lbl('कैप्शन सेटिंग खोलें', 'Open caption settings'),
+              label: _lbl('open_cap'),
             ),
           ],
         ),
         _step(
           icon: Icons.notifications_active,
-          title: 'अलर्ट सूचनाएँ चालू करें',
+          title: _t('notif_title'),
           done: _notif,
-          body: 'स्कैम मिलने पर फ़ोन पर तुरंत चेतावनी दिखेगी, साथ में "रिपोर्ट करें" बटन।\n'
-              'Allow notifications so a scam warning pops up with a Report button.',
+          body: _t('notif_body'),
           actions: [
             OutlinedButton.icon(
               onPressed: _notif
@@ -355,22 +349,20 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
                       _refresh();
                     },
               icon: Icon(_notif ? Icons.check : Icons.notifications),
-              label: Text(_notif ? 'सूचनाएँ चालू हैं' : 'सूचनाएँ चालू करें', textAlign: TextAlign.center),
+              label: Text(_t(_notif ? 'notif_on' : 'notif_enable'), textAlign: TextAlign.center),
             ),
           ],
         ),
         _step(
           icon: Icons.mark_email_unread,
-          title: 'मैसेज सुरक्षा चालू करें',
+          title: _t('msg_title'),
           done: _nlAccess,
-          body: 'ScamShield फ़ोन पर आए मैसेज (SMS, WhatsApp) की सूचनाएँ पढ़ता है, सिर्फ़ इसी फ़ोन पर। कुछ भी फ़ोन से बाहर नहीं जाता।\n'
-              'ScamShield reads message notifications on the phone only; nothing leaves the phone. '
-              'Settings → Notification access → ScamShield → On.',
+          body: _t('msg_body'),
           actions: [
             OutlinedButton.icon(
               onPressed: () => _api.invokeMethod('perm.openNotificationAccess'),
               icon: Icon(_nlAccess ? Icons.check : Icons.settings),
-              label: Text(_nlAccess ? 'चालू है' : 'नोटिफ़िकेशन एक्सेस खोलें', textAlign: TextAlign.center),
+              label: Text(_t(_nlAccess ? 'msg_on' : 'msg_open'), textAlign: TextAlign.center),
             ),
           ],
         ),
@@ -389,8 +381,10 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
         collapsedShape: const Border(),
         minTileHeight: kTouch,
         leading: Icon(Icons.tune, size: 32, color: t.colorScheme.onSurface),
-        title: Text('उन्नत', style: t.textTheme.titleLarge),
-        subtitle: Text('Advanced (optional)', style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
+        title: Text(_t('adv'), style: t.textTheme.titleLarge),
+        subtitle: AppLanguage.code == 'en'
+            ? null
+            : Text(_t('adv_s'), style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
         children: _optionalSteps(modelStatus, modelReady, downloading, serviceOn),
       ),
     );
@@ -406,71 +400,24 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
         const SizedBox(width: Sp.m),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('ScamShield सिर्फ़ स्क्रीन के कैप्शन पढ़ता है। आवाज़ रिकॉर्ड नहीं होती।',
-                style: t.textTheme.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
-            Text('Reads on-screen captions only. No audio recorded.',
-                style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+            Text(_t('privacy'), style: t.textTheme.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
+            if (_secondary('privacy_s') case final sub?)
+              Text(sub, style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
           ]),
         ),
       ]),
     );
   }
 
-  /// First run only: one language choice. Setup copy is Hindi for every choice until
-  /// Chhattisgarhi and English strings exist for this screen.
-  Widget _languageCard() {
-    final t = Theme.of(context);
-    return Card(
-      key: const Key('setup_firstrun_card'),      child: Padding(
-        padding: const EdgeInsets.all(Sp.l),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Icon(Icons.translate, size: 40, color: t.colorScheme.primary),
-            const SizedBox(width: Sp.m),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Semantics(header: true, child: Text('भाषा चुनें', style: t.textTheme.titleLarge)),
-                Text('Choose language', style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
-              ]),
-            ),
-          ]),
-          const SizedBox(height: Sp.m),
-          for (final (code, label) in const [('hi', 'हिन्दी'), ('hne', 'छत्तीसगढ़ी'), ('en', 'English')])
-            Padding(
-              padding: const EdgeInsets.only(bottom: Sp.s),
-              child: Semantics(
-                selected: (_lang ?? 'hi') == code,
-                child: OutlinedButton.icon(
-                  key: Key('lang_$code'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(kTouch),
-                    alignment: Alignment.centerLeft,
-                    backgroundColor: (_lang ?? 'hi') == code ? t.colorScheme.primary.withValues(alpha: 0.12) : null,
-                    side: BorderSide(
-                        color: (_lang ?? 'hi') == code ? t.colorScheme.primary : t.colorScheme.outlineVariant,
-                        width: (_lang ?? 'hi') == code ? 2 : 1),
-                  ),
-                  onPressed: () => _pickLang(code),
-                  // Hindi is pre-selected on first run (not saved until the user taps).
-                  icon: Icon((_lang ?? 'hi') == code ? Icons.check_circle : Icons.circle_outlined, size: 28),
-                  label: Text(label),
-                ),
-              ),
-            ),
-        ]),
-      ),
-    );
-  }
-
   /// Why the next system hand-off is needed; null when no hand-off is coming.
   String? _whyNext(bool serviceOn) => !serviceOn
-      ? 'ठगी की बात पर तुरंत चेतावनी देने के लिए ScamShield को कॉल कैप्शन पढ़ने होंगे।'
+      ? _t('why_service')
       : !_captionsOn
           ? null
           : !_notif
-              ? 'ठगी पकड़े जाने पर फ़ोन पर चेतावनी दिखाने के लिए सूचनाओं की अनुमति चाहिए।'
+              ? _t('why_notif')
               : !_nlAccess
-                  ? 'SMS और WhatsApp के ठग संदेश पकड़ने के लिए ScamShield को आने वाली सूचनाएँ पढ़नी होंगी। यह सिर्फ़ इसी फ़ोन पर होता है।'
+                  ? _t('why_msg')
                   : null;
 
   /// Shown before the button that opens an Android permission screen or dialog.
@@ -485,9 +432,9 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
           const SizedBox(width: Sp.m),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('अब Android आपसे पूछेगा। यह सामान्य है।', style: t.textTheme.titleLarge),
-              Text('Android will now ask you to confirm. This is normal.',
-                  style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
+              Text(_t('pre'), style: t.textTheme.titleLarge),
+              if (_secondary('pre_s') case final sub?)
+                Text(sub, style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
               const SizedBox(height: Sp.s),
               Text(why, style: t.textTheme.bodyLarge),
             ]),
@@ -500,77 +447,74 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   List<Widget> _optionalSteps(String modelStatus, bool modelReady, bool downloading, bool serviceOn) => [
         _step(
           icon: Icons.memory,
-          title: 'ऑन-डिवाइस AI मॉडल',
-          subtitle: 'On-device AI model (Gemma 3 1B)',
+          title: _t('model_title'),
+          subtitle: _secondary('model_s'),
           done: modelReady,
-          body: 'Status: $modelStatus ${_model['message'] ?? ''}\n'
-              '${_model['path'] != null ? 'File: ${_model['path']} (${_model['sizeMb']} MB)\n' : ''}'
-              'Without the model, ScamShield still works using rules only.\n'
-              'Download it once (~555 MB, Wi-Fi recommended). It keeps downloading in the background.',
+          body: _t('model_status', {'s': modelStatus, 'm': _model['message'] ?? ''}) +
+              (_model['path'] != null ? _t('model_file', {'p': _model['path'], 'mb': _model['sizeMb']}) : '') +
+              _t('model_body'),
           actions: [
             OutlinedButton.icon(
               onPressed: downloading ? null : _download,
               icon: const Icon(Icons.download),
-              label: _lbl('मॉडल डाउनलोड करें', 'Download model'),
+              label: _lbl('model_dl'),
             ),
             if (downloading)
               OutlinedButton.icon(
                 onPressed: () async { await TextApi.cancelDownload(); _refresh(); setState(() => _dl = {}); },
                 icon: const Icon(Icons.close),
-                label: _lbl('रद्द करें', 'Cancel'),
+                label: _lbl('cancel'),
               ),
             SizedBox(width: double.infinity, child: _downloadProgress()),
             OutlinedButton.icon(
               onPressed: _importing ? null : _import,
               icon: const Icon(Icons.file_open),
               label: _importing
-                  ? _lbl('कॉपी हो रहा है…', 'Copying (≈550 MB)…')
-                  : _lbl('.task फ़ाइल जोड़ें', 'Import .task file'),
+                  ? _lbl('copying')
+                  : _lbl('import'),
             ),
             TextButton.icon(
               onPressed: () async { await TextApi.loadModel(); _refresh(); },
               icon: const Icon(Icons.refresh),
-              label: _lbl('मॉडल फिर लोड करें', 'Reload model'),
+              label: _lbl('reload'),
             ),
           ],
         ),
         _step(
           icon: Icons.mic,
-          title: 'कॉल ऑडियो टेस्ट',
-          subtitle: 'Call audio test (can the mic hear calls on this phone?)',
+          title: _t('mic_title'),
+          subtitle: _secondary('mic_s'),
           done: _mic,
-          body: 'Allow the microphone, then make a call ON SPEAKER and keep talking for ~15 s.\n'
-              'ScamShield records 3 s from each mic source and shows the result in the Live tab '
-              '(HAS_AUDIO / SILENT) with a play button. Nothing is uploaded.',
+          body: _t('mic_body'),
           actions: [
             OutlinedButton.icon(
               onPressed: _mic ? null : () async { await TextApi.requestMic(); },
               icon: Icon(_mic ? Icons.check : Icons.mic),
-              label: _mic ? _lbl('माइक्रोफ़ोन की अनुमति मिल गई', 'Microphone allowed') : _lbl('माइक्रोफ़ोन की अनुमति दें', 'Allow microphone'),
+              label: _lbl(_mic ? 'mic_ok' : 'mic_allow'),
             ),
             OutlinedButton.icon(
               onPressed: _mic
                   ? () async {
                       await TextApi.setSettings({'micProbe': true});
-                      _snack('Armed: make a call on speaker now. Results appear in the Live tab.');
+                      _snack(_t('mic_armed'));
                     }
                   : null,
               icon: const Icon(Icons.phone_in_talk),
-              label: _lbl('अगली कॉल पर जाँचें', 'Test on my next call'),
+              label: _lbl('mic_next'),
             ),
             TextButton.icon(
               onPressed: _mic ? () => TextApi.runMicProbe() : null,
               icon: const Icon(Icons.play_arrow),
-              label: _lbl('अभी जाँचें (बिना कॉल)', 'Test now (no call)'),
+              label: _lbl('mic_now'),
             ),
           ],
         ),
         _step(
           icon: Icons.chat_bubble_outline,
-          title: 'चेतावनी बबल जाँचें',
-          subtitle: 'Test the warning bubble',
+          title: _t('bub_title'),
+          subtitle: _secondary('bub_s'),
           done: false,
-          body: 'Shows a sample SCAM warning on top of the screen, exactly as it appears during a call.',
+          body: _t('bub_body'),
           actions: [
             OutlinedButton.icon(
               onPressed: serviceOn
@@ -579,7 +523,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
                     }
                   : null,
               icon: const Icon(Icons.visibility),
-              label: _lbl('टेस्ट बबल दिखाएँ', 'Show test bubble'),
+              label: _lbl('bub_show'),
             ),
           ],
         ),

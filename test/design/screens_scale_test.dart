@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/lessons/lesson_model.dart';
 import 'package:scamshield/lessons/quiz_engine.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/screens/demo_lab_screen.dart';
 import 'package:scamshield/screens/family_screen.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
@@ -92,6 +93,7 @@ Future<Object?> _demoCall(MethodCall c, {required bool slow}) async => switch (c
     };
 
 void main() {
+  setUp(() => AppLanguage.debugSet('hi')); // these tests assert the Hindi-first copy
   final themes = {'light': AppTheme.light(), 'dark': AppTheme.dark()};
 
   for (final e in themes.entries) {
@@ -245,7 +247,7 @@ void main() {
         await _show(t, e.value, const SetupScreen());
         await t.pump(const Duration(milliseconds: 100)); // let the mocked channel replies land
         await t.pumpAndSettle();
-        expect(find.byKey(const Key('setup_firstrun_card')), firstRun ? findsOneWidget : findsNothing);
+        expect(find.byKey(const Key('setup_firstrun_card')), findsNothing);
         expect(find.text('0 / 4 ज़रूरी कदम पूरे'), findsOneWidget);
         expect(t.takeException(), isNull);
         await t.scrollUntilVisible(find.byKey(const Key('setup_prepermission_card')), 200);
@@ -253,14 +255,9 @@ void main() {
         // back to the top (the AppBar owns the "सेटअप" title; the counter is the first line)
         await t.scrollUntilVisible(find.text('0 / 4 ज़रूरी कदम पूरे'), -500, maxScrolls: 100);
         if (firstRun) {
-          await t.ensureVisible(find.byKey(const Key('lang_hne')));
-          await t.pumpAndSettle();
-          // Language rows are full-width 56dp buttons, not chips.
-          expect(t.getSize(find.byKey(const Key('lang_hne'))).height, greaterThanOrEqualTo(56));
+          // The language choice moved to the app-level gate and Settings: no picker on Setup.
+          expect(find.byKey(const Key('lang_hne')), findsNothing);
           expect(find.byType(ChoiceChip), findsNothing);
-          await t.tap(find.byKey(const Key('lang_hne')));
-          await t.pumpAndSettle();
-          expect(find.byKey(const Key('setup_firstrun_card')), findsNothing);
         } else {
           await t.scrollUntilVisible(find.byKey(const Key('setup_advanced')), 500, maxScrolls: 100);
           await t.tap(find.byKey(const Key('setup_advanced')));

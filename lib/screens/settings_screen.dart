@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../api/text_api.dart';
 import '../demo/demo_flag.dart';
+import '../l10n/app_language.dart';
+import '../l10n/strings_settings.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 import '../widgets/section_header.dart';
@@ -62,7 +64,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   String? _district;
   bool _loaded = false, _failed = false, _busy = false, _ok = true;
-  String? _hi, _en; // export result message, Hindi first
+  String? _msgKey; // export result message (string key), shown in the app language
+  int _msgN = 0;
   int _versionTaps = 0;
 
   @override
@@ -71,6 +74,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _load();
     DemoFlag.load();
   }
+
+  /// Text in the app language; works in callbacks (the build-time dependency comes from [build]).
+  String _t(String key, [Map<String, Object?> args = const {}]) => settingsT(AppLanguage.code, key, args);
+
+  /// The muted English second line: only in Hindi / Chhattisgarhi mode.
+  String? _sub(String key) => AppLanguage.code == 'en' ? null : _t(key);
 
   @override
   void dispose() {
@@ -128,7 +137,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: const EdgeInsets.fromLTRB(Sp.l, 0, Sp.l, Sp.s),
               child: Semantics(
                 header: true,
-                child: Text('अपना ज़िला चुनें', style: Theme.of(ctx).textTheme.titleLarge),
+                child: Text(_t('district_sheet'), style: Theme.of(ctx).textTheme.titleLarge),
               ),
             ),
             Expanded(
@@ -158,7 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (d == null || !mounted) return;
     setState(() {
       _district = d;
-      _hi = _en = null;
+      _msgKey = null;
     });
     try {
       await _prefs.invokeMethod<void>('setString', {
@@ -177,11 +186,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// Result of the last export; [info] is a neutral outcome (not a failure).
   bool _info = false;
 
-  void _msg(bool ok, String hi, String en, {bool info = false}) => setState(() {
+  void _msg(bool ok, String key, {bool info = false, int n = 0}) => setState(() {
     _ok = ok;
     _info = info;
-    _hi = hi;
-    _en = en;
+    _msgKey = key;
+    _msgN = n;
   });
 
   Future<void> _export() async {
@@ -189,35 +198,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (d == null || _busy) return;
     setState(() {
       _busy = true;
-      _hi = _en = null;
+      _msgKey = null;
     });
     try {
       final r = await _trend.invokeMapMethod<Object?, Object?>('trend.export', {
         'district': d,
       });
       final n = (r?['count'] as num?)?.toInt() ?? 0;
-      n == 0
-          ? _msg(false, 'अभी भेजने के लिए कुछ नहीं है', 'Nothing to share yet', info: true)
-          : _msg(
-              true,
-              'शेयर खुल गया: $n गिनती',
-              'Share sheet opened: $n counts',
-            );
+      n == 0 ? _msg(false, 'm_none', info: true) : _msg(true, 'm_ok', n: n);
     } on PlatformException {
-      _msg(
-        false,
-        'नहीं भेज सके। फिर कोशिश करें',
-        'Could not export. Try again',
-      );
+      _msg(false, 'm_fail');
     } on MissingPluginException {
-      _msg(
-        false,
-        'नहीं भेज सके। फिर कोशिश करें',
-        'Could not export. Try again',
-      );
+      _msg(false, 'm_fail');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Top row: current language name; opens the picker page.
+  Widget _languageRow(ThemeData t) {
+    final cs = t.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Sp.l, Sp.l, Sp.l, 0),
+      child: Semantics(
+        button: true,
+        child: Material(
+          color: cs.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Rad.lg),
+            side: BorderSide(color: cs.outline),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            key: const Key('settings_language_row'),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const _LanguagePage())),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: kTouch),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Sp.l, vertical: Sp.m),
+                child: Row(
+                  children: [
+                    Icon(Icons.translate, size: 28, color: cs.primary),
+                    const SizedBox(width: Sp.m),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_t('lang_label'), style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                          Text(_t('lang_${AppLanguage.code}'), style: t.textTheme.titleMedium),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, size: 32, color: cs.onSurfaceVariant),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   /// One 56dp+ row: location icon, label, current value, chevron.
@@ -251,13 +291,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'आपका ज़िला',
+                          _t('district_label'),
                           style: t.textTheme.bodySmall?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
                         ),
                         Text(
-                          d ?? 'ज़िला चुनें',
+                          d ?? _t('district_pick'),
                           style: t.textTheme.titleMedium,
                         ),
                       ],
@@ -301,12 +341,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'सिर्फ़ ज़िला, ठगी का प्रकार और तारीख',
+            _t('trust_title'),
             style: t.textTheme.titleMedium,
           ),
-          item(Icons.location_on, 'ज़िला'),
-          item(Icons.category, 'ठगी का प्रकार'),
-          item(Icons.event, 'तारीख'),
+          item(Icons.location_on, _t('trust_district')),
+          item(Icons.category, _t('trust_type')),
+          item(Icons.event, _t('trust_date')),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: Sp.m),
             child: Divider(),
@@ -318,7 +358,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(width: Sp.m),
               Expanded(
                 child: Text(
-                  'आपके मैसेज, कॉल, नंबर और नाम कभी फ़ोन से बाहर नहीं जाते',
+                  _t('trust_private'),
                   style: t.textTheme.bodyLarge,
                 ),
               ),
@@ -339,10 +379,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionHeader(
+          SectionHeader(
             icon: Icons.bar_chart,
-            title: 'ठगी की गिनती भेजें',
-            subtitle: 'Share scam counts (optional)',
+            title: _t('trend_title'),
+            subtitle: _sub('trend_s'),
           ),
           _districtRow(t, d),
           const SizedBox(height: Sp.l),
@@ -356,14 +396,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _busy ? 'तैयार हो रहा है…' : 'गिनती साझा करें',
+                  _t(_busy ? 'export_busy' : 'export'),
                   textAlign: TextAlign.center,
                 ),
-                const Text(
-                  'Export anonymised counts',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                ),
+                if (_sub('export_s') case final sub?)
+                  Text(
+                    sub,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                  ),
               ],
             ),
           ),
@@ -371,14 +412,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Padding(
               padding: const EdgeInsets.only(top: Sp.s),
               child: Text(
-                'पहले ज़िला चुनें · Choose a district first',
+                [_t('pick_first'), ?_sub('pick_first_s')].join(' · '),
                 textAlign: TextAlign.center,
                 style: t.textTheme.bodySmall?.copyWith(
                   color: cs.onSurfaceVariant,
                 ),
               ),
             ),
-          if (_hi != null)
+          if (_msgKey case final mk?)
             Padding(
               padding: const EdgeInsets.only(top: Sp.m),
               child: Row(
@@ -397,17 +438,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _hi!,
+                            _t(mk, {'n': _msgN}),
                             style: t.textTheme.bodyLarge?.copyWith(
                               color: _ok ? st.safe : (_info ? cs.onSurfaceVariant : cs.error),
                             ),
                           ),
-                          Text(
-                            _en!,
-                            style: t.textTheme.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
+                          if (_sub('${mk}_s') case final sub?)
+                            Text(
+                              sub.replaceAll('{n}', '$_msgN'),
+                              style: t.textTheme.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
@@ -426,7 +468,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _versionTaps = 0;
     DemoFlag.set(true);
     ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      const SnackBar(content: Text('डेमो मोड चालू · Demo mode on')),
+      SnackBar(content: Text(_t('demo_snack'))),
     );
   }
 
@@ -435,15 +477,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) setState(() => _s = s);
   }
 
-  /// Hindi title first; the English title stays as a secondary line, then the detail.
   Widget _enLine(String t) => Text(t, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant));
 
-  // Hindi title and Hindi detail lead; the English name is the muted last line.
-  Widget _switch(String key, String hi, String en, String detail) => SwitchListTile(
-    title: Text(hi),
+  // Title and detail lead in the app language; in hi/hne the English name is the muted last line.
+  Widget _switch(String key, String tk) => SwitchListTile(
+    title: Text(_t(tk)),
     subtitle: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [Text(detail), _enLine(en)],
+      children: [Text(_t('${tk}_d')), if (_sub('${tk}_s') case final en?) _enLine(en)],
     ),
     value: _s[key] == true,
     onChanged: (v) => _set(key, v),
@@ -451,23 +492,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    AppLanguage.of(context); // rebuild when the language changes; strings read it via _t
     if (_failed) {
       return Center(
         child: StateMessage(
           icon: Icons.error_outline,
-          title: 'सेटिंग नहीं खुलीं',
-          subtitle: 'Could not load settings',
-          actionLabel: 'फिर कोशिश करें',
+          title: _t('fail_title'),
+          subtitle: _sub('fail_sub'),
+          actionLabel: _t('retry'),
           onAction: _load,
         ),
       );
     }
     if (!_loaded) {
-      return const Center(
+      return Center(
         child: StateMessage(
           loading: true,
-          title: 'लोड हो रहा है…',
-          subtitle: 'Loading…',
+          title: _t('loading'),
+          subtitle: _sub('loading_s'),
         ),
       );
     }
@@ -475,23 +517,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Keep the last row clear of the gesture bar.
       padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom + Sp.l),
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: Sp.l),
+        _languageRow(Theme.of(context)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Sp.l),
           child: SectionHeader(
             icon: Icons.shield,
-            title: 'चेतावनी की सेटिंग',
-            subtitle: 'Warning settings',
+            title: _t('warn_title'),
+            subtitle: _sub('warn_s'),
             muted: true,
           ),
         ),
-        _switch('overlayEnabled', 'चेतावनी बबल दिखाएँ', 'Show warning bubble',
-            'कॉल के दौरान स्क्रीन पर तैरती चेतावनी'),
-        _switch('autoEnableCaptions', 'लाइव कैप्शन अपने आप चालू करें', 'Auto-turn-on Live Caption',
-            'कॉल के 6 सेकंड बाद तक कैप्शन न दिखें तो'),
-        _switch('inCallSignals', 'कॉल के दौरान ठगी के संकेत', 'In-call scam signals',
-            'कॉल में OTP आए या UPI/बैंक/AnyDesk ऐप खुले तो चेतावनी'),
-        _switch('wifiOnly', 'मॉडल सिर्फ़ Wi-Fi पर डाउनलोड करें', 'Download model on Wi-Fi only',
-            'मॉडल लगभग 555 MB का है'),
+        _switch('overlayEnabled', 'overlay'),
+        _switch('autoEnableCaptions', 'caps'),
+        _switch('inCallSignals', 'signals'),
+        _switch('wifiOnly', 'wifi'),
         _trendSection(context),
         const Divider(),
         // Developer controls: closed by default so the first screen is for the user.
@@ -503,25 +542,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             initiallyExpanded: _advancedOpen,
             onExpansionChanged: (v) => _advancedOpen = v,
             leading: Icon(Icons.tune, size: 28, color: Theme.of(context).colorScheme.onSurfaceVariant),
-            title: const Text('उन्नत सेटिंग'),
-            subtitle: const Text('Advanced settings'),
+            title: Text(_t('adv')),
+            subtitle: AppLanguage.code == 'en' ? null : Text(_t('adv_s')),
             children: [
-              _switch('useLlm', 'फ़ोन पर चलने वाला Gemma इस्तेमाल करें', 'Use on-device Gemma',
-                  'बंद हो तो सिर्फ़ नियम चलते हैं (कम क्षमता वाले फ़ोन पर तेज़)'),
-              _switch('ocrFallback', 'स्क्रीन पढ़कर देखें (OCR)', 'Screen-reading fallback (OCR)',
-                  'कैप्शन का टेक्स्ट छिपा हो तो स्क्रीनशॉट से पढ़ता है (Android 11+)'),
-              _switch('micProbe', 'अगली कॉल पर ऑडियो जाँच (प्रयोगात्मक)', 'Call audio test on next call (experimental)',
-                  'अगली कॉल की शुरुआत में हर माइक से 3 सेकंड जाँचता है, फिर खुद बंद हो जाता है'),
-              _switch('discoveryMode', 'खोज मोड (डिबग)', 'Discovery mode (debug)',
-                  'आपके फ़ोन का कैप्शन पैकेज ढूँढने के लिए हर विंडो का टेक्स्ट लाइव टैब में दिखाता है'),
+              _switch('useLlm', 'llm'),
+              _switch('ocrFallback', 'ocr'),
+              _switch('micProbe', 'probe'),
+              _switch('discoveryMode', 'disco'),
               Padding(
                 padding: const EdgeInsets.all(Sp.l),
                 child: TextField(
                   controller: _pkgCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'कैप्शन स्रोत पैकेज (कॉमा से अलग) · Caption source packages',
-                    helperText: 'खोज मोड से मिलते हैं। जिनमें "caption" है वे हमेशा शामिल हैं।',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: _t('pkg_label'),
+                    helperText: _t('pkg_help'),
+                    border: const OutlineInputBorder(),
                   ),
                   onSubmitted: (v) => _set('captionPackages', v),
                 ),
@@ -530,10 +565,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 valueListenable: DemoFlag.enabled,
                 builder: (_, on, _) => SwitchListTile(
                   key: const Key('demoModeSwitch'),
-                  title: const Text('डेमो मोड'),
+                  title: Text(_t('demo')),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [const Text('मदद टैब में "डेमो लैब" दिखाएँ'), _enLine('Demo mode')],
+                    children: [Text(_t('demo_d')), if (_sub('demo_s') case final en?) _enLine(en)],
                   ),
                   value: on,
                   onChanged: DemoFlag.set,
@@ -551,4 +586,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ],
     );
   }
+}
+
+/// Language choice page: picking a language saves it and returns to Settings.
+class _LanguagePage extends StatelessWidget {
+  const _LanguagePage();
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(settingsT(AppLanguage.of(context), 'lang_title'))),
+        body: LanguagePicker(
+          selected: AppLanguage.code,
+          showPrompt: false,
+          onPicked: (c) {
+            AppLanguage.set(c);
+            Navigator.pop(context);
+          },
+        ),
+      );
 }

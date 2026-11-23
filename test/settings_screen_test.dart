@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/screens/settings_screen.dart';
 
 import 'qa/qa_harness.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => AppLanguage.debugSet('hi')); // these tests assert the Hindi-first copy
 
   testWidgets('T3_10_exportCallsChannel', (t) async {
     final prefs = <String, String>{};

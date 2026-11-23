@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/lessons/quiz_engine.dart';
 import 'package:scamshield/screens/family_screen.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
@@ -17,6 +18,7 @@ const _okVerdict = {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => AppLanguage.debugSet('hi')); // these tests assert the Hindi-first copy
 
   for (final e in themes.entries) {
     final theme = e.value;
