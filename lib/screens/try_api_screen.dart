@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../api/text_api.dart';
 import '../models/verdict.dart';
+import '../theme/tokens.dart';
+import '../widgets/status_chip.dart';
 import '../widgets/verdict_card.dart';
 
 /// Paste any SMS / WhatsApp message / call sentence and run the on-device Text API.
@@ -48,7 +50,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
         minLines: 2,
         maxLines: 5,
         decoration: const InputDecoration(
-          labelText: 'Message or call sentence (English / हिंदी / Hinglish)',
+          labelText: 'संदेश यहाँ चिपकाएँ · Paste a message',
           border: OutlineInputBorder(),
         ),
       ),
@@ -56,7 +58,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
       Wrap(spacing: 6, runSpacing: 6, children: [
         for (final s in samples)
           ActionChip(
-            label: Text(s.length > 28 ? '${s.substring(0, 28)}…' : s),
+            label: Text(s.length > 20 ? '${s.substring(0, 20)}…' : s, maxLines: 1, overflow: TextOverflow.ellipsis),
             onPressed: () => _ctrl.text = s,
           ),
       ]),
@@ -73,7 +75,14 @@ class _TryApiScreenState extends State<TryApiScreen> {
         child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
       ),
       const SizedBox(height: 12),
-      for (final v in _history) VerdictCard(verdict: v),
+      for (final v in _history) ...[
+        if (v.scamTypeLabel != null && v.label != RiskLabel.safe)
+          Padding(
+            padding: const EdgeInsets.only(top: Sp.m),
+            child: Align(alignment: Alignment.centerLeft, child: StatusChip(label: v.label, text: v.scamTypeLabel)),
+          ),
+        VerdictCard(verdict: v),
+      ],
     ]);
   }
 }

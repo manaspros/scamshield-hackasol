@@ -42,6 +42,7 @@ class Verdict {
   final int latencyMs;
   final String source;
   final bool preliminary;
+  final String? scamType;
 
   const Verdict({
     required this.text,
@@ -53,6 +54,7 @@ class Verdict {
     required this.latencyMs,
     required this.source,
     this.preliminary = false,
+    this.scamType,
   });
 
   factory Verdict.fromMap(Map<Object?, Object?> m) => Verdict(
@@ -65,8 +67,28 @@ class Verdict {
         latencyMs: ((m['latencyMs'] as num?) ?? 0).toInt(),
         source: (m['source'] as String?) ?? 'manual',
         preliminary: (m['preliminary'] as bool?) ?? false,
+        scamType: m['scamType'] as String?,
       );
+
+  /// "हिंदी · English" for a known scam type, else null (unknown or absent types show no chip).
+  String? get scamTypeLabel {
+    final l = _scamTypeLabels[scamType?.toUpperCase()];
+    return l == null ? null : '${l.$1} · ${l.$2}';
+  }
 
   int get percent => (confidence * 100).round();
   String get headline => 'This statement is ${label.title} · $percent%';
 }
+
+const _scamTypeLabels = <String, (String, String)>{
+  'OTP': ('ओटीपी माँगना', 'OTP theft'),
+  'KYC': ('केवाईसी धोखा', 'KYC fraud'),
+  'DIGITAL_ARREST': ('डिजिटल अरेस्ट', 'Digital arrest'),
+  'COURIER_CUSTOMS': ('कूरियर / कस्टम्स धोखा', 'Courier / customs'),
+  'FAKE_QR': ('नकली क्यूआर', 'Fake QR'),
+  'LOAN_APP': ('लोन ऐप धोखा', 'Loan app'),
+  'INVESTMENT': ('निवेश धोखा', 'Investment fraud'),
+  'JOB': ('नौकरी का झाँसा', 'Job scam'),
+  'MISTAKEN_TRANSFER': ('गलती से भेजे पैसे', 'Mistaken transfer'),
+  'OTHER': ('अन्य धोखाधड़ी', 'Other scam'),
+};
