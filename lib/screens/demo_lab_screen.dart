@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
+import '../widgets/press_scale.dart';
 import '../widgets/section_header.dart';
+import '../widgets/stat_tile.dart';
 import '../widgets/state_message.dart';
 import '../widgets/status_chip.dart';
 
@@ -75,9 +77,18 @@ class DemoStrings {
     'reset': 'डेमो रीसेट करें',
     'resetOk': 'डेमो का डेटा हटा दिया',
     'resetErr': 'रीसेट नहीं हो सका',
+    'resetAsk': 'डेमो रीसेट करें?',
+    'resetBody': 'डेमो का सारा डेटा और अब तक के नतीजे हट जाएँगे।',
+    'cancel': 'रहने दें',
     'skip': 'एनीमेशन छोड़ें',
     'run': 'चलाएँ',
     'running': 'चल रहा है…',
+    'progress': 'चल रहे हैं',
+    'passed': 'सफल',
+    'failed': 'विफल',
+    'avg': 'औसत समय',
+    'more': 'और देखें',
+    'less': 'कम दिखाएँ',
     'steps': 'घटनाएँ',
     'event': 'घटना',
     'st1': 'घटना आई',
@@ -90,11 +101,14 @@ class DemoStrings {
     'noRules': 'कोई नियम नहीं लगा',
     'rulesOnly': 'सिर्फ़ नियम, Gemma नहीं',
     'noAlert': 'कोई अलर्ट नहीं भेजा गया',
+    'alertYes': 'अलर्ट भेजा गया',
     'expected': 'अपेक्षित',
     'got': 'मिला',
     'flagsExp': 'अपेक्षित संकेत',
     'flagsGot': 'मिले संकेत',
     'engine': 'इंजन',
+    'engineGemma': 'Gemma + नियम',
+    'engineRules': 'सिर्फ़ नियम',
     'note': 'नोट',
     'conf': 'भरोसा',
     'type': 'प्रकार',
@@ -107,6 +121,8 @@ class DemoStrings {
     'unavailableSub': 'फ़ोन का डेमो हिस्सा जवाब नहीं दे रहा',
     'retry': 'फिर कोशिश करें',
     'runErr': 'यह डेमो नहीं चल सका',
+    'emptyTitle': 'अभी कोई डेमो नहीं है',
+    'emptySub': 'इस ऐप में डेमो कहानियाँ नहीं मिलीं',
   });
 
   static const hne = DemoStrings({
@@ -122,9 +138,18 @@ class DemoStrings {
     'reset': 'डेमो रीसेट करव',
     'resetOk': 'डेमो के डेटा हटा दिस',
     'resetErr': 'रीसेट नइ हो सकिस',
+    'resetAsk': 'डेमो रीसेट करव?',
+    'resetBody': 'डेमो के जम्मो डेटा अउ अब तक के नतीजा हट जाही।',
+    'cancel': 'रहन देव',
     'skip': 'एनीमेशन छोड़व',
     'run': 'चलावव',
     'running': 'चलत हे…',
+    'progress': 'चलत हें',
+    'passed': 'सफल',
+    'failed': 'असफल',
+    'avg': 'औसत समय',
+    'more': 'अउ देखव',
+    'less': 'कम देखव',
     'steps': 'घटना',
     'event': 'घटना',
     'st1': 'घटना आइस',
@@ -137,11 +162,14 @@ class DemoStrings {
     'noRules': 'कोनो नियम नइ लगिस',
     'rulesOnly': 'सिरिफ नियम, Gemma नइ',
     'noAlert': 'कोनो अलर्ट नइ भेजिस',
+    'alertYes': 'अलर्ट भेजे गिस',
     'expected': 'अपेक्षित',
     'got': 'मिलिस',
     'flagsExp': 'अपेक्षित संकेत',
     'flagsGot': 'मिले संकेत',
     'engine': 'इंजन',
+    'engineGemma': 'Gemma + नियम',
+    'engineRules': 'सिरिफ नियम',
     'note': 'नोट',
     'conf': 'भरोसा',
     'type': 'किसम',
@@ -154,6 +182,8 @@ class DemoStrings {
     'unavailableSub': 'फोन के डेमो हिस्सा जवाब नइ देवत हे',
     'retry': 'फेर कोसिस करव',
     'runErr': 'ये डेमो नइ चलिस',
+    'emptyTitle': 'अभी कोनो डेमो नइ हे',
+    'emptySub': 'ये ऐप म डेमो कहिनी नइ मिलिस',
   });
 
   static const en = DemoStrings({
@@ -169,9 +199,18 @@ class DemoStrings {
     'reset': 'Reset demo',
     'resetOk': 'Demo data cleared',
     'resetErr': 'Could not reset',
+    'resetAsk': 'Reset the demo?',
+    'resetBody': 'All demo data and the results so far will be cleared.',
+    'cancel': 'Keep it',
     'skip': 'Skip animation',
     'run': 'Run',
     'running': 'Running…',
+    'progress': 'running',
+    'passed': 'Passed',
+    'failed': 'Failed',
+    'avg': 'Average time',
+    'more': 'See more',
+    'less': 'Show less',
     'steps': 'events',
     'event': 'Event',
     'st1': 'Event ingested',
@@ -184,11 +223,14 @@ class DemoStrings {
     'noRules': 'No rule matched',
     'rulesOnly': 'Rules only, no Gemma',
     'noAlert': 'No alert fired',
+    'alertYes': 'Alert shown',
     'expected': 'Expected',
     'got': 'Got',
     'flagsExp': 'Expected flags',
     'flagsGot': 'Actual flags',
     'engine': 'Engine',
+    'engineGemma': 'Gemma + rules',
+    'engineRules': 'Rules only',
     'note': 'Note',
     'conf': 'Confidence',
     'type': 'Type',
@@ -201,6 +243,8 @@ class DemoStrings {
     'unavailableSub': 'The phone side of the demo is not answering',
     'retry': 'Try again',
     'runErr': 'This demo could not run',
+    'emptyTitle': 'No demos yet',
+    'emptySub': 'No demo stories were found in this build',
   });
 
   static const all = {'hi': hi, 'hne': hne, 'en': en};
@@ -230,6 +274,9 @@ const _icons = <String, IconData>{
 /// Longest wait between two timeline events, so a long scripted gap never stalls the demo.
 const _maxDelayMs = 1500;
 
+/// Widest the content grows on a tablet or a mirrored screen.
+const _maxWidth = 720.0;
+
 String _headline(RiskLabel l) => switch (l) {
       RiskLabel.safe => 'सुरक्षित',
       RiskLabel.suspicious => 'सावधान',
@@ -237,6 +284,54 @@ String _headline(RiskLabel l) => switch (l) {
     };
 
 String _join(List<String> l) => l.isEmpty ? '—' : l.join(', ');
+
+/// Script time of an event as "+2.5 s".
+String _offset(int ms) => '+${(ms / 1000).toStringAsFixed(ms % 1000 == 0 ? 0 : 1)} s';
+
+/// Monospace block that shows its first lines and opens on "और देखें". Only long content gets the toggle.
+class _MonoBox extends StatefulWidget {
+  const _MonoBox({required this.lines, required this.more, required this.less, this.peek = 2});
+  final List<String> lines;
+  final String more, less;
+  final int peek;
+
+  @override
+  State<_MonoBox> createState() => _MonoBoxState();
+}
+
+class _MonoBoxState extends State<_MonoBox> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context);
+    final style = t.textTheme.bodySmall?.copyWith(fontFamily: 'monospace', color: t.colorScheme.onSurface);
+    final long = widget.lines.length > widget.peek || widget.lines.any((l) => l.length > 90);
+    final shown = _open ? widget.lines : widget.lines.take(widget.peek).toList();
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Container(
+        padding: const EdgeInsets.all(Sp.m),
+        decoration: BoxDecoration(
+          color: t.colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(Rad.md),
+          border: Border.all(color: t.colorScheme.outline),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          for (final l in shown) Text(l, style: style, maxLines: _open ? null : 2, overflow: _open ? null : TextOverflow.ellipsis),
+        ]),
+      ),
+      if (long)
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => setState(() => _open = !_open),
+            icon: Icon(_open ? Icons.expand_less : Icons.expand_more),
+            label: Text(_open ? widget.less : widget.more),
+          ),
+        ),
+    ]);
+  }
+}
 
 /// Feature-flagged test bench: runs scripted SMS / call stories through the real pipeline
 /// (graph context, rules, Gemma, fusion, alert) and shows every stage with a PASS / FAIL badge.
@@ -255,8 +350,11 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
   bool _loading = true, _modelReady = false, _gemma = true, _cold = false, _skip = false;
   String? _busyId; // '*' while Run all is going
   String? _current; // scenario being run right now
+  int _runTotal = 0, _runDone = 0;
   final _results = <String, Map<String, Object?>>{};
   final _shown = <String, int>{};
+  final _open = <String>{}; // cards whose timeline is expanded
+  final _cardKeys = <String, GlobalKey>{};
   Timer? _timer;
   Completer<void>? _wake;
 
@@ -313,7 +411,17 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
       _current = id;
       _results.remove(id);
       _shown.remove(id);
+      _open
+        ..clear()
+        ..add(id);
     });
+    if (_runTotal > 1) {
+      // Run all: bring the card that is running to the top so a long list never hides it.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctx = _cardKeys[id]?.currentContext;
+        if (ctx != null && ctx.mounted) Scrollable.ensureVisible(ctx, duration: Duration.zero);
+      });
+    }
     final r = await widget.api.run(id, gemma: _useGemma, coldStart: _cold);
     if (!mounted) return;
     if (r == null) {
@@ -338,30 +446,58 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
     setState(() {
       _busyId = busy;
       _skip = false;
+      _runTotal = ids.length;
+      _runDone = 0;
     });
     for (final id in ids) {
       await _runOne(id);
       if (!mounted) return;
+      setState(() => _runDone++);
     }
     setState(() {
       _busyId = null;
       _current = null;
+      // After a batch, open only the scenarios that failed, so the one to look at is on screen.
+      if (ids.length > 1) {
+        _open
+          ..clear()
+          ..addAll(ids.where((i) => _results[i] != null && _results[i]!['pass'] != true));
+      }
     });
   }
 
   Future<void> _reset() async {
     if (_busyId != null) return;
+    final s = DemoStrings.of(_lang);
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(s['resetAsk']),
+        content: Text(s['resetBody']),
+        actions: [
+          TextButton(key: const Key('demo_reset_cancel'), onPressed: () => Navigator.pop(c, false), child: Text(s['cancel'])),
+          FilledButton(key: const Key('demo_reset_confirm'), onPressed: () => Navigator.pop(c, true), child: Text(s['reset'])),
+        ],
+      ),
+    );
+    if (sure != true || !mounted) return;
     final ok = await widget.api.reset();
     if (!mounted) return;
     setState(() {
       _results.clear();
       _shown.clear();
+      _open.clear();
     });
-    final s = DemoStrings.of(_lang);
     _toast(ok ? s['resetOk'] : s['resetErr']);
   }
 
-  Widget _panel(ThemeData t, Widget child) => Container(
+  /// Hindi first, English after a slash, so a judge who cannot read Hindi still knows the action.
+  String _bi(DemoStrings s, String k) => _lang == 'en' ? s[k] : '${s[k]} / ${DemoStrings.en[k]}';
+
+  String _engineName(DemoStrings s, String used) => used.toLowerCase().contains('gemma') ? s['engineGemma'] : s['engineRules'];
+
+  Widget _panel(ThemeData t, Widget child, {Key? key}) => Container(
+        key: key,
         padding: const EdgeInsets.all(Sp.l),
         decoration: BoxDecoration(
           color: t.colorScheme.surface,
@@ -389,7 +525,7 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
         ]),
       );
 
-  Widget _controls(ThemeData t, DemoStrings s, List<Map<String, Object?>> list) {
+  Widget _controls(ThemeData t, DemoStrings s) {
     final busy = _busyId != null;
     // Transparent Material so the switch tiles paint their ink on it, not under the panel's DecoratedBox.
     return _panel(
@@ -397,43 +533,67 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
       Material(
         type: MaterialType.transparency,
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        SwitchListTile(
-          key: const Key('demo_engine'),
-          contentPadding: EdgeInsets.zero,
-          title: Text(s['gemmaOn']),
-          subtitle: Text(!_modelReady
-              ? s['noModel']
-              : _useGemma
-                  ? 'Gemma + नियम · Gemma + rules'
-                  : 'सिर्फ़ नियम · Rules only'),
-          value: _useGemma,
-          onChanged: _modelReady && !busy ? (v) => setState(() => _gemma = v) : null,
-        ),
-        SwitchListTile(
-          key: const Key('demo_cold'),
-          contentPadding: EdgeInsets.zero,
-          title: Text(s['cold']),
-          subtitle: Text(s['coldSub']),
-          value: _cold,
-          onChanged: busy ? null : (v) => setState(() => _cold = v),
-        ),
-        const SizedBox(height: Sp.m),
-        FilledButton.icon(
-          key: const Key('demo_run_all'),
-          onPressed: busy || list.isEmpty ? null : () => _start([for (final sc in list) _s(sc['id'])], '*'),
-          icon: const Icon(Icons.play_circle),
-          label: Text(s['runAll'], textAlign: TextAlign.center),
-        ),
-        const SizedBox(height: Sp.s),
-        OutlinedButton.icon(
-          key: const Key('demo_reset'),
-          onPressed: busy ? null : _reset,
-          icon: const Icon(Icons.restart_alt),
-          label: Text(s['reset'], textAlign: TextAlign.center),
-        ),
+          Row(children: [
+            Icon(Icons.tune, size: 24, color: t.colorScheme.primary),
+            const SizedBox(width: Sp.s),
+            Expanded(child: Text(_bi(s, 'engine'), style: t.textTheme.titleMedium)),
+          ]),
+          SwitchListTile(
+            key: const Key('demo_engine'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(s['gemmaOn']),
+            subtitle: Text(!_modelReady
+                ? s['noModel']
+                : _useGemma
+                    ? 'Gemma + नियम · Gemma + rules'
+                    : 'सिर्फ़ नियम · Rules only'),
+            value: _useGemma,
+            onChanged: _modelReady && !busy ? (v) => setState(() => _gemma = v) : null,
+          ),
+          SwitchListTile(
+            key: const Key('demo_cold'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(s['cold']),
+            subtitle: Text(s['coldSub']),
+            value: _cold,
+            onChanged: busy ? null : (v) => setState(() => _cold = v),
+          ),
         ]),
       ),
     );
+  }
+
+  /// Passed / failed / average time over every scenario that has finished.
+  Widget _summary(ThemeData t, DemoStrings s) {
+    final done = [
+      for (final e in _results.entries)
+        if ((_shown[e.key] ?? 0) >= _ml(e.value['steps']).length) e.value
+    ];
+    final passed = done.where((r) => r['pass'] == true).length;
+    final lat = [
+      for (final r in done)
+        for (final st in _ml(r['steps']))
+          if (st['latencyMs'] is num) (st['latencyMs'] as num).toDouble()
+    ];
+    final tiles = <Widget>[
+      StatTile(key: const Key('demo_sum_pass'), valueKey: const Key('demo_sum_pass_value'), icon: Icons.check_circle, value: '$passed', caption: _bi(s, 'passed')),
+      StatTile(key: const Key('demo_sum_fail'), valueKey: const Key('demo_sum_fail_value'), icon: Icons.cancel, value: '${done.length - passed}', caption: _bi(s, 'failed')),
+      if (lat.isNotEmpty)
+        StatTile(
+            key: const Key('demo_sum_avg'),
+            valueKey: const Key('demo_sum_avg_value'),
+            icon: Icons.timer,
+            value: '${(lat.reduce((a, b) => a + b) / lat.length).round()} ms',
+            caption: _bi(s, 'avg')),
+    ];
+    return LayoutBuilder(builder: (c, box) {
+      // Two to a row on a phone (a third wraps full width), all in one row on a wide screen.
+      final cols = box.maxWidth >= 560 ? tiles.length : 2;
+      final w = (box.maxWidth - Sp.m * (cols - 1)) / cols;
+      return Wrap(spacing: Sp.m, runSpacing: Sp.m, children: [
+        for (final (i, tile) in tiles.indexed) SizedBox(width: cols == 2 && i == tiles.length - 1 && tiles.length.isOdd ? box.maxWidth : w, child: tile),
+      ]);
+    });
   }
 
   Widget _badge(ThemeData t, StatusColors st, bool pass, {Key? key}) {
@@ -467,9 +627,10 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
         child: child,
       );
 
-  /// One row of the six-stage rail: numbered node, bilingual stage title, then the stage body.
-  Widget _stage(ThemeData t, DemoStrings s, int n, List<Widget> body, {bool last = false}) {
+  /// One row of the six-stage rail: icon dot on a thin line, bilingual stage title, then the stage body.
+  Widget _stage(ThemeData t, DemoStrings s, int n, IconData icon, List<Widget> body, {bool last = false, Color? tone}) {
     final cs = t.colorScheme;
+    final c = tone ?? cs.primary;
     return IntrinsicHeight(
       child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         SizedBox(
@@ -479,8 +640,8 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
               width: 32,
               height: 32,
               alignment: Alignment.center,
-              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: cs.primary, width: 2)),
-              child: Text('$n', textScaler: TextScaler.noScaling, style: t.textTheme.labelMedium?.copyWith(color: cs.primary)),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: cs.surface, border: Border.all(color: c, width: 2)),
+              child: Icon(icon, size: 18, color: c),
             ),
             if (!last) Expanded(child: Container(width: 2, color: cs.outline)),
           ]),
@@ -534,7 +695,7 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
     );
   }
 
-  Widget _step(ThemeData t, StatusColors st, DemoStrings s, Map<String, Object?> step, int n) {
+  Widget _step(ThemeData t, StatusColors st, DemoStrings s, Map<String, Object?> step, int n, int offsetMs, String engineUsed) {
     final cs = t.colorScheme;
     final muted = t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant);
     final pass = step['pass'] == true;
@@ -551,15 +712,27 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
     final gemmaType = gemma == null ? '' : _s(gemma['scamType']);
     final gemmaReason = gemma == null ? '' : _s(gemma['reason']);
     final sender = _s(step['sender']);
+    final source = _s(step['source']);
     final expLabel = _s(step['expectedLabel']);
     final flagStyle = pass ? muted : muted?.copyWith(color: st.scam);
+    final srcIcon = switch (source) {
+      'call' => Icons.call,
+      'notification' => Icons.notifications,
+      _ => Icons.sms,
+    };
     return Column(
       key: Key('demo_step_$n'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Divider(height: Sp.xl),
         Row(children: [
-          Expanded(child: Text('${s['event']} $n', style: t.textTheme.titleMedium)),
+          Expanded(
+            child: Text.rich(TextSpan(children: [
+              TextSpan(text: '${s['event']} $n'),
+              TextSpan(text: '  ${_offset(offsetMs)}', style: muted),
+            ]), style: t.textTheme.titleMedium),
+          ),
+          const SizedBox(width: Sp.s),
           _badge(t, st, pass, key: Key('demo_step_badge_$n')),
         ]),
         const SizedBox(height: Sp.xs),
@@ -567,45 +740,57 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
         Text('${s['flagsExp']}: ${_join(_sl(step['expectedFlags']))}', style: flagStyle),
         Text('${s['flagsGot']}: ${_join(_sl(step['actualFlags']))}', style: flagStyle),
         const SizedBox(height: Sp.l),
-        _stage(t, s, 1, [
+        _stage(t, s, 1, srcIcon, [
           Wrap(spacing: Sp.s, runSpacing: Sp.xs, children: [
-            _tag(t, _s(step['source'])),
+            if (source.isNotEmpty) _tag(t, source),
             if (sender.isNotEmpty) _tag(t, sender),
           ]),
           const SizedBox(height: Sp.s),
           _box(t, Text(_s(step['text']), style: t.textTheme.bodyLarge)),
         ]),
-        _stage(t, s, 2, [
-          if (ctx.isEmpty)
-            Text(s['noContext'], style: muted)
-          else
-            _box(t, Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              for (final line in ctx) Text(line, style: t.textTheme.bodyMedium?.copyWith(fontFamily: 'monospace')),
-            ])),
+        _stage(t, s, 2, Icons.account_tree, [
+          if (ctx.isEmpty) Text(s['noContext'], style: muted) else _MonoBox(lines: ctx, more: _bi(s, 'more'), less: _bi(s, 'less')),
         ]),
-        _stage(t, s, 3, [
+        _stage(t, s, 3, Icons.rule, [
           if (rules.isEmpty)
             Text(s['noRules'], style: muted)
           else
             Wrap(spacing: Sp.s, runSpacing: Sp.xs, children: [for (final r in rules) _tag(t, r)]),
         ]),
-        _stage(t, s, 4, [
+        _stage(t, s, 4, Icons.psychology, [
           if (gemma == null)
             Text(s['rulesOnly'], style: muted)
           else ...[
             Align(alignment: Alignment.centerLeft, child: _chip(parseLabel(gemma['label']))),
-            if (gemmaType.isNotEmpty) Padding(padding: const EdgeInsets.only(top: Sp.xs), child: Text('${s['type']}: $gemmaType', style: t.textTheme.bodyMedium)),
-            if (gemmaReason.isNotEmpty) Padding(padding: const EdgeInsets.only(top: Sp.xs), child: Text(gemmaReason, style: t.textTheme.bodyMedium)),
+            const SizedBox(height: Sp.s),
+            _MonoBox(
+              lines: [
+                'label: ${parseLabel(gemma['label']).title}',
+                if (gemmaType.isNotEmpty) 'type: $gemmaType',
+                if (gemmaReason.isNotEmpty) 'reason: $gemmaReason',
+              ],
+              more: _bi(s, 'more'),
+              less: _bi(s, 'less'),
+              peek: 3,
+            ),
           ],
         ]),
-        _stage(t, s, 5, [
+        _stage(t, s, 5, Icons.gavel, tone: st.solid(fusedLabel), [
           Align(alignment: Alignment.centerLeft, child: _chip(fusedLabel)),
-          if (confText != null) Padding(padding: const EdgeInsets.only(top: Sp.xs), child: Text('${s['conf']}: $confText', style: t.textTheme.bodyMedium)),
+          const SizedBox(height: Sp.xs),
+          Text('${s['engine']}: ${_engineName(s, engineUsed)}', style: t.textTheme.bodyMedium),
+          if (confText != null) Text('${s['conf']}: $confText', style: t.textTheme.bodyMedium),
           if (fusedType.isNotEmpty) Text('${s['type']}: $fusedType', style: t.textTheme.bodyMedium),
           if (raised.isNotEmpty) Text('${s['raisedBy']}: ${raised.join(', ')}', style: t.textTheme.bodyMedium),
         ]),
-        _stage(t, s, 6, [
-          if (alert == null) Text(s['noAlert'], style: muted) else _alertCard(t, s, alert),
+        _stage(t, s, 6, alert == null ? Icons.notifications_off : Icons.notifications_active, [
+          if (alert == null)
+            Text(s['noAlert'], style: muted)
+          else ...[
+            Text(fusedType.isEmpty ? s['alertYes'] : '${s['alertYes']} · $fusedType', style: t.textTheme.bodyMedium),
+            const SizedBox(height: Sp.s),
+            _alertCard(t, s, alert),
+          ],
         ], last: true),
       ],
     );
@@ -621,46 +806,131 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
     final passed = steps.where((e) => e['pass'] == true).length;
     final note = res == null ? '' : _s(res['note']);
     final busy = _busyId != null;
+    final open = res != null && _open.contains(id);
+    // The scenario can state its expected verdict; otherwise take the most severe step expectation of the last run.
+    final expected = sc['expectedLabel'] != null
+        ? parseLabel(sc['expectedLabel'])
+        : steps.isEmpty
+            ? null
+            : steps.map((e) => parseLabel(e['expectedLabel'])).reduce((a, b) => a.index >= b.index ? a : b);
+    var offset = 0;
+    final offsets = [for (final e in steps) offset += (e['delayMs'] as num?)?.toInt() ?? 0];
+    final engineUsed = res == null ? '' : _s(res['engineUsed']);
+    final header = Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(
+        width: 48,
+        height: 48,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: cs.surfaceContainerHigh),
+        child: Icon(_icons[_s(sc['icon'])] ?? Icons.science, size: 28, color: cs.primary),
+      ),
+      const SizedBox(width: Sp.m),
+      Expanded(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(_s(sc['titleHi']), style: t.textTheme.titleMedium),
+          Text(_s(sc['titleEn']), style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+        ]),
+      ),
+      if (res != null) Padding(padding: const EdgeInsets.only(left: Sp.s), child: Icon(open ? Icons.expand_less : Icons.expand_more, size: 28, color: cs.onSurfaceVariant)),
+    ]);
     return _panel(
       t,
+      key: _cardKeys.putIfAbsent(id, GlobalKey.new),
       Column(key: Key('demo_card_$id'), crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(_icons[_s(sc['icon'])] ?? Icons.science, size: 32, color: cs.primary),
-          const SizedBox(width: Sp.m),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(_s(sc['titleHi']), style: t.textTheme.titleMedium),
-              Text(_s(sc['titleEn']), style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-            ]),
+        if (res == null)
+          header
+        else
+          Semantics(
+            button: true,
+            expanded: open,
+            child: InkWell(
+              key: Key('demo_toggle_$id'),
+              borderRadius: BorderRadius.circular(Rad.md),
+              onTap: () => setState(() => open ? _open.remove(id) : _open.add(id)),
+              child: ConstrainedBox(constraints: const BoxConstraints(minHeight: kTouch), child: header),
+            ),
           ),
-        ]),
         const SizedBox(height: Sp.s),
         Text(_lang == 'en' ? _s(sc['storyEn']) : _s(sc['storyHi']), style: t.textTheme.bodyMedium),
         const SizedBox(height: Sp.s),
-        Wrap(spacing: Sp.m, runSpacing: Sp.xs, crossAxisAlignment: WrapCrossAlignment.center, children: [
-          Text('${(sc['steps'] as num?)?.toInt() ?? steps.length} ${s['steps']}', style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+        Wrap(spacing: Sp.m, runSpacing: Sp.s, crossAxisAlignment: WrapCrossAlignment.center, children: [
+          if (expected != null) StatusChip(key: Key('demo_expected_$id'), label: expected, text: '${s['expected']}: ${_headline(expected)}'),
           if (res != null && done) _badge(t, st, res['pass'] == true, key: Key('demo_badge_$id')),
           if (res != null && done) Text('$passed/${steps.length}', style: t.textTheme.labelMedium),
+          Text('${(sc['steps'] as num?)?.toInt() ?? steps.length} ${s['steps']}', style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
         ]),
         const SizedBox(height: Sp.m),
-        FilledButton.icon(
+        OutlinedButton.icon(
           key: Key('demo_run_$id'),
           onPressed: busy ? null : () => _start([id], id),
           icon: Icon(_current == id ? Icons.hourglass_top : Icons.play_arrow),
-          label: Text(_current == id ? s['running'] : s['run'], textAlign: TextAlign.center),
+          label: Text(_current == id ? _bi(s, 'running') : _bi(s, 'run'), textAlign: TextAlign.center),
         ),
         if (res != null) ...[
           const SizedBox(height: Sp.m),
-          Text('${s['engine']}: ${_s(res['engineUsed'])}', key: Key('demo_engine_used_$id'), style: t.textTheme.labelMedium),
+          Row(children: [
+            Icon(engineUsed.toLowerCase().contains('gemma') ? Icons.psychology : Icons.rule, size: 20, color: cs.onSurfaceVariant),
+            const SizedBox(width: Sp.s),
+            Expanded(child: Text('${s['engine']}: ${_engineName(s, engineUsed)}', key: Key('demo_engine_used_$id'), style: t.textTheme.labelMedium)),
+          ]),
           if (note.isNotEmpty) Text('${s['note']}: $note', style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-          for (var i = 0; i < steps.length && i < shown; i++) _step(t, st, s, steps[i], i + 1),
-          if (!done)
-            Padding(
-              padding: const EdgeInsets.only(top: Sp.m),
-              child: Text(s['next'], style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-            ),
+          if (open) ...[
+            for (var i = 0; i < steps.length && i < shown; i++) _step(t, st, s, steps[i], i + 1, offsets[i], engineUsed),
+            if (!done)
+              Padding(
+                padding: const EdgeInsets.only(top: Sp.m),
+                child: Text(s['next'], style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              ),
+          ],
         ],
       ]),
+    );
+  }
+
+  /// Run all pill, with a progress line and Skip while a run is going. Pinned under the list.
+  Widget _bottomBar(ThemeData t, DemoStrings s, List<Map<String, Object?>> list) {
+    final busy = _busyId != null;
+    final n = _runDone + 1 > _runTotal ? _runTotal : _runDone + 1;
+    return DecoratedBox(
+      decoration: BoxDecoration(color: t.colorScheme.surface, border: Border(top: BorderSide(color: t.colorScheme.outline))),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: _maxWidth),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(Sp.l, Sp.m, Sp.l, Sp.m),
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              if (busy) ...[
+                Semantics(
+                  liveRegion: true,
+                  child: Text('$n / $_runTotal ${s['progress']}', key: const Key('demo_progress'), style: t.textTheme.labelMedium),
+                ),
+                const SizedBox(height: Sp.xs),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(Rad.pill),
+                  child: LinearProgressIndicator(value: _runTotal == 0 ? null : _runDone / _runTotal, minHeight: 6),
+                ),
+                const SizedBox(height: Sp.m),
+              ],
+              PressScale(
+                enabled: !busy && list.isNotEmpty,
+                child: FilledButton.icon(
+                  key: const Key('demo_run_all'),
+                  onPressed: busy || list.isEmpty ? null : () => _start([for (final sc in list) _s(sc['id'])], '*'),
+                  icon: const Icon(Icons.play_circle),
+                  label: Text(_bi(s, 'runAll'), textAlign: TextAlign.center),
+                ),
+              ),
+              if (busy)
+                TextButton.icon(
+                  key: const Key('demo_skip'),
+                  onPressed: _skipAnimation,
+                  icon: const Icon(Icons.skip_next),
+                  label: Text(s['skip'], textAlign: TextAlign.center),
+                ),
+            ]),
+          ),
+        ),
+      ),
     );
   }
 
@@ -682,43 +952,54 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
         ),
       );
     }
+    if (list.isEmpty) {
+      return Center(child: StateMessage(icon: Icons.science_outlined, title: s['emptyTitle'], subtitle: s['emptySub']));
+    }
+    final anyDone = _results.entries.any((e) => (_shown[e.key] ?? 0) >= _ml(e.value['steps']).length);
     return Column(children: [
       Expanded(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(Sp.l),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Wrap(spacing: Sp.s, runSpacing: Sp.xs, children: [
-              for (final (code, label) in const [('hi', 'हिन्दी'), ('hne', 'छत्तीसगढ़ी'), ('en', 'English')])
-                ChoiceChip(
-                  key: Key('lang_$code'),
-                  label: Text(label),
-                  selected: _lang == code,
-                  checkmarkColor: t.colorScheme.primary,
-                  onSelected: (_) => setState(() => _lang = code),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: _maxWidth),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                Wrap(spacing: Sp.s, runSpacing: Sp.xs, children: [
+                  for (final (code, label) in const [('hi', 'हिन्दी'), ('hne', 'छत्तीसगढ़ी'), ('en', 'English')])
+                    ChoiceChip(
+                      key: Key('lang_$code'),
+                      label: Text(label),
+                      selected: _lang == code,
+                      checkmarkColor: t.colorScheme.primary,
+                      onSelected: (_) => setState(() => _lang = code),
+                    ),
+                ]),
+                SectionHeader(title: s['title'], icon: Icons.science, subtitle: 'Demo Lab'),
+                _about(t, s),
+                const SizedBox(height: Sp.l),
+                _controls(t, s),
+                if (anyDone && _busyId == null) ...[
+                  const SizedBox(height: Sp.l),
+                  _summary(t, s),
+                ],
+                for (final sc in list) ...[
+                  const SizedBox(height: Sp.l),
+                  _card(t, st, s, sc),
+                ],
+                const SizedBox(height: Sp.l),
+                TextButton.icon(
+                  key: const Key('demo_reset'),
+                  onPressed: _busyId != null ? null : _reset,
+                  icon: const Icon(Icons.restart_alt),
+                  label: Text(_bi(s, 'reset'), textAlign: TextAlign.center),
                 ),
-            ]),
-            SectionHeader(title: s['title'], icon: Icons.science, subtitle: 'Demo Lab'),
-            _about(t, s),
-            const SizedBox(height: Sp.l),
-            _controls(t, s, list),
-            for (final sc in list) ...[
-              const SizedBox(height: Sp.l),
-              _card(t, st, s, sc),
-            ],
-          ]),
-        ),
-      ),
-      // Pinned so it stays one tap away however far the timeline has scrolled.
-      if (_busyId != null)
-        Padding(
-          padding: const EdgeInsets.fromLTRB(Sp.l, Sp.s, Sp.l, Sp.l),
-          child: OutlinedButton.icon(
-            key: const Key('demo_skip'),
-            onPressed: _skipAnimation,
-            icon: const Icon(Icons.skip_next),
-            label: Text(s['skip'], textAlign: TextAlign.center),
+              ]),
+            ),
           ),
         ),
+      ),
+      _bottomBar(t, s, list),
     ]);
   }
 }
