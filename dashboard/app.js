@@ -9,12 +9,13 @@ const COLORS = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)'];
 const OTHER = 'Other types';
 const UNCLASSIFIED = 'OTHER';
 
-const label = (t) => t.replace(/_/g, ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase());
+const label = (t) => String(t).replace(/_/g, ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase());
 const TYPE_NAMES = {
   OTP: 'OTP', KYC: 'KYC', DIGITAL_ARREST: 'Digital arrest', COURIER_CUSTOMS: 'Courier or customs', FAKE_QR: 'Fake QR',
   LOAN_APP: 'Loan app', INVESTMENT: 'Investment', JOB: 'Job offer', MISTAKEN_TRANSFER: 'Mistaken transfer', OTHER: 'Other',
 };
-export const typeName = (t) => TYPE_NAMES[t] ?? label(t);
+const named = (map, k) => (Object.hasOwn(map, k) ? map[k] : label(k));
+export const typeName = (t) => named(TYPE_NAMES, t);
 const ranked = (counts) => Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 
 // Accepts a bare array or {rows: [...]}; throws TypeError with a readable message.
@@ -62,7 +63,7 @@ export function accuracyRows(m1) {
   if (sys && typeof sys === 'object') {
     const keys = [...new Set([...Object.keys(SYSTEM_NAMES), ...Object.keys(sys)])];
     const rows = keys.map((k) => {
-      const name = SYSTEM_NAMES[k] ?? label(k);
+      const name = named(SYSTEM_NAMES, k);
       const o = sys[k] && sys[k].overall;
       if (!hasMetrics(o)) {
         const st = sys[k] && typeof sys[k].status === 'string' ? sys[k].status.trim() : '';
@@ -70,7 +71,7 @@ export function accuracyRows(m1) {
       }
       const per = sys[k].per_language || {};
       return { name, overall: o, langs: Object.keys(per).filter((l) => hasMetrics(per[l]))
-        .map((l) => ({ name: LANG_NAMES[l] ?? label(l), m: per[l] })) };
+        .map((l) => ({ name: named(LANG_NAMES, l), m: per[l] })) };
     });
     return rows.some((r) => !r.notRun) ? rows : [];
   }
