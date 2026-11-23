@@ -1,19 +1,20 @@
-# ScamShield QA Report (near-final)
+# ScamShield QA Report (final)
 
 - Date: 2026-11-23
-- Build: HEAD 257d210 when this update was written (branch main). Suite counts below were taken at the commits named in each row; the Final gate section is still TBD.
-- QA commits: Kotlin a5bdf5d, 54e4182, 3b96b18, 21fd870, ea3f96e (and others under android/app/src/test); Flutter 6dd1b1a, 509b9e8, a60c299, 7f3c389, 4ac3d51; ML/dashboard c558864, 42b2fb9, 1adb24c
-- Emulator: round 1 at 1adb24c, round 2 at 7f3c389 (see Emulator rounds)
+- Build: HEAD fddef91 (branch main), clean worktree for the final gate. Per-suite counts in the segment table were taken at the commits named there; the Final gate section has the full-suite numbers at fddef91.
+- QA commits: Kotlin a5bdf5d, 54e4182, 3b96b18, 21fd870, ea3f96e, 5a12833, b164b60 (and others under android/app/src/test); Flutter 6dd1b1a, 509b9e8, a60c299, 7f3c389, 4ac3d51; ML/dashboard c558864, 42b2fb9, 1adb24c
+- Emulator: round 1 at 1adb24c, round 2 at 7f3c389, final pass on the fddef91 debug APK (see Emulator rounds)
+- UX audit: docs/qa/UX_AUDIT.md v2 (4b0bf86)
 
 ## Summary by segment
 
 | Segment | Suite / file | Tests added | Pass / fail | Bugs (severity, file:line) | Status |
 |---|---|---|---|---|---|
-| Kotlin core (qa package) | Alerts/Privacy 33, CallPipeline 37, ContextLayer 35 (T5.3), DetectionCore 47, EndToEndPrivacy 9, FixedBugs 7, GraphUpiTotp 47, OtpPrivacyE2E 10, Reports 21, RegressionSplitOtp 5, RegressionDashOtpE2E 1 | 252 | 252 pass / 0 fail | K1-K8 all fixed (K1/K2/K3-K7 in 938c6d6, K8 in ea3f96e) | fixed, re-tested |
-| Flutter | test/qa: family_secret 2, live_feed_layout 2, logic 23, nav 18 (T3.11), report 26, screens 12, try_api_errors 2, upi 27 | 112 (at 4ac3d51); full Flutter suite +209 green at 4ac3d51 | 112 pass / 0 fail | F1, F2, F4, F5 fixed; F3 LOW still open (family_screen.dart:267) | F3 open |
+| Kotlin core (qa package) | Alerts/Privacy 33, CallPipeline 37, ContextLayer 35 (T5.3), DetectionCore 47, EndToEndPrivacy 9, FixedBugs 7, GraphUpiTotp 47, OtpPrivacyE2E 10, Reports 21, RegressionSplitOtp 5, RegressionDashOtpE2E 1, QASttParserTest 21, QAApkGuardTest 25, QARegressionSttApkTest 5 | 303 (at b164b60) | 303 pass / 0 fail | K1-K9 and 3 LOWs fixed (K1-K7 in 938c6d6, K8 in ea3f96e, K9 + 3 LOWs in fddef91) | fixed, re-tested |
+| Flutter | test/qa: family_secret 2, live_feed_layout 2, logic 23, nav 18 (T3.11), report 26, screens 12, try_api_errors 2, upi 27 | 112 (at 4ac3d51); full Flutter suite +209 green at 4ac3d51 | 112 pass / 0 fail | F1, F2, F4, F5, F6 fixed; F3 LOW still open (family_screen.dart:267) | F3 open |
 | ML | ml/tests/test_qa_ml.py + short-row regression | 75 | 75 pass / 0 fail | M1 fixed (17d7540) | fixed, re-tested |
 | Dashboard | dashboard/test/qa.test.mjs + regression | 31 | 31 pass / 0 fail | D1 fixed (1309997) | fixed, re-tested |
-| Emulator (Android 36, arm64, 360dp) | manual rounds r1 (1adb24c) and r2 (7f3c389), no test files | n/a | no app FATAL or ANR in logcat | E1-E3 and 4 re-check items (see Emulator rounds) | open, fixer in progress |
+| Emulator (Android 36, arm64, 360dp) | manual rounds r1 (1adb24c), r2 (7f3c389), final (fddef91 APK); no test files | n/a | Demo Lab run-all 12/12; no FATAL or ANR in the kept logcat | E1-E6 fixed on device; L1-L4 open (low) | L1-L4 open |
 
 Detail per segment:
 
@@ -43,14 +44,22 @@ Detail per segment:
 | F6 | HIGH | app shell nav | Report and Lessons unreachable from the UI (found at 99c3662) | Flutter | fixed by T3.11, re-tested (nav 18) and route=report / route=recording deep links verified on emulator |
 | M1 | LOW | ml/scamshield_ml/data.py:44 | `load_rows` on a short CSV row -> AttributeError instead of ValueError naming the line | ML | fixed 17d7540, re-tested |
 | D1 | LOW | dashboard/app.js:17 | `typeName('constructor')` returned a function; only reachable via hand-edited m1.json | Dashboard | fixed 1309997, re-tested |
-| E1 | MED-HIGH | UPI paste card (Flutter) | Paste `upi://pay?pa=refund.helpdesk@oksbi&pn=Priya Stores&am=4999`: card says "You will PAY money to Priya" with no amount, masked id, and a separate green "safe / normal conversation" card. Shot qr_paste_result_light_1.0.png (r2) | coordinator's fixer | open, fix in progress |
-| E2 | LOW-MED | Demo Lab | Scenario mistaken_a (SUSPICIOUS fake-credit) posts no heads-up | coordinator's fixer | open, fix in progress |
-| E3 | MEDIUM | settings_screen.dart | Developer-only toggles (Gemma, OCR, mic source test, caption source packages, discovery mode) shown to end users in English at the top of Settings | coordinator's fixer | open, fix in progress |
-| E4 | MEDIUM | try_api_screen.dart | Empty Analyse (and empty share) gives no feedback; still present at 7f3c389 | Flutter | open, re-check at final HEAD |
-| E5 | MEDIUM | settings_screen.dart | District bottom sheet extends under the status bar ("Balod" over the clock); suggested fix `useSafeArea` | Flutter | open, re-check at final HEAD |
-| E6 | MEDIUM | core/RuleScorer.kt:35 and :130 | Lottery + "processing fee" SMS typed LOAN_APP / SUSPICIOUS; prize rule has no scam type. Commit 96416af (prize-fee scams score SCAM) may cover this | APP lead | open, re-check at final HEAD |
+| K9 | MEDIUM | Kotlin ApkRisk (APK guard) | Regex hang on long text | APP lead | fixed fddef91, re-tested |
+| K10-K12 | LOW | Kotlin ApkRisk / STT parser | Custom permission suffix handling; STT nested-JSON stack overflow; STT huge start value | APP lead | fixed fddef91, re-tested |
+| E1 | MED-HIGH | UPI paste card (Flutter) | Paste `upi://pay?pa=refund.helpdesk@oksbi&pn=Priya Stores&am=4999`: card said "You will PAY money to Priya" with no amount, masked id, and a green "safe" card. Root cause: link regex `upi://\S+` cut the paste at the first space | Flutter | fixed 640dad2 (amount, full id, amber, never green), verified on device |
+| E2 | LOW-MED | Demo Lab | Scenario mistaken_a (SUSPICIOUS fake-credit) posted no heads-up | APP lead | fixed f2235ad, verified on device |
+| E3 | MEDIUM | settings_screen.dart | Developer-only toggles shown to end users in English at the top of Settings | Flutter | fixed 3f1683f (Hindi-first), verified on device |
+| E4 | MEDIUM | try_api_screen.dart | Empty Analyse (and empty share) gave no feedback | Flutter | fixed (31fc425 redesign), verified on device |
+| E5 | MEDIUM | settings_screen.dart | District bottom sheet extended under the status bar | Flutter | fixed, verified on device |
+| E6 | MEDIUM | core/RuleScorer.kt:35 and :130 | Lottery + "processing fee" SMS typed LOAN_APP / SUSPICIOUS | APP lead | fixed 96416af, verified on device; Hindi KYC share now typed KYC. Known false-positive risk: a genuine prize-draw message with "pay" near the prize word scores SCAM |
+| L1 | LOW | digital_arrest alert | Alert shows only the trigger 'Kisi ko mat batana', no scam-type label | APP lead | open |
+| L2 | LOW | ShareReceiver | SecurityException on an ungranted content URI is caught silently; the user sees nothing | APP lead | open |
+| L3 | LOW (UX) | lessons / quiz | Literacy score shows 8/100 after a 2/3 quiz (see UX_AUDIT) | Flutter | open |
+| L4 | n/a | emulator coverage | In-call overlay, Live card order, QR camera and the ApkGuard alert on a real APK not verified on the emulator (file:// shares gave no alert; no granted content URI). ApkGuard pure logic has 51 unit tests | QA | not verified, see Untested |
 
-Lows from the emulator notes (emu.md, all open unless the redesign fixed them, to be re-checked): export "nothing to export" shown in red error style and the last message hidden behind the gesture bar; setup language chips show no selected state on first run; Try hint truncated at scale 2.0 and English Analyse label; Live tab shows "no call" twice; golden-hour progress bar semantics value "100" has no percent sign; shared triggers can be a whole short message and are stored in the log and zip (notification caps at 40 chars); thin lime frame at screen edges in screenshots from about 11:22 (unexplained, possibly an emulator focus ring). Info: bottom nav "Setting/s" wrap at font 2.0 was fixed in the new UI.
+K10-K12 are my labels for the three LOWs named in the fddef91 report; the commit itself may not use those IDs.
+
+Emulator lows from emu.md not individually re-confirmed in the final pass (check UX_AUDIT v2): export "nothing to export" in red error style; setup language chips with no selected state on first run; Try hint truncated at scale 2.0; Live tab shows "no call" twice; golden-hour progress bar semantics value "100" without a percent sign; shared triggers can be a whole short message (the privacy invariant since added masks digits and caps triggers at the source); thin lime frame at screen edges in screenshots (unexplained, possibly an emulator focus ring).
 
 Observation (not a bug, not tested): `upi://collect` links return null (only `pay` accepted), so a collect QR gets no collect warning.
 
@@ -58,7 +67,9 @@ Observation (not a bug, not tested): `upi://collect` links return null (only `pa
 
 Setup: AVD scamshield_qa (Android 36, arm64, 1080x2400 at 480dpi), rules-only engine (Gemma model not downloaded). Screenshots: /private/tmp/claude-501/-Users-manas-choudhary-orca-projects-hackasol/e64f2eb4-9bd8-469c-aefb-75bfaefd4d3f/scratchpad/shots/emu/
 
-Verified on device:
+Final pass on the fddef91 debug APK: Demo Lab run-all 12/12; 1930 = ACTION_DIAL only (mCallState 0); AppBar 1930 action opens Report; route=report and route=recording cold and warm OK; export has exactly 3 keys; evidence zip has no raw text; family pair, bad-code and unpair OK; no FATAL or ANR in the kept logcat (window is only about 150 KB).
+
+Verified on device (rounds 1 and 2):
 - 1930 uses ACTION_DIAL only (dialer opened, telephony call state 0, no call placed).
 - Evidence zip (card.json, events.json, manifest.json) contains triggers, types and timestamps, no raw message text.
 - Trend export has exactly 3 keys per row: date, district, scam_type.
@@ -71,7 +82,7 @@ Verified on device:
 ## Untested / blocked
 
 - Not testable here: QR camera on the emulator (ML Kit scanner module unavailable; the paste fallback works); the in-call overlay with the 1930 row (needs a live call and a connected accessibility service); Demo Lab digital_arrest scenario not run; Live feed card order (no call to populate it).
-- Not built, so untested: STT parser, APK guard (as of the Kotlin QA pass; commits f4aa9f0 and 5125e16 have since landed and are not covered by the counts above).
+- STT parser and APK guard are now built and covered by Kotlin QA (QASttParserTest 21, QAApkGuardTest 25, QARegressionSttApkTest 5). The ApkGuard alert on a real APK was not seen on the emulator.
 - Android-only, not unit-testable here: AppSettings export (SharedPreferences), SqliteVerdictLog SQL (row mapping is covered).
 - Kotlin side of ML prompt parity: read-only comparison, no JVM run.
 - Setup screen showed the accessibility step as pending while dumpsys showed the service bound; probably an artifact of uiautomator dump, not verified.
@@ -82,18 +93,26 @@ Verified on device:
 
 ## Final gate
 
-To be filled in at the final HEAD.
+At HEAD fddef91, clean worktree.
 
 | Check | Command | Result |
 |---|---|---|
-| Final HEAD | `git rev-parse --short HEAD` | TBD |
-| Kotlin qa package | see How to run | TBD |
-| Full Kotlin unit tests | `:app:testDebugUnitTest` | TBD |
-| Flutter test/qa and full suite | `flutter test test/qa`, `flutter test` | TBD |
-| ML | `pytest tests` | TBD |
-| Dashboard | `node --test dashboard/test/` | TBD |
-| Open bugs at final HEAD (E1-E6, F3) | re-check | TBD |
-| Emulator smoke at final HEAD | manual | TBD |
+| Aggregate gate | `check.sh` | exit 0 |
+| Kotlin unit tests | via check.sh | 402 tests, 0 failures |
+| Flutter | via check.sh | 222 tests, 0 failures |
+| ML | via check.sh (`pytest tests`) | 75 passed |
+| Dashboard | via check.sh (`node --test dashboard/test/`) | 31/31 |
+| Traceability | `trace_report.sh` | exit 0: 44 pass, 6 blocked, 10 not-run, 0 fail |
+| Release build | `flutter build apk --release --split-per-abi --android-skip-build-dependency-validation` | exit 0 |
+| Emulator smoke | manual, fddef91 debug APK | see Emulator rounds |
+
+Release APKs (scratchpad, not in git): /private/tmp/claude-501/-Users-manas-choudhary-orca-projects-hackasol/963dd60f-9fc0-4f23-bbc2-18bf27903757/scratchpad/qa/release/ holds arm64-v8a 51.4M, armeabi-v7a 40.0M, x86_64 54.8M, plus app-debug-final.apk.
+
+Known build issues:
+- Gradle 9.1.0 is below Flutter 3.50's minimum, so builds need `--android-skip-build-dependency-validation`.
+- A fresh clone lacks the gitignored android/local.properties; Kotlin fails until it is written.
+
+Open at final HEAD: F3 (LOW), L1-L3 (LOW), and the L4 coverage gaps. No open HIGH or MEDIUM bugs.
 
 ## How to run
 
