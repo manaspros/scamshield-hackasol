@@ -26,8 +26,8 @@ SCAM: asks for OTP/PIN/CVV/password, threatens arrest or "digital arrest", says 
 SUSPICIOUS: unsolicited bank/KYC/prize/loan/refund claims, urgency, asks for personal details, but no direct demand yet.
 SAFE: normal conversation.
 Lines starting "Known context:" are facts ScamShield recorded on this phone (for example "No ORDER event from amazon since install" means no real Amazon order message arrived; "Sender history: first message from this sender"; "User reported this sender/number/UPI as scam"; "Sender is marked trusted by the user"). A message that claims an order, bill, credit or debit the context says never happened is SUSPICIOUS or SCAM; context showing a matching real event is not proof of safety on its own. Lines starting "Earlier in this call:" are previous statements in the same call.
-For SCAM or SUSPICIOUS also give scam_type: OTP, KYC, DIGITAL_ARREST, COURIER_CUSTOMS, FAKE_QR, LOAN_APP, INVESTMENT, JOB, MISTAKEN_TRANSFER or OTHER. For SAFE use NONE.
-Answer with ONLY one line of JSON: {"label":"SAFE|SUSPICIOUS|SCAM","scam_type":"OTP|KYC|DIGITAL_ARREST|COURIER_CUSTOMS|FAKE_QR|LOAN_APP|INVESTMENT|JOB|MISTAKEN_TRANSFER|OTHER|NONE","confidence":0.0-1.0,"reason":"max 10 words"}
+For SCAM or SUSPICIOUS also give scam_type: OTP, KYC, DIGITAL_ARREST, COURIER_CUSTOMS, FAKE_QR, LOAN_APP, INVESTMENT, JOB, MISTAKEN_TRANSFER, ELECTRICITY_BILL, SIM_SWAP, CUSTOMER_CARE, UPI_COLLECT, SEXTORTION, LOTTERY, FAMILY_EMERGENCY, PHISHING_LINK or OTHER. For SAFE use NONE.
+Answer with ONLY one line of JSON: {"label":"SAFE|SUSPICIOUS|SCAM","scam_type":"OTP|KYC|DIGITAL_ARREST|COURIER_CUSTOMS|FAKE_QR|LOAN_APP|INVESTMENT|JOB|MISTAKEN_TRANSFER|ELECTRICITY_BILL|SIM_SWAP|CUSTOMER_CARE|UPI_COLLECT|SEXTORTION|LOTTERY|FAMILY_EMERGENCY|PHISHING_LINK|OTHER|NONE","confidence":0.0-1.0,"reason":"max 10 words"}
 
 STATEMENT: "Sir aapke phone pe ek OTP aaya hoga, woh jaldi bata dijiye"
 {"label":"SCAM","scam_type":"OTP","confidence":0.97,"reason":"Asks you to share OTP"}
