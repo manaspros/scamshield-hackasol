@@ -85,8 +85,8 @@ def test_qa_prompt_newlines_preserved_and_double_quotes_replaced_only_in_text():
 def test_qa_prompt_context_takelast2_applied_before_blank_filter():
     # Kotlin: context.takeLast(2).filter { isNotBlank } -> ["a","","b"] keeps only "b".
     assert 'Earlier in this call: "b"\n' in build_prompt("x", ["a", "", "b"])
-    assert "Earlier in this call" not in build_prompt("x", ["a", "  ", "\t"])
-    assert "Earlier in this call" not in build_prompt("x", [])
+    assert "\nEarlier in this call: " not in build_prompt("x", ["a", "  ", "\t"])
+    assert "\nEarlier in this call: " not in build_prompt("x", [])
 
 
 def test_qa_prompt_length_caps_300_text_150_context():

@@ -116,6 +116,15 @@ class ScamTypeTest {
     }
     private fun q(s: String) = "\"${esc(s)}\""
 
+    @Test fun R3_KB_promptExplainsKnownContext() {
+        val ctx = "No ORDER event from amazon since install"
+        val p = GemmaPrompt.build("Your order is on hold", listOf(ctx), "Known context")
+        assertTrue(p.contains("Lines starting \"Known context:\" are facts ScamShield recorded"))
+        val line = "Known context: \"$ctx\"\nSTATEMENT: \"Your order is on hold\"\n"
+        assertTrue(p.endsWith("\n$line"))
+        assertEquals(1, p.split(line).size - 1)
+    }
+
     @Test fun T1_2_goldenWritten() {
         val sb = StringBuilder("[\n")
         cases.forEachIndexed { i, c ->

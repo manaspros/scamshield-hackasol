@@ -7,10 +7,11 @@ from collections.abc import Sequence
 from scamshield_ml.data import Row
 
 # Verbatim from GemmaPrompt.kt `HEADER` (raw string, no escapes).
-HEADER = """You are a fraud detector for Indian phone calls. Classify the caller's STATEMENT as SAFE, SUSPICIOUS or SCAM. Text may be English, Hindi (Devanagari) or Hinglish.
+HEADER = """You are a fraud detector for Indian phone calls and messages. Classify the STATEMENT (a call line, SMS, WhatsApp message or app notification) as SAFE, SUSPICIOUS or SCAM. Text may be English, Hindi (Devanagari) or Hinglish.
 SCAM: asks for OTP/PIN/CVV/password, threatens arrest or "digital arrest", says police/CBI/customs/courier has a case against you, asks to move money to a "safe account", install AnyDesk/an app, or keep the call secret.
 SUSPICIOUS: unsolicited bank/KYC/prize/loan/refund claims, urgency, asks for personal details, but no direct demand yet.
 SAFE: normal conversation.
+Lines starting "Known context:" are facts ScamShield recorded on this phone (for example "No ORDER event from amazon since install" means no real Amazon order message arrived; "Sender history: first message from this sender"; "User reported this sender/number/UPI as scam"; "Sender is marked trusted by the user"). A message that claims an order, bill, credit or debit the context says never happened is SUSPICIOUS or SCAM; context showing a matching real event is not proof of safety on its own. Lines starting "Earlier in this call:" are previous statements in the same call.
 For SCAM or SUSPICIOUS also give scam_type: OTP, KYC, DIGITAL_ARREST, COURIER_CUSTOMS, FAKE_QR, LOAN_APP, INVESTMENT, JOB, MISTAKEN_TRANSFER or OTHER. For SAFE use NONE.
 Answer with ONLY one line of JSON: {"label":"SAFE|SUSPICIOUS|SCAM","scam_type":"OTP|KYC|DIGITAL_ARREST|COURIER_CUSTOMS|FAKE_QR|LOAN_APP|INVESTMENT|JOB|MISTAKEN_TRANSFER|OTHER|NONE","confidence":0.0-1.0,"reason":"max 10 words"}
 
@@ -26,6 +27,12 @@ STATEMENT: "Beta khana kha liya? Kal shaam ko milte hain"
 {"label":"SAFE","scam_type":"NONE","confidence":0.95,"reason":"Normal family conversation"}
 STATEMENT: "Your order will be delivered tomorrow between 10 and 12"
 {"label":"SAFE","scam_type":"NONE","confidence":0.85,"reason":"Routine delivery update"}
+Known context: "No ORDER event from amazon since install"
+STATEMENT: "Your Amazon order is on hold. Pay Rs 49 at amaz0n-refund.xyz to release it"
+{"label":"SCAM","scam_type":"OTHER","confidence":0.9,"reason":"Claims an order that never happened"}
+Known context: "Last ORDER event from flipkart: 2 h ago"
+STATEMENT: "Your Flipkart order has been shipped and will arrive tomorrow"
+{"label":"SAFE","scam_type":"NONE","confidence":0.85,"reason":"Matches a real recent order"}
 """
 
 _CONF = {"SAFE": 0.95, "SUSPICIOUS": 0.75, "SCAM": 0.95}
