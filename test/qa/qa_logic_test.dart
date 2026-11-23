@@ -13,6 +13,7 @@ import 'package:scamshield/screens/family_screen.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/try_api_screen.dart';
+import 'package:scamshield/widgets/status_chip.dart';
 import 'package:scamshield/widgets/verdict_card.dart';
 
 import 'qa_harness.dart';
@@ -163,7 +164,9 @@ void main() {
       await t.enterText(find.byType(TextField), 'hello');
       await tapVisible(t, find.byType(FilledButton));
       await t.pumpAndSettle();
-      expect(find.textContaining('model not loaded'), findsOneWidget);
+      expect(find.text('जाँच नहीं हो पाई, फिर कोशिश करें'), findsOneWidget);
+      expect(find.text('दोबारा जाँचें'), findsOneWidget); // retry action
+      expect(find.textContaining('model not loaded'), findsNothing); // raw detail never shown
       expect(find.byType(VerdictCard), findsNothing);
       expect(t.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNotNull);
     });
@@ -178,18 +181,24 @@ void main() {
         await tapVisible(t, find.byType(FilledButton));
         await t.pumpAndSettle();
       }
-      final cards = find.byType(VerdictCard);
-      expect(cards, findsNWidgets(2));
-      expect(find.descendant(of: cards.at(0), matching: find.text('सुरक्षित')), findsOneWidget); // newest (2nd call) first
-      expect(find.descendant(of: cards.at(1), matching: find.textContaining('धोखाधड़ी')), findsWidgets); // older SCAM below
+      // exactly 2 results: the newest as the full card, the older one as exactly one history row
+      final card = find.byType(VerdictCard);
+      final history = find.byKey(const Key('try_history'));
+      final rows = find.descendant(of: history, matching: find.byType(StatusChip));
+      await reveal(t, rows);
+      expect(card, findsOneWidget);
+      expect(rows, findsOneWidget);
+      expect(find.descendant(of: card, matching: find.text('सुरक्षित')), findsOneWidget); // newest = 2nd call (SAFE)
+      expect(find.descendant(of: history, matching: find.textContaining('धोखाधड़ी')), findsOneWidget);
+      expect(t.getTopLeft(card).dy, lessThan(t.getTopLeft(rows).dy)); // newest above older
     });
 
     testWidgets('QA_tryApi_sampleChip_fillsField', (t) async {
-      // exact expected text comes from the product's own sample list, not a copy in the test
+      // exact expected text comes from the product source, not a copy in the test
       final src = File('lib/screens/try_api_screen.dart').readAsStringSync();
-      final expected = RegExp(r"'(Beta khana kha liya[^']*)'").firstMatch(src)!.group(1)!;
+      final expected = RegExp(r"_example = '([^']*)'").firstMatch(src)!.group(1)!;
       await pump(t, (c) async => _v('SAFE'));
-      await tapVisible(t, find.textContaining('Beta khana kha liya'));
+      await tapVisible(t, find.byKey(const Key('try_example')));
       expect(t.widget<TextField>(find.byType(TextField)).controller!.text, expected);
     });
   });
