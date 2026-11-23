@@ -436,11 +436,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   /// Hindi title first; the English title stays as a secondary line, then the detail.
+  Widget _enLine(String t) => Text(t, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant));
+
+  // Hindi title and Hindi detail lead; the English name is the muted last line.
   Widget _switch(String key, String hi, String en, String detail) => SwitchListTile(
     title: Text(hi),
     subtitle: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [Text(en), Text(detail)],
+      children: [Text(detail), _enLine(en)],
     ),
     value: _s[key] == true,
     onChanged: (v) => _set(key, v),
@@ -528,9 +531,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 builder: (_, on, _) => SwitchListTile(
                   key: const Key('demoModeSwitch'),
                   title: const Text('डेमो मोड'),
-                  subtitle: const Column(
+                  subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [Text('Demo mode'), Text('मदद टैब में "डेमो लैब" दिखाएँ')],
+                    children: [const Text('मदद टैब में "डेमो लैब" दिखाएँ'), _enLine('Demo mode')],
                   ),
                   value: on,
                   onChanged: DemoFlag.set,
