@@ -112,7 +112,7 @@ void main() {
     await _pump(t, const LiveFeedScreen());
     emit({'type': 'call', 'active': true});
     emit({'type': 'signal', 'kind': 'link', 'trigger': 'link'});
-    emit({'type': 'signal', 'kind': 'otp', 'trigger': 'otp'});
+    emit({'type': 'signal', 'kind': 'otp_during_call', 'trigger': 'otp'});
     emit({'type': 'service', 'connected': false});
     emit({'type': 'mic_probe', 'status': 'SILENT', 'source': 'VOICE_CALL', 'dbfs': -90.0, 'peak': 0, 'path': '/x.wav'});
     emit({..._scam.cast<String, Object?>(), 'type': 'verdict', 'callRisk': 0.9, 'callLevel': 'SCAM'});
@@ -157,7 +157,7 @@ void main() {
     await _pump(t, const LiveFeedScreen(), scale: 2.0, height: 800);
     expect(t.takeException(), isNull); // empty state
     emit({'type': 'call', 'active': true});
-    emit({'type': 'signal', 'kind': 'otp', 'trigger': 'otp'});
+    emit({'type': 'signal', 'kind': 'otp_during_call', 'trigger': 'otp'});
     emit({'type': 'mic_probe', 'status': 'SILENT', 'source': 'VOICE_CALL', 'dbfs': -90.0, 'peak': 0, 'path': '/x.wav'});
     emit({..._scam.cast<String, Object?>(), 'type': 'verdict', 'callRisk': 0.9, 'callLevel': 'SCAM'});
     await t.pumpAndSettle();

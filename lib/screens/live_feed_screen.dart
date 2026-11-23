@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../api/signal_kinds.dart';
 import '../api/text_api.dart';
 import '../l10n/app_language.dart';
 import '../l10n/strings_live.dart';
@@ -94,7 +95,7 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
           _add(_FeedItem.note('call', key: _inCall ? 'call_on' : 'call_off'));
           if (_inCall) { _callRisk = 0; _callLevel = RiskLabel.safe; }
         case 'signal':
-          _add(_FeedItem.note(e['kind'] == 'otp' ? 'signal_otp' : 'signal',
+          _add(_FeedItem.note(e['kind'] == SignalKinds.otp ? 'signal_otp' : 'signal',
               key: 'signal', args: ['${e['trigger']}', '${e['kind']}']));
         case 'mic_probe':
           final status = '${e['status']}';

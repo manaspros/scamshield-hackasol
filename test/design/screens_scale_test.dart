@@ -368,7 +368,7 @@ void main() {
       _emit({'type': 'call', 'active': true});
       _emit({'type': 'caption', 'text': 'आपके खाते से पैसे कट जाएंगे, अभी ओटीपी बताइए', 'via': 'a11y'});
       _emit({'type': 'statement', 'text': 'आपका पार्सल रुका है, लिंक खोलें'});
-      _emit({'type': 'signal', 'kind': 'otp', 'trigger': 'ओटीपी'});
+      _emit({'type': 'signal', 'kind': 'otp_during_call', 'trigger': 'ओटीपी'});
       _emit({'type': 'mic_probe', 'status': 'SILENT', 'source': 'VOICE_CALL', 'dbfs': -90.0, 'peak': 0, 'path': '/x.wav'});
       _emit({'type': 'error', 'where': 'model', 'message': 'something went wrong while loading'});
       _emit({
