@@ -7,8 +7,8 @@ package com.hackasol.scamshield.core
 object PaymentGuard {
     /** A victim coached by a scammer opens the payment app within minutes of the call/message; 10 min covers a call plus the walk to the app. */
     const val WINDOW_MS = 10 * 60_000L
-    /** One calm nudge per ~5 min across both triggers; repeating would train people to dismiss it. */
-    const val COOLDOWN_MS = 5 * 60_000L
+    /** One calm nudge per risky window across both triggers (>= WINDOW_MS, else it re-fires inside the window); repeating would train people to dismiss it. */
+    const val COOLDOWN_MS = WINDOW_MS
     const val CHANNEL_ID = "payment_guard"
     const val ROUTE_FAMILY = "family"
     const val HELPLINE = "1930"

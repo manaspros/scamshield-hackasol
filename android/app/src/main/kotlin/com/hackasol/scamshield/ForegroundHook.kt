@@ -12,6 +12,8 @@ import com.hackasol.scamshield.core.PaymentGuard
 object ForegroundHook {
     @Volatile private var lastWarnedMs: Long? = null
 
+    // @Synchronized: check-then-set of lastWarnedMs must be atomic (foreground and notification callbacks run on different coroutines).
+    @Synchronized
     fun onForeground(ctx: Context, pkg: String, nowMs: Long) {
         if (pkg !in InCallSignals.PAYMENT_APPS) return   // cheap exit before touching SQLite
         val lastRisky = TextApi.verdictLog?.since(nowMs - PaymentGuard.WINDOW_MS)
@@ -19,6 +21,7 @@ object ForegroundHook {
         if (PaymentGuard.shouldWarnOnForeground(pkg, nowMs, lastRisky, lastWarnedMs)) warn(ctx, nowMs)
     }
 
+    @Synchronized
     fun onNotification(ctx: Context, pkg: String, title: String, text: String, nowMs: Long) {
         if (PaymentGuard.shouldWarnOnCollect(pkg, title, text, nowMs, lastWarnedMs)) warn(ctx, nowMs)
     }

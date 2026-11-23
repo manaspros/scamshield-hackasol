@@ -11,7 +11,8 @@ import com.hackasol.scamshield.core.PaymentGuard
 
 /** One calm heads-up with two dial actions. Never full-screen, never an overlay, so it cannot cover the payment app. */
 object PaymentGuardNotifier {
-    private const val ID = 7002
+    /** Not 7002: ApkGuard uses it and would replace this nudge (or be replaced by it). ID+1 / ID+2 are PendingIntent request codes. */
+    private const val ID = 7010
     private const val TIMEOUT_MS = 2 * 60_000L
     /** Optional, read-only: set by whatever stores a family number later. Nothing in the app writes it today. */
     const val FAMILY_PREFS = "scamshield_family"

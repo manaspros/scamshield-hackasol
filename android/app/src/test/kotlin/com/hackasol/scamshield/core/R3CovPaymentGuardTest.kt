@@ -11,6 +11,12 @@ class R3CovPaymentGuardTest {
     private val w = PaymentGuard.WINDOW_MS
     private val cd = PaymentGuard.COOLDOWN_MS
 
+    @Test fun cooldownCoversTheWholeWindowSoTheNudgeFiresOncePerRiskyWindow() {
+        assertTrue(PaymentGuard.COOLDOWN_MS >= PaymentGuard.WINDOW_MS)
+        val risky = now - 1_000
+        assertFalse(PaymentGuard.shouldWarnOnForeground(pay, now + w - 2_000, risky, now))   // still inside the window
+    }
+
     @Test fun R3_COV_foreground_insideWindowWarns() = assertTrue(PaymentGuard.shouldWarnOnForeground(pay, now, now - 60_000, null))
     @Test fun R3_COV_foreground_exactlyAtWindowBoundaryWarns() = assertTrue(PaymentGuard.shouldWarnOnForeground(pay, now, now - w, null))
     @Test fun R3_COV_foreground_afterWindowNoWarn() = assertFalse(PaymentGuard.shouldWarnOnForeground(pay, now, now - w - 1, null))
