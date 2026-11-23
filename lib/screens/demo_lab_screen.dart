@@ -12,6 +12,7 @@ import '../widgets/section_header.dart';
 import '../widgets/stat_tile.dart';
 import '../widgets/state_message.dart';
 import '../widgets/status_chip.dart';
+import '../widgets/island.dart';
 
 Map<String, Object?> _m(Object? o) => o is Map ? {for (final e in o.entries) '${e.key}': e.value} : <String, Object?>{};
 List<Map<String, Object?>> _ml(Object? o) => o is List ? [for (final e in o) _m(e)] : <Map<String, Object?>>[];
@@ -423,7 +424,7 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
     });
   }
 
-  void _toast(String msg) => ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(msg)));
+  void _toast(String msg) => showIsland(context, msg);
 
   Future<void> _wait(int ms) {
     final c = _wake = Completer<void>();

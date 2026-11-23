@@ -13,7 +13,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.hackasol.scamshield.core.ModelCatalog
 import com.hackasol.scamshield.core.ModelConfig
+import com.hackasol.scamshield.core.ModelSpec
 import com.hackasol.scamshield.core.SttModelConfig
 import java.io.File
 import java.net.HttpURLConnection
@@ -31,7 +33,6 @@ object ModelDownloader {
     private const val TAG = "ScamShield/Download"
     const val DEFAULT_URL = ModelConfig.URL
     const val FILE_NAME = ModelConfig.FILENAME
-    private const val NEEDED_BYTES = 700L * 1024 * 1024
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO +
         kotlinx.coroutines.CoroutineExceptionHandler { _, t -> Log.e(TAG, "uncaught", t) })
@@ -41,32 +42,38 @@ object ModelDownloader {
     private fun prefs(ctx: Context) = ctx.getSharedPreferences("scamshield", Context.MODE_PRIVATE)
     private fun dm(ctx: Context) = ctx.getSystemService(DownloadManager::class.java)
     private fun modelsDir(ctx: Context) = File(ctx.getExternalFilesDir(null), "models").apply { mkdirs() }
-    private fun partFile(ctx: Context) = File(modelsDir(ctx), "$FILE_NAME.download")
+    /** File name of the model being downloaded (the default until a download picks another). */
+    private fun fileOf(ctx: Context) = prefs(ctx).getString("downloadFile", null) ?: FILE_NAME
+    private fun partFile(ctx: Context) = File(modelsDir(ctx), "${fileOf(ctx)}.download")
 
     private fun idOf(ctx: Context) = prefs(ctx).getLong("downloadId", -1L)
     private fun setId(ctx: Context, id: Long) = prefs(ctx).edit().putLong("downloadId", id).apply()
 
-    /** Starts a download from the GitHub release. Returns a status map (or ERROR with a readable message). */
-    suspend fun start(ctx: Context, wifiOnly: Boolean): Map<String, Any?> = withContext(Dispatchers.IO) {
+    /** Starts a download of [modelId] (null = the default) from its release URL. Returns a status map (or ERROR with a readable message). */
+    suspend fun start(ctx: Context, wifiOnly: Boolean, modelId: String? = null): Map<String, Any?> = withContext(Dispatchers.IO) {
         val app = ctx.applicationContext
         try {
+            val spec: ModelSpec = ModelCatalog.byId(modelId) ?: ModelCatalog.byId(ModelCatalog.DEFAULT_ID)!!
+            val url = spec.url ?: return@withContext err("${spec.name} is not available to download yet")
             cancel(app)
+            val needMb = spec.sizeMb + ModelCatalog.HEADROOM_MB
             val free = StatFs(modelsDir(app).absolutePath).availableBytes
-            if (free < NEEDED_BYTES) return@withContext err("Not enough storage: need ~700 MB free, have ${free / (1024 * 1024)} MB")
-            reachability(DEFAULT_URL)?.let { return@withContext err(it) }
+            if (free < needMb * 1024L * 1024L) return@withContext err("Not enough storage: need ~$needMb MB free, have ${free / (1024 * 1024)} MB")
+            reachability(url)?.let { return@withContext err(it) }
+            prefs(app).edit().putString("downloadFile", spec.file).apply()
             partFile(app).delete()
-            val req = DownloadManager.Request(Uri.parse(DEFAULT_URL))
+            val req = DownloadManager.Request(Uri.parse(url))
                 .setTitle("AI model")
-                .setDescription("On-device model (~555 MB)")
+                .setDescription("${spec.name} (~${spec.sizeMb} MB)")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationInExternalFilesDir(app, null, "models/$FILE_NAME.download")
+                .setDestinationInExternalFilesDir(app, null, "models/${spec.file}.download")
                 .setAllowedOverMetered(!wifiOnly)
                 .setAllowedOverRoaming(false)
             val id = dm(app).enqueue(req)
             setId(app, id)
-            Log.i(TAG, "enqueued id=$id wifiOnly=$wifiOnly")
+            Log.i(TAG, "enqueued id=$id model=${spec.id} wifiOnly=$wifiOnly")
             watch(app)
-            status(app)
+            status(app) + ("modelId" to spec.id)
         } catch (t: Throwable) {
             Log.e(TAG, "start failed", t)
             err("Could not start download: ${t.message}")
@@ -140,7 +147,8 @@ object ModelDownloader {
 
     private fun finish(ctx: Context) {
         val part = partFile(ctx)
-        val dest = File(modelsDir(ctx), FILE_NAME)
+        val name = fileOf(ctx)
+        val dest = File(modelsDir(ctx), name)
         setId(ctx, -1)
         if (!part.exists() || part.length() < 100L * 1024 * 1024) {
             part.delete()
@@ -149,6 +157,7 @@ object ModelDownloader {
         }
         dest.delete()
         part.renameTo(dest)
+        GemmaClassifier.setPreferred(ctx, name)
         EventBus.emit("download", mapOf("status" to "INSTALLED", "message" to "Model downloaded — loading…"))
         GemmaClassifier.ensureLoaded(ctx, force = true)
     }

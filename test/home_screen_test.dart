@@ -5,6 +5,7 @@ import 'package:scamshield/api/home_api.dart';
 import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/main.dart';
 import 'package:scamshield/models/verdict.dart';
+import 'package:scamshield/profile/user_profile.dart';
 import 'package:scamshield/screens/evidence_screen.dart';
 import 'package:scamshield/screens/home_screen.dart';
 import 'package:scamshield/screens/knowledge_screen.dart';
@@ -177,11 +178,12 @@ void main() {
       _phone(t);
       _Native().install(t);
       await _show(t, const HomeScreen());
+      expect(find.text("You're protected"), findsOneWidget);
+      expect(find.byKey(const Key('home_fix')), findsNothing);
+      await t.scrollUntilVisible(find.byKey(const Key('home_family_code')), 200);
       expect(t.widget<Text>(find.byKey(const Key('home_family_code'))).data, '123 456');
       expect(find.byKey(const Key('home_family_ask')), findsOneWidget);
       expect(find.byKey(const Key('home_family_pair')), findsNothing);
-      expect(find.text("You're protected"), findsOneWidget);
-      expect(find.byKey(const Key('home_fix')), findsNothing);
       expect(find.byKey(const Key('setup_primary')), findsNothing);
       await _end(t);
     });
@@ -190,6 +192,7 @@ void main() {
       _phone(t);
       _Native(paired: false).install(t);
       await _show(t, const HomeScreen());
+      await t.scrollUntilVisible(find.byKey(const Key('home_family_pair')), 200);
       expect(find.byKey(const Key('home_family_code')), findsNothing);
       expect(find.byKey(const Key('home_family_pair')), findsOneWidget);
       await _end(t);
@@ -208,14 +211,55 @@ void main() {
       await _end(t);
     });
 
-    testWidgets('HOME_home_familyCodeAndAllThreeActionsFitWithoutScrolling_360x664', (t) async {
-      _phone(t); // 664dp is what is left of an 800dp phone under the app bar and bottom bar
+    testWidgets('HOME_home_greetingStatusAndWeekAboveTheFold_360x664', (t) async {
+      _phone(t); // 664dp is what is left of an 800dp phone under the app bar and the floating bar
       t.view.physicalSize = const Size(360, 664);
       _Native().install(t);
       await _show(t, const HomeScreen());
-      for (final k in ['home_family_code', 'home_make_evidence', 'home_about_me', 'home_past_alerts']) {
+      for (final k in ['home_greeting', 'home_hero', 'home_stat_blocked', 'home_stat_score']) {
         expect(t.getBottomLeft(find.byKey(Key(k))).dy, lessThanOrEqualTo(664), reason: k);
       }
+      expect(t.takeException(), isNull);
+      await _end(t);
+    });
+
+    testWidgets('HOME_home_greetsByFirstName_whenProfileHasOne', (t) async {
+      _phone(t);
+      _Native().install(t);
+      ProfileStore.debugSet(const UserProfile(name: 'Ramesh Sahu'));
+      addTearDown(ProfileStore.debugReset);
+      await _show(t, HomeScreen(now: () => DateTime(2026, 11, 23, 19)));
+      expect(find.text('Good evening, Ramesh'), findsOneWidget);
+      expect(find.text('Monday, 23 November'), findsOneWidget);
+      await _end(t);
+    });
+
+    testWidgets('HOME_home_recentAttempts_newestThree_countThisWeek_andEmptyState', (t) async {
+      _phone(t);
+      _Native(alerts: [
+        _alert(1, 'SUSPICIOUS', 0.7, 300, type: 'KYC'),
+        _alert(2, 'SCAM', 0.8, 120, type: 'OTP'),
+        _alert(3, 'SCAM', 0.95, 600, type: 'KYC', source: 'caption'),
+        _alert(4, 'SCAM', 0.9, 900, type: 'KYC'),
+        _alert(5, 'SAFE', 0.1, 10),
+        _alert(6, 'SCAM', 0.9, 60 * 24 * 10, type: 'JOB'), // 10 days ago: not this week
+      ]).install(t);
+      await _show(t, const HomeScreen());
+      final blocked = find.descendant(of: find.byKey(const Key('home_stat_blocked')), matching: find.byType(Text)).first;
+      expect(t.widget<Text>(blocked).data, '4');
+      expect(find.descendant(of: find.byKey(const Key('home_stat_top')), matching: find.text('KYC')), findsOneWidget);
+      await t.scrollUntilVisible(find.byKey(const Key('home_attempt_3')), 200);
+      for (final id in [2, 1, 3]) {
+        expect(find.byKey(Key('home_attempt_$id')), findsOneWidget, reason: '$id');
+      }
+      expect(find.byKey(const Key('home_attempt_4')), findsNothing); // only the newest three
+      expect(find.byKey(const Key('home_attempt_5')), findsNothing); // SAFE is never an attempt
+      await _end(t);
+
+      _Native().install(t);
+      await _show(t, const HomeScreen());
+      await t.scrollUntilVisible(find.byKey(const Key('home_recent_empty')), 200);
+      expect(find.text("No attempts this week — you're safe"), findsOneWidget);
       await _end(t);
     });
 
@@ -237,8 +281,9 @@ void main() {
         ('home_past_alerts', PastAlertsScreen),
       ]) {
         await _show(t, const HomeScreen());
-        await t.scrollUntilVisible(find.byKey(Key(key)), 100);
+        await t.scrollUntilVisible(find.byKey(Key(key)), 100, scrollable: find.byType(Scrollable).first);
         await t.ensureVisible(find.byKey(Key(key)));
+        await t.pump();
         await t.tap(find.byKey(Key(key)));
         await _settle(t);
         expect(find.byType(type), findsOneWidget, reason: key);

@@ -60,11 +60,10 @@ void main() {
     await t.pumpWidget(const ScamShieldApp());
     await t.pump();
     await t.pump(const Duration(milliseconds: 600));
-    await t.tap(find.byTooltip('Help'));
+    await t.tap(find.byKey(const Key('nav_profile')));
     await t.pump();
     await t.pump(const Duration(milliseconds: 600));
-
-    expect(find.text('रिपोर्ट करें'), findsOneWidget); // the hub itself is on screen
+    await reveal(t, find.byKey(const Key('profile_settings'))); // the help list itself is on screen
     expect(find.byKey(const Key('tile_demo_lab')), findsNothing);
     expect(find.text('डेमो लैब'), findsNothing);
     expect(DemoFlag.enabled.value, isFalse);

@@ -4,6 +4,21 @@ import 'app_language.dart';
 // hne wording is a first draft: [VERIFY] with a native Chhattisgarhi speaker. Missing hne falls back to hi.
 const homeStrings = Tri(
   hi: {
+    'tip_0': 'बैंक कभी फ़ोन पर OTP नहीं माँगता। कोई माँगे तो फ़ोन काट दें।',
+    'tip_1': 'पैसे पाने के लिए कभी UPI PIN नहीं डालना पड़ता। PIN सिर्फ़ पैसे भेजने के लिए है।',
+    'tip_2': 'पुलिस या CBI वीडियो कॉल पर "डिजिटल अरेस्ट" नहीं करती। डरें नहीं, 1930 पर कॉल करें।',
+    'tip_3': 'QR कोड स्कैन करने से पैसे जाते हैं, आते नहीं।',
+    'tip_4': 'KYC अपडेट के लिए आए SMS के लिंक पर क्लिक न करें। सीधे बैंक की शाखा या ऐप में जाएँ।',
+    'tip_5': 'परिवार का बनकर पैसे माँगने वाले से परिवार कोड पूछें।',
+    'tip_6': 'अनजान कॉल पर AnyDesk या कोई स्क्रीन-शेयर ऐप न डालें।',
+    'g_morning': 'सुप्रभात', 'g_afternoon': 'नमस्ते', 'g_evening': 'शुभ संध्या', 'greet_name': '{g}, {name} जी',
+    'home_sub': 'आपकी वजह से आपका परिवार सुरक्षित है।', 'checks_on': 'सारी जाँच चालू · {n} दिन सुरक्षित', 'checks_on0': 'सारी जाँच चालू',
+    'week': 'इस हफ़्ते', 'st_blocked': 'हमले रोके', 'st_top': 'सबसे आम चाल', 'st_score': 'सुरक्षा स्कोर',
+    'recent': 'हाल के हमले', 'see_all': 'सब देखें', 'no_attempts': 'इस हफ़्ते कोई हमला नहीं — आप सुरक्षित हैं',
+    'quick': 'जल्दी करें', 'qa_check': 'संदेश जाँचें', 'qa_live': 'कॉल पर सुरक्षा', 'qa_rec': 'रिकॉर्डिंग जाँचें',
+    'qa_know': 'मेरे बारे में', 'qa_alerts': 'पुरानी चेतावनियाँ',
+    'tip': 'आज की सीख', 'tip_link': '2 मिनट का पाठ', 'chip_scam': 'धोखा', 'chip_susp': 'संदिग्ध',
+    'check_title': 'संदेश जाँचें', 'live_title': 'लाइव कॉल',
     'prot_ok': 'आप सुरक्षित हैं', 'prot_off': 'ध्यान दें: {what} बंद है', 'prot_checking': 'जाँच हो रही है…',
     'off_call': 'कॉल सुरक्षा', 'off_msg': 'मैसेज सुरक्षा', 'off_notif': 'अलर्ट',
     'fix': 'ठीक करें',
@@ -58,6 +73,8 @@ const homeStrings = Tri(
     'set_setup': 'सेटअप और अनुमतियाँ', 'set_setup_s': 'देखें ScamShield को क्या चाहिए',
   },
   hne: {
+    'g_morning': 'राम राम', 'g_afternoon': 'राम राम', 'g_evening': 'राम राम',
+    'recent': 'हाल के हमला', 'see_all': 'सब देखव', 'quick': 'झटकुन करव',
     'prot_ok': 'तुमन सुरक्षित हव', 'prot_off': 'धियान देव: {what} बंद हे',
     'fix': 'ठीक करव',
     'fam_title': 'परिवार के कोड', 'fam_ask': 'फ़ोन करइया ले ए कोड पूछव',
@@ -72,6 +89,21 @@ const homeStrings = Tri(
     'fam_msg': 'मोला {type} वाले ठगी के संदेश/कॉल आइस ({time})। मैं कुछु नइ भेजेंव अउ कोनो PIN या OTP नइ बतायेंव। तुमन भी सावधान रहव।',
   },
   en: {
+    'tip_0': 'Your bank will never ask for an OTP on a call. If someone does, hang up.',
+    'tip_1': 'You never enter a UPI PIN to receive money. A PIN only ever sends money.',
+    'tip_2': 'Police and the CBI never do a "digital arrest" on a video call. Stay calm and call 1930.',
+    'tip_3': 'Scanning a QR code sends money. It never brings money in.',
+    'tip_4': 'Never tap a link in a "KYC update" SMS. Go to your bank branch or app yourself.',
+    'tip_5': 'If a "relative" asks for money on a new number, ask them for the family code.',
+    'tip_6': 'Never install AnyDesk or any screen-sharing app because a caller asked.',
+    'g_morning': 'Good morning', 'g_afternoon': 'Good afternoon', 'g_evening': 'Good evening', 'greet_name': '{g}, {name}',
+    'home_sub': 'Your family is safer because of you.', 'checks_on': 'All checks on · {n} days safe', 'checks_on0': 'All checks on',
+    'week': 'This week', 'st_blocked': 'attacks stopped', 'st_top': 'most tried trick', 'st_score': 'safety score',
+    'recent': 'Recent attempts', 'see_all': 'See all', 'no_attempts': "No attempts this week — you're safe",
+    'quick': 'Quick actions', 'qa_check': 'Check a message', 'qa_live': 'Live call guard', 'qa_rec': 'Check a recording',
+    'qa_know': 'About me', 'qa_alerts': 'Past alerts',
+    'tip': "TODAY'S TIP", 'tip_link': '2-minute lesson', 'chip_scam': 'Scam', 'chip_susp': 'Suspicious',
+    'check_title': 'Check a message', 'live_title': 'Live call',
     'prot_ok': "You're protected", 'prot_off': 'Needs attention: {what} is off', 'prot_checking': 'Checking…',
     'off_call': 'Call protection', 'off_msg': 'Message protection', 'off_notif': 'Alerts',
     'fix': 'Fix',
@@ -150,3 +182,23 @@ String agoIn(String lang, int tsMs, {int? nowMs}) {
   if (d < 7 * 86400000) return homeT(lang, 't_day', {'n': d ~/ 86400000});
   return DateTime.fromMillisecondsSinceEpoch(tsMs).toIso8601String().substring(0, 10);
 }
+
+const _wdEn = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const _moEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const _wdHi = ['सोमवार', 'मंगलवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार', 'रविवार'];
+const _moHi = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+
+/// Number of `tip_N` strings (the Home tip rotates by day).
+const kTipCount = 7;
+
+/// "Monday, 23 November" / "सोमवार, 23 नवंबर".
+String longDateIn(String lang, DateTime d) => lang == 'en'
+    ? '${_wdEn[d.weekday - 1]}, ${d.day} ${_moEn[d.month - 1]}'
+    : '${_wdHi[d.weekday - 1]}, ${d.day} ${_moHi[d.month - 1]}';
+
+/// "14 Mar 1964" / "14 मार्च 1964".
+String shortDateIn(String lang, DateTime d) =>
+    lang == 'en' ? '${d.day} ${_moEn[d.month - 1].substring(0, 3)} ${d.year}' : '${d.day} ${_moHi[d.month - 1]} ${d.year}';
+
+/// Morning before 12, afternoon before 17, evening after.
+String greetingKey(DateTime now) => now.hour < 12 ? 'g_morning' : now.hour < 17 ? 'g_afternoon' : 'g_evening';

@@ -10,6 +10,7 @@ import '../theme/tokens.dart';
 import '../widgets/action_tile.dart';
 import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
+import '../widgets/island.dart';
 
 /// Client for the native handoff channel (K/HandoffChannel.kt).
 /// Every call returns null/false instead of throwing, so the screen still works
@@ -343,7 +344,7 @@ class _ReportScreenState extends State<ReportScreen> {
     if (mounted && !ok) _toast(ReportStrings.of(_lang)[errKey]);
   }
 
-  void _toast(String msg) => ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(msg)));
+  void _toast(String msg) => showIsland(context, msg);
 
   String _clock(int ms) =>
       '${(ms ~/ 60000).toString().padLeft(2, '0')}:${((ms ~/ 1000) % 60).toString().padLeft(2, '0')}';

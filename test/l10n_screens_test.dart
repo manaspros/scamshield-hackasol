@@ -44,7 +44,7 @@ void main() {
       'family': (() => const FamilyScreen(), 'Show my code', 'Enter family code'),
       'recording': (_recording, 'Pick a recording', 'Open a call recording saved on this phone.'),
       'demo': (() => const DemoLabScreen(), 'No demos yet', 'No demo stories were found in this build'),
-      'lessons': (_lessons, 'Start', 'Finish your first lesson — your score will show here'),
+      'lessons': (_lessons, 'Start', 'Take a quiz to find your weak spots'),
     };
     for (final e in cases.entries) {
       testWidgets('L10N_${e.key}_starts_in_english', (t) async {
@@ -53,8 +53,8 @@ void main() {
         await t.pumpAndSettle();
         expect(find.textContaining(e.value.$2), findsWidgets);
         expect(find.textContaining(e.value.$3), findsWidgets);
-        // the demo's empty state has no chips
-        if (e.key != 'demo') expect(find.byWidgetPredicate((w) => w is ChoiceChip && w.key == const Key('lang_en') && w.selected), findsOneWidget);
+        // the demo's empty state has no chips; Learn follows the top-bar language only
+        if (e.key != 'demo' && e.key != 'lessons') expect(find.byWidgetPredicate((w) => w is ChoiceChip && w.key == const Key('lang_en') && w.selected), findsOneWidget);
       });
     }
   });
@@ -117,10 +117,10 @@ void main() {
       AppLanguage.debugSet('hi');
       await t.pumpWidget(_app(_lessons(), scoped: true));
       await t.pumpAndSettle();
-      expect(find.text('पहला पाठ पूरा करें — आपका स्कोर यहाँ दिखेगा'), findsOneWidget);
+      expect(find.text('कमज़ोर हिस्से जानने के लिए एक क्विज़ दें'), findsOneWidget);
       AppLanguage.debugSet('en');
       await t.pumpAndSettle();
-      expect(find.text('Finish your first lesson — your score will show here'), findsOneWidget);
+      expect(find.text('Take a quiz to find your weak spots'), findsOneWidget);
     });
 
     testWidgets('L10N_chip_override_is_temporary', (t) async {

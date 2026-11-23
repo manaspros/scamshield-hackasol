@@ -11,6 +11,7 @@ import '../theme/tokens.dart';
 import '../widgets/action_tile.dart';
 import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
+import '../widgets/island.dart';
 import 'setup_screen.dart';
 
 /// Chhattisgarh districts, generated from data/districts.json.
@@ -470,9 +471,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (++_versionTaps < 7) return;
     _versionTaps = 0;
     DemoFlag.set(true);
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      SnackBar(content: Text(_t('demo_snack'))),
-    );
+    showIsland(context, _t('demo_snack'), tone: IslandTone.success);
   }
 
   Future<void> _set(String key, Object? value) async {

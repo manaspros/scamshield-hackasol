@@ -44,19 +44,22 @@ void main() {
   testWidgets('T3_5_hindiCardsRender', (t) async {
     await _phone(t);
     await _pump(t, InMemoryQuizStore());
-    expect(find.text('ओटीपी की सुरक्षा'), findsOneWidget);
+    final otp = _hi().first;
     expect(find.byKey(const Key('score_value')), findsOneWidget);
-    await t.scrollUntilVisible(find.byKey(const Key('lesson_loan_app')), 200);
+    await t.scrollUntilVisible(find.byKey(const Key('lesson_otp')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.text(otp.title), findsWidgets); // carousel card + list row
+    await t.scrollUntilVisible(find.byKey(const Key('lesson_loan_app')), 200, scrollable: find.byType(Scrollable).first);
     await t.drag(find.byType(ListView), const Offset(0, 3000));
     await t.pumpAndSettle();
+    await t.scrollUntilVisible(find.byKey(const Key('lesson_otp')), 200, scrollable: find.byType(Scrollable).first);
     await t.ensureVisible(find.byKey(const Key('lesson_otp')));
     await t.pumpAndSettle();
     await t.tap(find.byKey(const Key('lesson_otp')));
     await t.pumpAndSettle();
-    expect(find.text('इसे गुप्त रखें'), findsOneWidget);
+    expect(find.text(otp.cards[0].title), findsOneWidget);
     await t.drag(find.byKey(const Key('card_pages')), const Offset(-300, 0));
     await t.pumpAndSettle();
-    expect(find.text('कोड आपके लिए है'), findsOneWidget);
+    expect(find.text(otp.cards[1].title), findsOneWidget);
     expect(t.takeException(), isNull);
   });
 
@@ -66,6 +69,7 @@ void main() {
     await _pump(t, store);
     final otp = _hi().first;
 
+    await t.scrollUntilVisible(find.byKey(const Key('lesson_otp')), 200, scrollable: find.byType(Scrollable).first);
     await t.ensureVisible(find.byKey(const Key('lesson_otp')));
     await t.pumpAndSettle();
     await t.tap(find.byKey(const Key('lesson_otp')));
@@ -107,6 +111,7 @@ void main() {
     await _phone(t);
     await _pump(t, InMemoryQuizStore());
     final otp = _hi().first;
+    await t.scrollUntilVisible(find.byKey(const Key('lesson_otp')), 200, scrollable: find.byType(Scrollable).first);
     await t.ensureVisible(find.byKey(const Key('lesson_otp')));
     await t.pumpAndSettle();
     await t.tap(find.byKey(const Key('lesson_otp')));
@@ -125,9 +130,8 @@ void main() {
     expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget); // feedback header
     // The options sit below the feedback and may not be built yet: bring each into view.
     final right = Key('option_${otp.questions[0].correctIndex}');
-    await t.drag(find.byType(ListView), const Offset(0, -3000)); // options are the last items
-    await t.pumpAndSettle();
     for (final (k, icon) in [(Key('option_$wrong'), Icons.cancel), (right, Icons.check_circle)]) {
+      await t.scrollUntilVisible(find.byKey(k), -150, scrollable: find.byType(Scrollable).first);
       expect(find.descendant(of: find.byKey(k), matching: find.byIcon(icon)), findsOneWidget);
     }
     expect(t.takeException(), isNull);

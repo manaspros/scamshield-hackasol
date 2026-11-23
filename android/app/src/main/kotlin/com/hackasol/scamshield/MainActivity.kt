@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.content.Intent
 import android.provider.Settings
+import com.hackasol.scamshield.core.ModelCatalog
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -37,7 +38,8 @@ class MainActivity : FlutterActivity() {
 
     companion object { private const val REQ_IMPORT = 4201
         private const val REQ_NOTIF = 4203
-        private val PREF_KEYS = setOf("lesson_best_v1", "district", "lang_v1", "captions_ack_v1", "demo_mode", "onboarded_v1") }
+        private val PREF_KEYS = setOf("lesson_best_v1", "district", "lang_v1", "captions_ack_v1", "demo_mode", "onboarded_v1",
+            "theme_v1", "profile_v1", "family_contacts_v1", "learn_v2") }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,7 +102,25 @@ class MainActivity : FlutterActivity() {
                 "loadModel" -> { GemmaClassifier.ensureLoaded(this, force = true); result.success(GemmaClassifier.statusMap(this)) }
                 "importModel" -> startImport(result)
                 "downloadModel" -> scope.launch {
-                    result.success(ModelDownloader.start(this@MainActivity, AppSettings.wifiOnly))
+                    result.success(ModelDownloader.start(this@MainActivity, AppSettings.wifiOnly, call.argument<String>("modelId")))
+                }
+                "models.catalog" -> result.success(ModelCatalog.all.map { it.toMap() })
+                "models.select" -> {
+                    // Switch to an already-installed model and reload it.
+                    val spec = ModelCatalog.byId(call.argument<String>("id"))
+                    if (spec == null) result.error("BAD_ID", "unknown model", null)
+                    else {
+                        GemmaClassifier.setPreferred(this, spec.file)
+                        GemmaClassifier.ensureLoaded(this, force = true)
+                        result.success(GemmaClassifier.statusMap(this))
+                    }
+                }
+                "device.info" -> result.success(deviceInfo())
+                "llm.generate" -> scope.launch {
+                    val prompt = call.argument<String>("prompt").orEmpty()
+                    val temp = (call.argument<Number>("temperature") ?: 0.8).toFloat()
+                    try { result.success(if (prompt.isBlank()) null else GemmaClassifier.generate(prompt, temp)) }
+                    catch (t: Throwable) { result.error("LLM", t.message, null) }
                 }
                 "downloadStatus" -> result.success(ModelDownloader.status(this))
                 "cancelDownload" -> { ModelDownloader.cancel(this); result.success(null) }
@@ -172,6 +192,28 @@ class MainActivity : FlutterActivity() {
 
         TrendChannel.register(this, messenger)
         DemoChannel.register(this, messenger)
+    }
+
+    /** RAM, chip and free storage for the model picker's recommendation. */
+    private fun deviceInfo(): Map<String, Any?> {
+        val mi = android.app.ActivityManager.MemoryInfo()
+        getSystemService(android.app.ActivityManager::class.java)?.getMemoryInfo(mi)
+        val totalMb = mi.totalMem / (1024 * 1024)
+        val dir = getExternalFilesDir(null) ?: filesDir
+        val freeMb = try { android.os.StatFs(dir.absolutePath).availableBytes / (1024 * 1024) } catch (_: Throwable) { 0L }
+        val soc = if (android.os.Build.VERSION.SDK_INT >= 31) android.os.Build.SOC_MODEL else android.os.Build.HARDWARE
+        return mapOf(
+            "totalRamMb" to totalMb,
+            "availRamMb" to mi.availMem / (1024 * 1024),
+            "freeStorageMb" to freeMb,
+            "manufacturer" to android.os.Build.MANUFACTURER,
+            "model" to android.os.Build.MODEL,
+            "soc" to soc,
+            "abi" to android.os.Build.SUPPORTED_ABIS.firstOrNull(),
+            "sdk" to android.os.Build.VERSION.SDK_INT,
+            "release" to android.os.Build.VERSION.RELEASE,
+            "recommendedId" to ModelCatalog.recommend(totalMb, freeMb).id,
+        )
     }
 
     private fun isServiceEnabled(): Boolean {
