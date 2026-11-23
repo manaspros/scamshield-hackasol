@@ -57,6 +57,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Decisions
 - 2026-11-23: scamshield/prefs allowlist extended with lang_v1 and captions_ack_v1 (design lead's first-run keys) so the language choice persists; district read times out after 1 s so settings never block on it. settings_screen.dart was reformatted by dart format in T3.10 (large diff, no other session had edits there).
+- Quiz wrong-answer feedback is amber 'ध्यान दें' with a warning icon, not red 'गलत' (gentler for first-time learners; coordinator-approved UX change; lessons_screen_test updated).
 - 2026-11-23: T3.11 committed ahead of T2.7 at QA priority (Report/Lessons were unreachable; QA's qa_nav_test a60c299 depends on it). Recording tile + 'recording' deep link come with T2.7. Full flutter test had 4 order-dependent failures in test/design/screens_scale_test.dart setup_screen cases (pass alone; another session's uncommitted setup_screen.dart edit), not caused by main.dart.
 - 2026-11-23: DEP6 pinned com.alphacephei:vosk-android:0.3.75 (published 2025-12-08, >7 days); model https://alphacephei.com/vosk/models/vosk-model-small-hi-0.22.zip (~42 MB, downloaded on device, never in git); no checksum pinned (shortcut).
 - 2026-11-23: T2.1 keeps the legacy source 'manual' (Kotlin maps it to PASTE) so existing QA tests stay valid. The share path classifies inside a translucent activity; a slow Gemma run blocks touches for a few seconds, and leaving early cancels the check (prototype).

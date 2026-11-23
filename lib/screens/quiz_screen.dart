@@ -22,7 +22,7 @@ class LessonStrings {
     'back': 'पीछे',
     'startQuiz': 'क्विज़ शुरू करें',
     'right': 'सही!',
-    'wrong': 'गलत',
+    'wrong': 'ध्यान दें',
     'answerWas': 'सही उत्तर:',
     'nextQ': 'अगला सवाल',
     'finish': 'नतीजा देखें',
@@ -46,7 +46,7 @@ class LessonStrings {
     'back': 'पाछू',
     'startQuiz': 'क्विज़ सुरू करव',
     'right': 'सही!',
-    'wrong': 'गलत',
+    'wrong': 'ध्यान देव',
     'answerWas': 'सही जवाब:',
     'nextQ': 'आगू के सवाल',
     'finish': 'नतीजा देखव',
@@ -70,7 +70,7 @@ class LessonStrings {
     'back': 'Back',
     'startQuiz': 'Start quiz',
     'right': 'Correct!',
-    'wrong': 'Wrong',
+    'wrong': 'Take note',
     'answerWas': 'Right answer:',
     'nextQ': 'Next question',
     'finish': 'See result',
@@ -271,7 +271,7 @@ class _QuizScreenState extends State<QuizScreen> {
     final q = _lesson.questions[_q];
     final answered = _picked != null;
     final right = answered && _picked == q.correctIndex;
-    final fbLabel = right ? RiskLabel.safe : RiskLabel.scam;
+    final fbLabel = right ? RiskLabel.safe : RiskLabel.suspicious; // amber, not red: gentler for learners
     final fb = st.solid(fbLabel);
     return Column(children: [
       Expanded(
@@ -317,7 +317,7 @@ class _QuizScreenState extends State<QuizScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(right ? Icons.check_circle : Icons.cancel, color: fb, size: 40),
+                    Icon(right ? Icons.check_circle : Icons.warning_amber_rounded, color: fb, size: 40),
                     const SizedBox(width: Sp.s),
                     Expanded(
                       child: Text(

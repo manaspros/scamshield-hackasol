@@ -128,6 +128,9 @@ void main() {
           messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
           messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'), null);
         });
+        // Unmount before the handlers go away (teardowns run last-in first), so the screen's
+        // event-channel cancel cannot hit a missing or the next test's handler.
+        addTearDown(() => t.pumpWidget(const SizedBox()));
         await _show(t, e.value, const SetupScreen());
         await t.pump(const Duration(milliseconds: 100)); // let the mocked channel replies land
         await t.pumpAndSettle();
@@ -139,6 +142,7 @@ void main() {
         await t.scrollUntilVisible(find.text('सेटअप'), -500, maxScrolls: 100); // back to the top
         if (firstRun) {
           await t.ensureVisible(find.byKey(const Key('lang_hne')));
+          await t.pumpAndSettle();
           await t.tap(find.byKey(const Key('lang_hne')));
           await t.pumpAndSettle();
           expect(find.byKey(const Key('setup_firstrun_card')), findsNothing);

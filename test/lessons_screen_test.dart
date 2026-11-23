@@ -119,8 +119,15 @@ void main() {
     await t.pumpAndSettle();
     await t.tap(find.byKey(Key('option_$wrong')));
     await t.pumpAndSettle();
-    expect(find.text('गलत'), findsOneWidget);
-    expect(find.byIcon(Icons.cancel), findsWidgets);
+    expect(find.text('ध्यान दें'), findsOneWidget);
+    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget); // feedback header
+    // The options sit below the feedback and may not be built yet: bring each into view.
+    final right = Key('option_${otp.questions[0].correctIndex}');
+    await t.drag(find.byType(ListView), const Offset(0, -3000)); // options are the last items
+    await t.pumpAndSettle();
+    for (final (k, icon) in [(Key('option_$wrong'), Icons.cancel), (right, Icons.check_circle)]) {
+      expect(find.descendant(of: find.byKey(k), matching: find.byIcon(icon)), findsOneWidget);
+    }
     expect(t.takeException(), isNull);
   });
 }
