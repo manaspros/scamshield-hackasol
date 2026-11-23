@@ -61,6 +61,17 @@ const kFallbackCatalog = <ModelSpec>[
       sizeMb: 304,
       minRamMb: 3000,
       tier: 'fast'),
+  // ScamShield's own model (release ScamShieldLLM-v1). Before the 1B so the recommended default stays Gemma 3 1B.
+  ModelSpec(
+      id: 'scamshield-llm-v1',
+      name: 'ScamShield LLM · v1',
+      file: 'scamshield-llm-v1.task',
+      url: 'https://github.com/AB527/open-model/releases/download/ScamShieldLLM-v1/scamshield-llm-v1.task',
+      sizeMb: 528,
+      minRamMb: 4000,
+      tier: 'balanced',
+      isNew: true,
+      note: {'en': "ScamShield's own model · Hindi support", 'hi': 'ScamShield का अपना मॉडल · हिंदी समझता है'}),
   ModelSpec(
       id: 'gemma3-1b-int4',
       name: 'Gemma 3 · 1B',

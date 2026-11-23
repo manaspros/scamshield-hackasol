@@ -30,6 +30,16 @@ class ModelCatalogTest {
         assertEquals(ModelCatalog.DEFAULT_ID, ModelCatalog.recommend(0, 0).id)
     }
 
+    @Test fun scamShieldLlmIsListedAndHostedButNotTheDefault() {
+        val s = ModelCatalog.byId(ModelCatalog.SCAMSHIELD_LLM_ID)!!
+        assertEquals("scamshield-llm-v1.task", s.file)
+        assertTrue(s.url!!.contains("/ScamShieldLLM-v1/"))
+        assertEquals(s, ModelCatalog.byFile("scamshield-llm-v1.task"))
+        // Listed before the 1B, so a phone that fits both is still recommended Gemma 3 1B.
+        assertTrue(ModelCatalog.all.indexOf(s) < ModelCatalog.all.indexOfFirst { it.id == ModelCatalog.DEFAULT_ID })
+        assertEquals(ModelCatalog.DEFAULT_ID, ModelCatalog.recommend(8_000, 20_000).id)
+    }
+
     @Test fun fitsChecksRamAndStorage() {
         val oneB = ModelCatalog.byId(ModelCatalog.DEFAULT_ID)!!
         assertTrue(ModelCatalog.fits(oneB, 4_000, 800))

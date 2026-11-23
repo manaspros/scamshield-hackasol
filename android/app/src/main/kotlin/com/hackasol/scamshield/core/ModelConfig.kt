@@ -33,9 +33,16 @@ object ModelCatalog {
 
     const val URL_270M = "https://github.com/AB527/open-model/releases/download/v1/gemma3-270m-it-q8.task"
 
+    /** ScamShield's own model, release ScamShieldLLM-v1. For now the Gemma 3 1B file under its own name; the
+     *  fine-tuned file replaces it later under a new release, with no app change beyond this entry. */
+    const val SCAMSHIELD_LLM_ID = "scamshield-llm-v1"
+    const val URL_SCAMSHIELD_LLM = "https://github.com/AB527/open-model/releases/download/ScamShieldLLM-v1/scamshield-llm-v1.task"
+
     // TODO(host): 3n-E2B (3.1 GB) is over GitHub's 2 GB asset limit; host it elsewhere and fill in its URL.
     val all: List<ModelSpec> = listOf(
         ModelSpec("gemma3-270m", "Gemma 3 · 270M", "gemma3-270m-it-q8.task", URL_270M, 304, 3_000, "fast"),
+        // Before the 1B on purpose: recommend() takes the last model that fits, so the default stays Gemma 3 1B.
+        ModelSpec(SCAMSHIELD_LLM_ID, "ScamShield LLM · v1", "scamshield-llm-v1.task", URL_SCAMSHIELD_LLM, 528, 4_000, "balanced"),
         ModelSpec(DEFAULT_ID, "Gemma 3 · 1B", ModelConfig.FILENAME, ModelConfig.URL, 555, 4_000, "balanced"),
         ModelSpec("gemma3n-e2b", "Gemma 3n · E2B", "gemma-3n-E2B-it-int4.task", null, 3_100, 8_000, "best"),
     )
