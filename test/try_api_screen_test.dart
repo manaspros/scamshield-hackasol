@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/screens/try_api_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 import 'package:scamshield/widgets/status_chip.dart';
 
 void main() {
+  setUp(() => AppLanguage.debugSet('hi')); // these tests assert the Hindi-first copy
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('T2_1_showsTypeAndTriggers', (tester) async {

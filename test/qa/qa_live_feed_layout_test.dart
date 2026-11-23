@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 
 import 'qa_harness.dart';
 
 void main() {
+  setUp(() => AppLanguage.debugSet('hi')); // these tests assert the Hindi-first copy
   TestWidgetsFlutterBinding.ensureInitialized();
   for (final e in themes.entries) {
     testWidgets('QA_liveFeed_noOverflow_listUsable_360x740_${e.key}_scale2', (t) async {

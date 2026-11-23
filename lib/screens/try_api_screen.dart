@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../api/text_api.dart';
+import '../l10n/app_language.dart';
+import '../l10n/strings_check.dart';
+import '../l10n/strings_shell.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
@@ -41,17 +44,18 @@ class _TryApiScreenState extends State<TryApiScreen> {
   // shortcut: prose containing '&' right after a link is absorbed (UpiQr then rejects it), upgrade if that shows up.
   static final _upiLink = RegExp(r'upi://(?:\S|[ \t](?=[^\r\n]*&))+', caseSensitive: false);
 
-  static const _upiCautionHi = 'पैसे भेजने से पहले जाँचें';
-  static const _upiCautionEn = 'Check before paying';
-  static const _upiRiskyEn = 'This UPI ID looks like a refund, helpdesk or prize account';
+  // Language for this build; hi/hne keep the Hindi-first look with small English second lines, en is English only.
+  String get _lang => AppLanguage.of(context);
+  bool get _en => _lang == 'en';
+  String _t(String key, [List<String> args = const []]) => checkT(_lang, key, args);
 
-  // Same lines as the live feed (live_feed_screen.dart _advice), Hindi first.
-  static const _adviceTitle = 'घबराएँ नहीं। अभी यह करें:';
-  static const _payAdvice = ['पैसे न भेजें, कॉल काट दें', 'OTP या PIN किसी को न बताएँ'];
-  static const _advice = <RiskLabel, List<String>>{
-    RiskLabel.scam: _payAdvice,
-    RiskLabel.suspicious: ['जल्दबाज़ी न करें, कॉल काट दें', 'पहले अपने परिवार से पूछें'],
-  };
+  // Same lines as the live feed (live_feed_screen.dart), per language.
+  List<String> get _payAdvice => [_t('pay1'), _t('pay2')];
+  List<String> _advice(RiskLabel l) => switch (l) {
+        RiskLabel.scam => _payAdvice,
+        RiskLabel.suspicious => [_t('sus1'), _t('sus2')],
+        _ => const [],
+      };
 
   @override
   void dispose() {
@@ -66,7 +70,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
   Future<void> _run() async {
     final text = _ctrl.text.trim();
     if (text.isEmpty) {
-      setState(() => _inputError = 'पहले मैसेज डालें');
+      setState(() => _inputError = 'input_empty'); // a key, shown via _t so a language switch updates it
       return;
     }
     setState(() { _busy = true; _error = null; _retry = null; _inputError = null; });
@@ -111,8 +115,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
       if (e.code == 'UNAVAILABLE') {
         debugPrint('try_api: $e');
         if (mounted) {
-          setState(() =>
-              _error = 'QR स्कैनर उपलब्ध नहीं है। लिंक चिपकाएँ। · QR scanner not available; paste the link instead.');
+          setState(() => _error = 'qr_unavail'); // a key, shown via _t
         }
       } else {
         _fail(e, _scanQr);
@@ -123,7 +126,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
   Future<void> _dial() async {
     final ok = await const HandoffApi().dial('1930'); // ACTION_DIAL only; the user presses the green button
     if (!ok && mounted) {
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(ReportStrings.hi['openErr'])));
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(ReportStrings.of(_lang)['openErr'])));
     }
   }
 
@@ -131,8 +134,8 @@ class _TryApiScreenState extends State<TryApiScreen> {
   Widget _helpline() => ActionTile(
         key: const Key('helpline_1930'),
         icon: Icons.call,
-        label: '1930 पर कॉल करें',
-        caption: 'साइबर ठगी की मुफ़्त हेल्पलाइन। डायल खुलेगा, हरा बटन आप खुद दबाएँ।',
+        label: _t('helpline'),
+        caption: _t('helpline_cap'),
         onTap: _dial,
       );
 
@@ -143,13 +146,16 @@ class _TryApiScreenState extends State<TryApiScreen> {
       if (v.scamTypeLabel != null && warn)
         Padding(
           padding: const EdgeInsets.only(top: Sp.m),
-          child: Align(alignment: Alignment.centerLeft, child: StatusChip(label: v.label, text: v.scamTypeLabel)),
+          child: Align(
+              alignment: Alignment.centerLeft,
+              // hi/hne keep the bilingual chip; en shows English only
+              child: StatusChip(label: v.label, text: _en ? scamTypeIn(v, 'en') : v.scamTypeLabel)),
         ),
       VerdictCard(
         verdict: v,
         showDebug: false,
-        adviceTitle: warn ? _adviceTitle : null,
-        advice: _advice[v.label] ?? const [],
+        adviceTitle: warn ? _t('advice_title') : null,
+        advice: _advice(v.label),
         footer: warn ? _helpline() : null,
       ),
     ];
@@ -162,7 +168,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
           key: const Key('btn_upi_scan'),
           onPressed: _scanQr,
           icon: const Icon(Icons.qr_code_scanner),
-          label: const Text('QR स्कैन करें', textAlign: TextAlign.center),
+          label: Text(_t('scan'), textAlign: TextAlign.center),
         ),
       );
 
@@ -171,7 +177,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
         key: const Key('upi_section'),
         onPressed: () => setState(() => _upiOpen = !_upiOpen),
         icon: Icon(_upiOpen ? Icons.expand_less : Icons.link),
-        label: const Text('UPI लिंक चिपकाएँ', textAlign: TextAlign.center),
+        label: Text(_t('paste_upi'), textAlign: TextAlign.center),
       );
 
   Widget _upiTile() {
@@ -182,13 +188,13 @@ class _TryApiScreenState extends State<TryApiScreen> {
             key: const Key('upi_link_field'),
             controller: _upiCtrl,
             keyboardType: TextInputType.url,
-            decoration: const InputDecoration(labelText: 'UPI लिंक / QR टेक्स्ट · UPI link / QR text'),
+            decoration: InputDecoration(labelText: _t('upi_link_lbl')),
           ),
           const SizedBox(height: Sp.m),
           TextField(
             key: const Key('upi_name_field'),
             controller: _nameCtrl,
-            decoration: const InputDecoration(labelText: 'आपको बताया गया नाम (चाहें तो) · Name I was told'),
+            decoration: InputDecoration(labelText: _t('upi_name_lbl')),
           ),
           const SizedBox(height: Sp.m),
           OutlinedButton.icon(
@@ -199,7 +205,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
               if (link.isNotEmpty) _checkUpi(link);
             },
             icon: const Icon(Icons.verified_user),
-            label: const Text('लिंक जाँचें · Check link', textAlign: TextAlign.center),
+            label: Text(_t('check_link'), textAlign: TextAlign.center),
           ),
           const SizedBox(height: Sp.m),
     ]);
@@ -219,8 +225,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
           Icon(Icons.info_outline, size: 28, color: cs.onSurfaceVariant),
           const SizedBox(width: Sp.s),
           Expanded(
-              child: Text('यह UPI लिंक सही नहीं लगता। upi://pay?pa=... वाला पूरा लिंक डालें।\nNot a valid UPI link.',
-                  style: tt.bodyLarge)),
+              child: Text(_t('upi_invalid'), style: tt.bodyLarge)),
         ]),
       );
     }
@@ -232,16 +237,17 @@ class _TryApiScreenState extends State<TryApiScreen> {
     // otherwise neutral "check before paying".
     final label = RiskLabel.suspicious;
     final solid = warned ? st.solid(label) : cs.onSurfaceVariant;
-    Widget warn(Key k, Color c, String hi, String? imperative, String en) => Padding(
+    // main + optional imperative; the small English line only in hi/hne (sub null in en)
+    Widget warn(Key k, Color c, String main, String? imperative, String? sub) => Padding(
           padding: const EdgeInsets.only(top: Sp.m),
           child: Row(key: k, crossAxisAlignment: CrossAxisAlignment.start, children: [
             Icon(Icons.warning_amber_rounded, size: 32, color: c),
             const SizedBox(width: Sp.s),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(hi, style: tt.titleMedium),
+                Text(main, style: tt.titleMedium),
                 if (imperative != null) Text(imperative, style: tt.titleMedium?.copyWith(color: c)),
-                Text(en, style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
+                if (sub != null) Text(sub, style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
               ]),
             ),
           ]),
@@ -249,7 +255,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
     final tabular = [const FontFeature.tabularFigures()];
     final payee = '${u['payeeName'] ?? ''}'.trim();
     final amount = u['amount'] == null ? '' : '${u['amount']}'.trim();
-    final qrName = payee.isEmpty ? 'नाम नहीं मिला' : payee;
+    final qrName = payee.isEmpty ? _t('no_name') : payee;
     final told = _toldName.isEmpty ? '—' : _toldName;
     return Container(
       key: const Key('upi_card'),
@@ -264,18 +270,23 @@ class _TryApiScreenState extends State<TryApiScreen> {
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Icon(Icons.payments, size: 40, color: solid),
           const SizedBox(width: Sp.m),
-          Expanded(child: Text('${u['framingHi']}', key: const Key('upi_framing_hi'), style: tt.titleLarge?.copyWith(color: solid))),
+          Expanded(
+              child: _en
+                  ? Text('${u['framing']}', key: const Key('upi_framing_en'), style: tt.titleLarge?.copyWith(color: solid))
+                  : Text('${u['framingHi']}', key: const Key('upi_framing_hi'), style: tt.titleLarge?.copyWith(color: solid))),
         ]),
-        const SizedBox(height: Sp.xs),
-        Text('${u['framing']}', key: const Key('upi_framing_en'), style: tt.titleMedium),
+        if (!_en) ...[
+          const SizedBox(height: Sp.xs),
+          Text('${u['framing']}', key: const Key('upi_framing_en'), style: tt.titleMedium),
+        ],
         if (payee.isNotEmpty || amount.isNotEmpty) ...[
           const SizedBox(height: Sp.l),
-          Text('पैसे पाने वाला', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+          Text(_t('payee'), style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
           if (payee.isNotEmpty)
             Text(payee, key: const Key('upi_payee'), style: tt.headlineMedium?.copyWith(fontFeatures: tabular)),
           if (amount.isNotEmpty) ...[
             const SizedBox(height: Sp.s),
-            Text('आप भेज रहे हैं', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+            Text(_t('sending'), style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
             Text('${u['amountDisplay'] ?? '₹$amount'}', key: const Key('upi_amount'), style: tt.displayLarge?.copyWith(fontFeatures: tabular)),
           ],
         ],
@@ -289,22 +300,19 @@ class _TryApiScreenState extends State<TryApiScreen> {
         ],
         if (!warned) ...[
           const SizedBox(height: Sp.m),
-          Text(_upiCautionHi, key: const Key('upi_caution'), style: tt.titleMedium),
-          Text(_upiCautionEn, style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
+          Text(_t('caution'), key: const Key('upi_caution'), style: tt.titleMedium),
+          if (!_en) Text(_t('caution_sub'), style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
         ],
         if (risky)
-          warn(const Key('upi_risky'), st.suspicious, 'यह UPI ID रिफंड, हेल्पडेस्क या इनाम जैसा लगता है।',
-              'पैसे भेजने से पहले जाँचें', _upiRiskyEn),
+          warn(const Key('upi_risky'), st.suspicious, _t('risky'), _t('caution'), _en ? null : _t('risky_sub')),
         if (mismatch)
-          warn(const Key('upi_mismatch'), st.suspicious, 'QR में नाम: $qrName — आपको बताया गया नाम: $told',
-              'पैसे भेजने से पहले नाम मिलाएँ', 'Name does not match this UPI ID'),
+          warn(const Key('upi_mismatch'), st.suspicious, _t('mismatch', [qrName, told]), _t('mismatch_imp'),
+              _en ? null : _t('mismatch_sub')),
         if (collect)
-          warn(const Key('upi_collect'), st.suspicious,
-              'यह QR पैसे माँगता है। इसे स्कैन करने से पैसे जाते हैं, आते नहीं।', null,
-              'This QR requests money; scanning it sends money, it never receives money.'),
+          warn(const Key('upi_collect'), st.suspicious, _t('collect'), null, _en ? null : _t('collect_sub')),
         if (warned) ...[
           const SizedBox(height: Sp.m),
-          Text(_adviceTitle, style: tt.titleMedium),
+          Text(_t('advice_title'), style: tt.titleMedium),
           for (final line in _payAdvice)
             Padding(
               padding: const EdgeInsets.only(top: Sp.s),
@@ -321,12 +329,6 @@ class _TryApiScreenState extends State<TryApiScreen> {
     );
   }
 
-  static const _shortWord = <RiskLabel, String>{
-    RiskLabel.safe: 'सुरक्षित',
-    RiskLabel.suspicious: 'सावधान',
-    RiskLabel.scam: 'धोखाधड़ी',
-  };
-
   static String _hhmm(DateTime t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
@@ -336,9 +338,9 @@ class _TryApiScreenState extends State<TryApiScreen> {
     final cs = t.colorScheme;
     return Column(key: const Key('try_empty'), children: [
       const SizedBox(height: Sp.l),
-      const StateMessage(
+      StateMessage(
         icon: Icons.verified_user_outlined,
-        title: 'कोई संदिग्ध मैसेज यहाँ चिपकाएँ, हम बताएँगे कि ठगी तो नहीं',
+        title: _t('empty'),
       ),
       Semantics(
         button: true,
@@ -373,7 +375,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
     final cs = t.colorScheme;
     final older = _history.skip(1).toList();
     return Column(key: const Key('try_history'), crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      const SectionHeader(title: 'पिछली जाँचें', icon: Icons.history),
+      SectionHeader(title: _t('earlier'), icon: Icons.history),
       for (final h in older)
         Container(
           margin: const EdgeInsets.only(bottom: Sp.s),
@@ -385,7 +387,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              Flexible(child: StatusChip(label: h.v.label, text: _shortWord[h.v.label])),
+              Flexible(child: StatusChip(label: h.v.label, text: _t('short_${h.v.label.name}'))),
               const SizedBox(width: Sp.s),
               Text(_hhmm(h.at),
                   style: t.textTheme.bodySmall?.copyWith(
@@ -419,7 +421,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
               icon: _busy
                   ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 3))
                   : const Icon(Icons.verified_user),
-              label: Text(_busy ? 'जाँच हो रही है…' : 'मैसेज जाँचें', textAlign: TextAlign.center),
+              label: Text(_busy ? _t('busy') : _t('run'), textAlign: TextAlign.center),
             ),
           ),
         ),
@@ -442,25 +444,25 @@ class _TryApiScreenState extends State<TryApiScreen> {
               if (_inputError != null) setState(() => _inputError = null);
             },
             decoration: InputDecoration(
-              hintText: 'संदेश यहाँ चिपकाएँ',
+              hintText: _t('hint'),
               hintMaxLines: 4,
               alignLabelWithHint: true,
-              errorText: _inputError,
+              errorText: _inputError == null ? null : _t(_inputError!),
               errorMaxLines: 3,
             ),
           ),
           if (_error != null)
             Padding(
               padding: const EdgeInsets.only(top: Sp.s),
-              child: Text(_error!, style: TextStyle(color: cs.error)),
+              child: Text(_t(_error!), style: TextStyle(color: cs.error)),
             ),
           if (_retry != null)
             StateMessage(
               key: const Key('try_failed'),
               icon: Icons.error_outline,
-              title: 'जाँच नहीं हो पाई, फिर कोशिश करें',
-              subtitle: "Couldn't check, try again",
-              actionLabel: 'दोबारा जाँचें',
+              title: _t('failed'),
+              subtitle: _en ? null : _t('failed_sub'),
+              actionLabel: _t('retry'),
               onAction: _retry,
             ),
           const SizedBox(height: Sp.m),

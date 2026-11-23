@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/screens/try_api_screen.dart';
 import 'package:scamshield/widgets/verdict_card.dart';
 
@@ -78,6 +79,7 @@ Future<void> _analyse(WidgetTester t, String text) async {
 }
 
 void main() {
+  setUp(() => AppLanguage.debugSet('hi')); // these tests assert the Hindi-first copy
   TestWidgetsFlutterBinding.ensureInitialized();
 
   for (final e in themes.entries) {
