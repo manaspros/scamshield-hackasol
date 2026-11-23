@@ -7,6 +7,7 @@ import android.os.Looper
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import com.hackasol.scamshield.core.ApkRisk
 import com.hackasol.scamshield.core.ClassifyRequest
 import com.hackasol.scamshield.core.GemmaPrompt
 import com.hackasol.scamshield.core.graph.ClaimParsers
@@ -99,6 +100,9 @@ class ScamNotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) = safe("posted") {
         val info = sbn?.let(::toInfo) ?: return@safe
+        if (info.pkg != packageName && !info.ongoing) ApkRisk.apkNameIn(info.title, info.text)?.let { name ->
+            scope.launch { safe("apkGuard") { ApkGuard.warnChatApk(this@ScamNotificationListener, name) } }
+        }
         scope.launch { safe("classify") { wiring.onPosted(info) } }
     }
 

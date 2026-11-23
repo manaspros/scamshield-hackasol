@@ -24,6 +24,7 @@ class ShareReceiver : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (intent?.action == android.content.Intent.ACTION_SEND && intent?.type == APK_MIME) { checkApk(); return }
         val text = ShareIntentMapper.map(intent?.action, intent?.type, intent?.getCharSequenceExtra(EXTRA_TEXT))
         if (text == null) { finish(); return }
         val app = applicationContext
@@ -44,6 +45,22 @@ class ShareReceiver : Activity() {
         }
     }
 
+    private fun checkApk() {
+        val uri = if (android.os.Build.VERSION.SDK_INT >= 33)
+            intent.getParcelableExtra(android.content.Intent.EXTRA_STREAM, android.net.Uri::class.java)
+        else @Suppress("DEPRECATION") intent.getParcelableExtra<android.net.Uri>(android.content.Intent.EXTRA_STREAM)
+        val app = applicationContext
+        scope.launch {
+            try {
+                if (uri != null) ApkGuard.check(app, uri)
+            } catch (t: Throwable) {
+                Log.e("ScamShield/Share", "apk check failed", t)
+            } finally {
+                withContext(Dispatchers.Main) { finish() }
+            }
+        }
+    }
+
     override fun onDestroy() { scope.cancel(); super.onDestroy() }
 
     private fun hindi(l: Label) = when (l) {
@@ -52,5 +69,8 @@ class ShareReceiver : Activity() {
         Label.SCAM -> "धोखाधड़ी हो सकती है"
     }
 
-    private companion object { const val EXTRA_TEXT = android.content.Intent.EXTRA_TEXT }
+    private companion object {
+        const val EXTRA_TEXT = android.content.Intent.EXTRA_TEXT
+        const val APK_MIME = "application/vnd.android.package-archive"
+    }
 }
