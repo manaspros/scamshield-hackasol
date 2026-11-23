@@ -29,7 +29,7 @@ test('QA validate key order does not matter and valid rows pass through unchange
 });
 
 test('QA validate every documented scam type accepted, near-misses rejected', () => {
-  assert.equal(SCAM_TYPES.length, 10);
+  assert.equal(SCAM_TYPES.length, 18);
   for (const t of SCAM_TYPES) validateRecords([ok({ scam_type: t })], D);
   for (const t of ['otp', 'OTP ', 'SCAM', '', 'constructor', 'toString']) rejects([ok({ scam_type: t })], /unknown scam_type/);
 });

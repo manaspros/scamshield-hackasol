@@ -43,6 +43,14 @@ object L10n {
         ScamType.INVESTMENT -> pick(lang, "Investment scam", "निवेश ठगी")
         ScamType.JOB -> pick(lang, "Job scam", "नौकरी ठगी")
         ScamType.MISTAKEN_TRANSFER -> pick(lang, "Mistaken transfer scam", "गलत ट्रांसफर ठगी")
+        ScamType.ELECTRICITY_BILL -> pick(lang, "Electricity bill scam", "बिजली बिल ठगी")
+        ScamType.SIM_SWAP -> pick(lang, "SIM block scam", "सिम ब्लॉक ठगी")
+        ScamType.CUSTOMER_CARE -> pick(lang, "Fake customer care", "नकली कस्टमर केयर")
+        ScamType.UPI_COLLECT -> pick(lang, "UPI collect scam", "UPI कलेक्ट ठगी")
+        ScamType.SEXTORTION -> pick(lang, "Sextortion", "वीडियो ब्लैकमेल")
+        ScamType.LOTTERY -> pick(lang, "Lottery scam", "लॉटरी ठगी")
+        ScamType.FAMILY_EMERGENCY -> pick(lang, "Family emergency scam", "परिवार इमरजेंसी ठगी")
+        ScamType.PHISHING_LINK -> pick(lang, "Phishing link", "फ़र्ज़ी लिंक")
         ScamType.OTHER, null -> null
     }
 
@@ -70,6 +78,29 @@ object L10n {
         "loan" to "Unsolicited loan offer",
         "video_stay" to "Tells you to stay on video",
         "urgency" to "Creates urgency",
+        "elec_cut" to "Threatens electricity disconnection",
+        "sim_kyc" to "Threatens SIM block or telecom KYC",
+        "care_refund" to "Refund via customer-care number or app",
+        "upi_collect" to "Asks for PIN to receive money",
+        "qr_receive" to "Asks you to scan a QR to receive money",
+        "job_task" to "Task or part-time job earning claim",
+        "invest_scam" to "Guaranteed-return investment pitch",
+        "join_group" to "Asks you to join a group",
+        "sextortion" to "Threatens to share a private video",
+        "blackmail_pay" to "Demands money or it shares your content",
+        "loan_threat" to "Loan recovery threat to your contacts",
+        "loan_fee" to "Asks a fee before a loan",
+        "courier_hold" to "Claims your parcel is held with illegal items",
+        "lottery_claim" to "Lottery or KBC winner claim",
+        "family_emerg" to "Relative-in-emergency money request",
+        "new_number" to "Says it is a new number or lost phone",
+        "fee_ask" to "Asks a registration or processing fee",
+        "call_ask" to "Asks you to call a number",
+        "url_short" to "Shortened link hides the real site",
+        "url_ip" to "Link goes to a raw IP address",
+        "url_punycode" to "Link uses look-alike characters",
+        "url_tld" to "Link on a risky domain ending",
+        "url_lookalike" to "Link looks like a bank or service site",
     )
 
     private val RULE_HI = mapOf(
@@ -94,6 +125,29 @@ object L10n {
         "loan" to "बिना माँगे लोन का ऑफर",
         "video_stay" to "वीडियो कॉल पर बने रहने को कहता है",
         "urgency" to "जल्दबाज़ी करवाता है",
+        "elec_cut" to "बिजली कटने की धमकी",
+        "sim_kyc" to "सिम बंद या टेलीकॉम KYC की धमकी",
+        "care_refund" to "कस्टमर केयर नंबर या ऐप से रिफंड का दावा",
+        "upi_collect" to "पैसे पाने के लिए PIN माँगता है",
+        "qr_receive" to "पैसे पाने के लिए QR स्कैन करने को कहता है",
+        "job_task" to "टास्क या पार्ट-टाइम जॉब से कमाई का दावा",
+        "invest_scam" to "पक्के मुनाफे वाला निवेश ऑफर",
+        "join_group" to "ग्रुप में जुड़ने को कहता है",
+        "sextortion" to "निजी वीडियो फैलाने की धमकी",
+        "blackmail_pay" to "पैसे न देने पर सामग्री फैलाने की धमकी",
+        "loan_threat" to "आपके कॉन्टैक्ट्स को लोन वसूली की धमकी",
+        "loan_fee" to "लोन से पहले फीस माँगता है",
+        "courier_hold" to "पार्सल में गैरकानूनी सामान का दावा",
+        "lottery_claim" to "लॉटरी या KBC जीतने का दावा",
+        "family_emerg" to "रिश्तेदार की इमरजेंसी बताकर पैसे माँगता है",
+        "new_number" to "नया नंबर या फोन खराब होने का दावा",
+        "fee_ask" to "रजिस्ट्रेशन या प्रोसेसिंग फीस माँगता है",
+        "call_ask" to "किसी नंबर पर कॉल करने को कहता है",
+        "url_short" to "छोटा लिंक असली साइट छुपाता है",
+        "url_ip" to "लिंक सीधे IP पते पर जाता है",
+        "url_punycode" to "लिंक में नकली जैसे दिखने वाले अक्षर हैं",
+        "url_tld" to "लिंक जोखिम भरे डोमेन पर है",
+        "url_lookalike" to "लिंक बैंक या सर्विस साइट जैसा दिखता है",
     )
 
     val ruleIds: Set<String> get() = RULE_EN.keys

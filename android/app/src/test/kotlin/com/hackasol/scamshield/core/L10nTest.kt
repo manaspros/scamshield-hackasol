@@ -55,7 +55,7 @@ class L10nTest {
     }
 
     @Test fun L10N_ruleReasonsEveryId() {
-        assertEquals(21, L10n.ruleIds.size)
+        assertEquals(44, L10n.ruleIds.size)
         for (id in L10n.ruleIds) {
             val en = L10n.ruleReason(id, "en"); val hi = L10n.ruleReason(id, "hi"); val hne = L10n.ruleReason(id, "hne")
             assertTrue(id, en.isNotBlank() && en != id && !deva.containsMatchIn(en))

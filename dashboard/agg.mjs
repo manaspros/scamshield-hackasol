@@ -1,6 +1,8 @@
 const SCAM_TYPES = Object.freeze([
   'OTP', 'KYC', 'DIGITAL_ARREST', 'COURIER_CUSTOMS', 'FAKE_QR',
   'LOAN_APP', 'INVESTMENT', 'JOB', 'MISTAKEN_TRANSFER', 'OTHER',
+  'ELECTRICITY_BILL', 'SIM_SWAP', 'CUSTOMER_CARE', 'UPI_COLLECT', 'SEXTORTION', 'LOTTERY',
+  'FAMILY_EMERGENCY', 'PHISHING_LINK',
 ]);
 const REQUIRED_KEYS = Object.freeze(['date', 'district', 'scam_type']);
 

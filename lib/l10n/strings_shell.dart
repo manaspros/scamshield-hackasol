@@ -48,12 +48,23 @@ const _scamTypes = Tri(
     'OTP': 'ओटीपी माँगना', 'KYC': 'केवाईसी धोखा', 'DIGITAL_ARREST': 'डिजिटल अरेस्ट',
     'COURIER_CUSTOMS': 'कूरियर / कस्टम्स धोखा', 'FAKE_QR': 'नकली क्यूआर', 'LOAN_APP': 'लोन ऐप धोखा',
     'INVESTMENT': 'निवेश धोखा', 'JOB': 'नौकरी का झाँसा', 'MISTAKEN_TRANSFER': 'गलती से भेजे पैसे',
+    'ELECTRICITY_BILL': 'बिजली बिल धोखा', 'SIM_SWAP': 'सिम ब्लॉक धोखा', 'CUSTOMER_CARE': 'नकली कस्टमर केयर',
+    'UPI_COLLECT': 'यूपीआई कलेक्ट धोखा', 'SEXTORTION': 'वीडियो ब्लैकमेल', 'LOTTERY': 'लॉटरी धोखा',
+    'FAMILY_EMERGENCY': 'परिवार इमरजेंसी धोखा', 'PHISHING_LINK': 'फ़र्ज़ी लिंक',
     'OTHER': 'अन्य धोखाधड़ी',
+  },
+  hne: {
+    'ELECTRICITY_BILL': 'बिजली बिल ठगी', 'SIM_SWAP': 'सिम बंद होय के ठगी', 'CUSTOMER_CARE': 'नकली कस्टमर केयर',
+    'UPI_COLLECT': 'यूपीआई कलेक्ट ठगी', 'SEXTORTION': 'वीडियो ब्लैकमेल', 'LOTTERY': 'लॉटरी ठगी',
+    'FAMILY_EMERGENCY': 'परिवार इमरजेंसी ठगी', 'PHISHING_LINK': 'फर्जी लिंक',
   },
   en: {
     'OTP': 'OTP theft', 'KYC': 'KYC fraud', 'DIGITAL_ARREST': 'Digital arrest',
     'COURIER_CUSTOMS': 'Courier / customs', 'FAKE_QR': 'Fake QR', 'LOAN_APP': 'Loan app',
     'INVESTMENT': 'Investment fraud', 'JOB': 'Job scam', 'MISTAKEN_TRANSFER': 'Mistaken transfer',
+    'ELECTRICITY_BILL': 'Electricity bill scam', 'SIM_SWAP': 'SIM block scam', 'CUSTOMER_CARE': 'Fake customer care',
+    'UPI_COLLECT': 'UPI collect scam', 'SEXTORTION': 'Sextortion', 'LOTTERY': 'Lottery scam',
+    'FAMILY_EMERGENCY': 'Family emergency scam', 'PHISHING_LINK': 'Phishing link',
     'OTHER': 'Other scam',
   },
 );

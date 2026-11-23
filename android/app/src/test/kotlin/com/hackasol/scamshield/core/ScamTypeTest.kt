@@ -33,7 +33,7 @@ class ScamTypeTest {
         assertEquals(ScamType.COURIER_CUSTOMS, RuleScorer.scamType("Your parcel to Taiwan has drugs, press 1 to talk to customs officer"))
         assertEquals(ScamType.KYC, RuleScorer.scamType("Main SBI bank se bol raha hoon, aapka KYC pending hai"))
         assertEquals(ScamType.LOAN_APP, RuleScorer.scamType("Instant loan approved, pay the processing fee"))
-        assertEquals(ScamType.OTHER, RuleScorer.scamType("Congratulations, you have won a lottery"))
+        assertEquals(ScamType.LOTTERY, RuleScorer.scamType("Congratulations, you have won a lottery"))
         assertNull(RuleScorer.scamType("Beta khana kha liya? Kal shaam ko milte hain"))
         // existing outputs unchanged
         assertEquals(Label.SAFE, RuleScorer.score("Beta khana kha liya?").label)
@@ -42,7 +42,7 @@ class ScamTypeTest {
     @Test fun T1_2_lotteryFeeIsScamOther() {
         val t = "Congratulations you won a lottery of 25 lakh, pay 5000 processing fee by UPI"
         assertEquals(Label.SCAM, RuleScorer.score(t).label)
-        assertEquals(ScamType.OTHER, RuleScorer.scamType(t))
+        assertEquals(ScamType.LOTTERY, RuleScorer.scamType(t))
     }
 
     @Test fun T1_2_hindiKycTypedKyc() {
@@ -76,6 +76,22 @@ class ScamTypeTest {
             """{"label":"SCAM","scam_type":"MISTAKEN_TRANSFER","confidence":0.88,"reason":"Fake mistaken transfer"}"""),
         Case("other_en", "You have won a lottery, pay the tax to claim your prize",
             """{"label":"SCAM","scam_type":"OTHER","confidence":0.85,"reason":"Lottery claim"}"""),
+        Case("electricity_bill_hinglish", "Aapki bijli kat jayegi aaj raat, abhi is number par call karo",
+            """{"label":"SCAM","scam_type":"ELECTRICITY_BILL","confidence":0.92,"reason":"Fake disconnection threat"}"""),
+        Case("sim_swap_en", "Your SIM will be blocked in 24 hours, update KYC now",
+            """{"label":"SCAM","scam_type":"SIM_SWAP","confidence":0.9,"reason":"SIM block threat"}"""),
+        Case("customer_care_en", "For your refund, download QuickSupport and call customer care",
+            """{"label":"SCAM","scam_type":"CUSTOMER_CARE","confidence":0.93,"reason":"Refund via remote-access app"}"""),
+        Case("upi_collect_hinglish", "Paise paane ke liye apna UPI PIN daalo",
+            """{"label":"SCAM","scam_type":"UPI_COLLECT","confidence":0.95,"reason":"Receiving money never needs a PIN"}"""),
+        Case("sextortion_en", "We recorded your video call. Pay Rs 5000 or we share the video with your contacts",
+            """{"label":"SCAM","scam_type":"SEXTORTION","confidence":0.94,"reason":"Video blackmail"}"""),
+        Case("lottery_en", "Kaun Banega Crorepati lucky draw: you won Rs 25 lakh, pay the registration fee",
+            """{"label":"SCAM","scam_type":"LOTTERY","confidence":0.93,"reason":"Lottery with upfront fee"}"""),
+        Case("family_emergency_hinglish", "Papa main hospital mein hoon, is number pe paise bhejo",
+            """{"label":"SCAM","scam_type":"FAMILY_EMERGENCY","confidence":0.9,"reason":"Relative in emergency asks money"}"""),
+        Case("phishing_link_en", "Your account is flagged. Verify now at http://sbi-kyc-update.xyz/login",
+            """{"label":"SCAM","scam_type":"PHISHING_LINK","confidence":0.9,"reason":"Look-alike bank link"}"""),
         Case("safe_delivery", "Your order will be delivered tomorrow between 10 and 12",
             """{"label":"SAFE","scam_type":"NONE","confidence":0.9,"reason":"Routine delivery update"}"""),
         Case("edge_missing_type_scam", "Share the OTP sent to 98XXXXXX01",

@@ -90,5 +90,13 @@ const _scamTypeLabels = <String, (String, String)>{
   'INVESTMENT': ('निवेश धोखा', 'Investment fraud'),
   'JOB': ('नौकरी का झाँसा', 'Job scam'),
   'MISTAKEN_TRANSFER': ('गलती से भेजे पैसे', 'Mistaken transfer'),
+  'ELECTRICITY_BILL': ('बिजली बिल धोखा', 'Electricity bill scam'),
+  'SIM_SWAP': ('सिम ब्लॉक धोखा', 'SIM block scam'),
+  'CUSTOMER_CARE': ('नकली कस्टमर केयर', 'Fake customer care'),
+  'UPI_COLLECT': ('यूपीआई कलेक्ट धोखा', 'UPI collect scam'),
+  'SEXTORTION': ('वीडियो ब्लैकमेल', 'Sextortion'),
+  'LOTTERY': ('लॉटरी धोखा', 'Lottery scam'),
+  'FAMILY_EMERGENCY': ('परिवार इमरजेंसी धोखा', 'Family emergency scam'),
+  'PHISHING_LINK': ('फ़र्ज़ी लिंक', 'Phishing link'),
   'OTHER': ('अन्य धोखाधड़ी', 'Other scam'),
 };

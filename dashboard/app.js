@@ -13,6 +13,8 @@ const label = (t) => String(t).replace(/_/g, ' ').toLowerCase().replace(/^./, (c
 const TYPE_NAMES = {
   OTP: 'OTP', KYC: 'KYC', DIGITAL_ARREST: 'Digital arrest', COURIER_CUSTOMS: 'Courier or customs', FAKE_QR: 'Fake QR',
   LOAN_APP: 'Loan app', INVESTMENT: 'Investment', JOB: 'Job offer', MISTAKEN_TRANSFER: 'Mistaken transfer', OTHER: 'Other',
+  ELECTRICITY_BILL: 'Electricity bill', SIM_SWAP: 'SIM block', CUSTOMER_CARE: 'Fake customer care', UPI_COLLECT: 'UPI collect',
+  SEXTORTION: 'Sextortion', LOTTERY: 'Lottery', FAMILY_EMERGENCY: 'Family emergency', PHISHING_LINK: 'Phishing link',
 };
 const named = (map, k) => (Object.hasOwn(map, k) ? map[k] : label(k));
 export const typeName = (t) => named(TYPE_NAMES, t);

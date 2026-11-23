@@ -52,7 +52,8 @@ data class RuleResult(
     val reason: String,
 )
 
-enum class ScamType { OTP, KYC, DIGITAL_ARREST, COURIER_CUSTOMS, FAKE_QR, LOAN_APP, INVESTMENT, JOB, MISTAKEN_TRANSFER, OTHER;
+enum class ScamType { OTP, KYC, DIGITAL_ARREST, COURIER_CUSTOMS, FAKE_QR, LOAN_APP, INVESTMENT, JOB, MISTAKEN_TRANSFER, OTHER,
+    ELECTRICITY_BILL, SIM_SWAP, CUSTOMER_CARE, UPI_COLLECT, SEXTORTION, LOTTERY, FAMILY_EMERGENCY, PHISHING_LINK;
     companion object {
         /** Null for blank/unknown/"NONE"; accepts any case and space/hyphen separators. */
         fun parse(s: String?): ScamType? {
