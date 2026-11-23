@@ -85,6 +85,30 @@ CHARTS = [("accuracy", "Accuracy"), ("false_alarms", "False alarms"), ("scam_typ
           ("prompt_tokens", "Prompt cost"), ("latency", "Measured time per message")]
 
 
+def second_test_set(cfg: dict, name: str = "eval_smoke") -> list[str]:
+    """Same comparison on data/golden/eval_smoke.csv: written earlier by other people, never used in training."""
+    from scamshield_ml.bench_charts import pairs
+
+    rows = pairs(load_reports(REPORTS / name), cfg) if (REPORTS / name).is_dir() else []
+    if not rows:
+        return []
+    out = [f"### Second test set: `data/golden/{name}.csv` (written separately, never trained on)", "",
+           "42 hand-written messages (29 SCAM, 2 SUSPICIOUS, 11 SAFE) that were already in the repo, written separately from the v2 templates, so "
+           "neither their templates nor their style are in the training data. Nearest-neighbour check: no test row in "
+           "either set shares 50% or more of its 4-character chunks with any training row. Expect the fine-tuned numbers "
+           "here, not the main table, to be closer to real traffic. Small set: one row is 2.4 points.", "",
+           "| Model | Accuracy | False alarms | Scams warned (SCAM or SUSPICIOUS) |", "|---|---|---|---|"]
+    for r in rows:
+        b, t = r["base"], r["tuned"]
+        cell = lambda f: f"{f(b):.1%} → **{f(t):.1%}**"  # noqa: E731
+        out.append(f"| {r['name']} | {cell(lambda x: x['labels']['accuracy'])} | "
+                   f"{cell(lambda x: x['binary']['overall']['fpr'])} | {cell(lambda x: x['binary']['overall']['recall'])} |")
+    out += ["", "Most remaining fine-tuned errors are SCAM answered SUSPICIOUS (still a warning). The two sets draw that "
+            "line differently: e.g. 'KYC pending, account will be blocked' is SCAM here but SUSPICIOUS under the v2 "
+            "template rules (no direct demand yet).", ""]
+    return out
+
+
 def headline(reports: list[dict], cfg: dict) -> list[str]:
     """Slide-ready section: base (app's prompt) vs fine-tuned (short prompt) per model, plus the charts."""
     from scamshield_ml.bench_charts import pairs
@@ -109,6 +133,7 @@ def headline(reports: list[dict], cfg: dict) -> list[str]:
                    f"{pair(lambda x: x['binary']['overall']['macro_f1'], False)} | "
                    f"{pair(lambda x: x['cost']['prompt_tokens_mean'], False)} |")
     out.append("")
+    out += second_test_set(cfg)
     for name, alt in CHARTS:
         if (ROOT / "docs" / "benchmark" / f"{name}.png").exists():
             out += [f"![{alt}](benchmark/{name}.png)", ""]
