@@ -1,0 +1,82 @@
+import 'app_language.dart';
+
+/// Learn tab redesign: plan card, AI quiz, results, flashcards and the details reminder.
+// hne wording is a first draft: [VERIFY] with a native Chhattisgarhi speaker. Missing hne falls back to hi.
+const learnStrings = Tri(
+  hi: {
+    'plan_label': 'आपकी योजना', 'plan_title_name': '{name} जी, आपके लिए बनी', 'plan_title': 'आपके लिए बनी योजना',
+    'plan_sub_weak': 'अगली बार इनका अभ्यास करें', 'plan_sub_none': 'कमज़ोर हिस्से जानने के लिए एक क्विज़ दें',
+    'plan_sub_strong': 'अभी कोई कमज़ोरी नहीं। ऐसे ही बढ़ते रहें!',
+    'ai_quiz': 'AI क्विज़ शुरू करें', 'quiz_btn': 'क्विज़ शुरू करें',
+    'deck_title': 'आपके फ़्लैशकार्ड', 'deck_new': 'पिछले क्विज़ से {n} नए', 'deck_count': '{n} कार्ड',
+    'lessons': 'पाठ', 'done_of': '{y} में से {x} पूरे',
+    'badge_new': 'नया', 'badge_practise': 'अभ्यास करें', 'badge_done': 'पूरा',
+    'cards_q': '{c} कार्ड · {q} सवाल',
+    'ai_made': 'AI ने आपके लिए बनाया', 'ai_writing': 'AI आपका सवाल लिख रहा है…',
+    'ai_writing_s': 'फ़ोन पर इसमें कुछ सेकंड लगते हैं', 'use_ready': 'तैयार सवाल लें',
+    'not_quite': 'सही नहीं', 'not_quite_name': '{name} जी, सही नहीं', 'correct': 'सही!', 'correct_name': 'सही, {name} जी!',
+    'answer_was': 'सही उत्तर: {a}',
+    'res_great': 'बहुत बढ़िया', 'res_good': 'अच्छी कोशिश', 'res_name': '{w}, {name} जी',
+    'res_body_strong': 'आपने हर सवाल सही किया।', 'res_body_weak': 'कुछ चालें अब भी फँसा सकती हैं, इसलिए हमने उनके कार्ड बनाए हैं।',
+    'correct_word': 'सही', 'pts': '+{n} अंक · स्कोर {s}', 'score_only': 'स्कोर {s}',
+    'where': 'कहाँ अभ्यास करें', 'tag_needs': 'अभ्यास चाहिए', 'tag_almost': 'लगभग पूरा', 'tag_strong': 'मज़बूत',
+    'plan_week': 'इस हफ़्ते की योजना', 'plan_default': 'रोज़ 5 मिनट {topics} का अभ्यास करें, फिर क्विज़ दोबारा दें।',
+    'plan_keep': 'रोज़ एक पाठ दोहराएँ ताकि यह याद रहे।',
+    'reviewing': 'AI आपके कमज़ोर हिस्से देख रहा है…',
+    'practise_new': 'मेरे {n} नए कार्ड का अभ्यास करें', 'practise': 'फ़्लैशकार्ड का अभ्यास करें', 'back_learn': 'सीखें पर लौटें',
+    'again': 'क्विज़ फिर से दें',
+    'fc_pos': 'कार्ड {i} / {n}', 'fc_new': '{n} नए', 'fc_flip': 'पलटने के लिए छुएँ', 'fc_flip_back': 'सवाल देखने के लिए छुएँ',
+    'fc_again': 'फिर से देखें', 'fc_knew': 'मुझे पता था', 'fc_done_t': 'सारे कार्ड हो गए!',
+    'fc_done_s': '{n} में से {k} आपको पता थे। “फिर से देखें” वाले कार्ड अगली बार पहले आएँगे।', 'fc_restart': 'फिर से करें',
+    'fc_empty': 'अभी कोई कार्ड नहीं', 'ai_tag': 'नया · AI',
+    'rem_t': 'इस क्विज़ को अपना बनाएँ',
+    'rem_b': 'कुछ जानकारी जोड़ें, AI आपके जैसे लोगों के साथ होने वाली ठगी पर सवाल पूछेगा। यह इसी फ़ोन पर रहती है।',
+    'rem_add': 'जानकारी जोड़ें', 'rem_skip': 'छोड़ें, क्विज़ शुरू करें', 'missing': 'नहीं भरा', 'optional': 'वैकल्पिक',
+    'no_model_hint': 'अपने लिए बने सवालों के लिए प्रोफ़ाइल में AI मॉडल डाउनलोड करें।',
+    'question_of': 'सवाल {i}/{n}',
+  },
+  hne: {
+    'plan_label': 'तुंहर योजना', 'ai_quiz': 'AI क्विज़ सुरू करव', 'quiz_btn': 'क्विज़ सुरू करव',
+    'deck_title': 'तुंहर फ़्लैशकार्ड', 'lessons': 'पाठ', 'badge_new': 'नवा',
+    'fc_knew': 'मोला पता रहिस', 'fc_again': 'फेर देखव', 'rem_add': 'जानकारी जोड़व', 'rem_skip': 'छोड़व, क्विज़ सुरू करव',
+    'back_learn': 'सीखव म लहुटव', 'again': 'क्विज़ फेर देव',
+  },
+  en: {
+    'plan_label': 'YOUR PLAN', 'plan_title_name': 'Made for you, {name}', 'plan_title': 'Made for you',
+    'plan_sub_weak': 'Practise these next', 'plan_sub_none': 'Take a quiz to find your weak spots',
+    'plan_sub_strong': 'No weak spots right now. Keep it up!',
+    'ai_quiz': 'Start AI quiz', 'quiz_btn': 'Start quiz',
+    'deck_title': 'Your flashcards', 'deck_new': '{n} new from your last quiz', 'deck_count': '{n} cards',
+    'lessons': 'Lessons', 'done_of': '{x} of {y} done',
+    'badge_new': 'New', 'badge_practise': 'Practise', 'badge_done': 'Done',
+    'cards_q': '{c} cards · {q} questions',
+    'ai_made': 'Made by AI for you', 'ai_writing': 'AI is writing your question…',
+    'ai_writing_s': 'This takes a few seconds on your phone', 'use_ready': 'Use ready questions',
+    'not_quite': 'Not quite', 'not_quite_name': 'Not quite, {name}', 'correct': 'Correct!', 'correct_name': 'Correct, {name}!',
+    'answer_was': 'Right answer: {a}',
+    'res_great': 'Great job', 'res_good': 'Good effort', 'res_name': '{w}, {name}',
+    'res_body_strong': 'You got every question right.', 'res_body_weak': 'Some tricks still catch you, so we made cards for them.',
+    'correct_word': 'correct', 'pts': '+{n} points · score {s}', 'score_only': 'Score {s}',
+    'where': 'Where to practise', 'tag_needs': 'Needs practice', 'tag_almost': 'Almost there', 'tag_strong': 'Strong',
+    'plan_week': 'PLAN FOR THIS WEEK', 'plan_default': 'Practise {topics} for 5 minutes a day, then retake the quiz.',
+    'plan_keep': 'Review one lesson a day so it stays fresh.',
+    'reviewing': 'AI is finding your weak spots…',
+    'practise_new': 'Practise my {n} new cards', 'practise': 'Practise flashcards', 'back_learn': 'Back to Learn',
+    'again': 'Take the quiz again',
+    'fc_pos': 'Card {i} of {n}', 'fc_new': '{n} new', 'fc_flip': 'Tap to flip', 'fc_flip_back': 'Tap to see the question',
+    'fc_again': 'Review again', 'fc_knew': 'I knew it', 'fc_done_t': 'Deck done!',
+    'fc_done_s': 'You knew {k} of {n}. Cards marked “review again” come first next time.', 'fc_restart': 'Go again',
+    'fc_empty': 'No cards yet', 'ai_tag': 'New · AI',
+    'rem_t': 'Make this quiz yours',
+    'rem_b': 'Add a few details and the AI will ask about the scams people like you actually get. It stays on this phone.',
+    'rem_add': 'Add details', 'rem_skip': 'Skip, start the quiz', 'missing': 'Missing', 'optional': 'Optional',
+    'no_model_hint': 'Download the AI model in Profile to get questions made for you.',
+    'question_of': 'Question {i}/{n}',
+  },
+);
+
+String learnT(String lang, String key, [Map<String, Object?> args = const {}]) {
+  var s = learnStrings(lang, key);
+  args.forEach((k, v) => s = s.replaceAll('{$k}', '$v'));
+  return s;
+}

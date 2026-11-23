@@ -7,6 +7,7 @@ import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
 import com.hackasol.scamshield.core.GemmaPrompt
 import com.hackasol.scamshield.core.LlmOutputParser
 import com.hackasol.scamshield.core.LlmResult
+import com.hackasol.scamshield.core.ModelCatalog
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,10 +48,26 @@ object GemmaClassifier {
         ctx.getExternalFilesDir(null)?.let { File(it, "models") },
     )
 
-    fun findModel(ctx: Context): File? = modelDirs(ctx)
+    private const val PREFERRED = "preferredModelFile"
+
+    /** Remember the model file the user picked (or just downloaded); [findModel] uses it while it exists. */
+    fun setPreferred(ctx: Context, fileName: String) {
+        prefs(ctx.applicationContext).edit().putString(PREFERRED, fileName).apply()
+    }
+
+    fun findModel(ctx: Context): File? {
+        val all = modelDirs(ctx)
+            .flatMap { d -> d.listFiles()?.toList().orEmpty() }
+            .filter { it.isFile && it.name.endsWith(".task") }
+        val want = prefs(ctx).getString(PREFERRED, null)
+        return all.firstOrNull { it.name == want } ?: all.maxByOrNull { it.lastModified() }
+    }
+
+    /** Catalog ids of the models present on this phone. */
+    fun installedIds(ctx: Context): List<String> = modelDirs(ctx)
         .flatMap { d -> d.listFiles()?.toList().orEmpty() }
-        .filter { it.isFile && it.name.endsWith(".task") }
-        .maxByOrNull { it.lastModified() }
+        .mapNotNull { f -> ModelCatalog.byFile(f.name)?.id }
+        .distinct()
 
     fun statusMap(ctx: Context): Map<String, Any?> {
         val f = modelPath?.let(::File) ?: findModel(ctx)
@@ -59,6 +76,8 @@ object GemmaClassifier {
             "message" to message,
             "path" to f?.absolutePath,
             "sizeMb" to (f?.length()?.div(1024 * 1024)),
+            "modelId" to ModelCatalog.byFile(f?.name)?.id,
+            "installed" to installedIds(ctx),
             "searchDirs" to modelDirs(ctx).map { it.absolutePath },
         )
     }
@@ -93,7 +112,7 @@ object GemmaClassifier {
                     val t0 = System.currentTimeMillis()
                     val opts = LlmInference.LlmInferenceOptions.builder()
                         .setModelPath(file.absolutePath)
-                        .setMaxTokens(1024)       // prompt + answer
+                        .setMaxTokens(2048)       // prompt + answer (quiz prompts are longer than the classifier's)
                         .setMaxTopK(40)
                         .build()
                     llm = LlmInference.createFromOptions(appCtx, opts)
@@ -131,6 +150,35 @@ object GemmaClassifier {
                     LlmOutputParser.parse(raw)
                 } catch (t: Throwable) {
                     Log.e(TAG, "inference failed", t)
+                    null
+                } finally {
+                    try { session?.close() } catch (_: Throwable) {}
+                }
+            }
+        }
+    }
+
+    /**
+     * Free-form generation for the Learn tab (quiz questions, flashcards). [prompt] is plain text;
+     * it is wrapped in Gemma's chat turn. Returns null if the model isn't ready or inference fails.
+     */
+    suspend fun generate(prompt: String, temperature: Float = 0.8f, topK: Int = 40): String? {
+        val engine = llm ?: return null
+        if (status != Status.READY) return null
+        return withContext(Dispatchers.IO) {
+            mutex.withLock {
+                var session: LlmInferenceSession? = null
+                try {
+                    val sOpts = LlmInferenceSession.LlmInferenceSessionOptions.builder()
+                        .setTopK(topK)
+                        .setTemperature(temperature)
+                        .setRandomSeed((System.nanoTime() and 0x7fffffff).toInt())
+                        .build()
+                    session = LlmInferenceSession.createFromOptions(engine, sOpts)
+                    session.addQueryChunk("<start_of_turn>user\n$prompt<end_of_turn>\n<start_of_turn>model\n")
+                    session.generateResponse()
+                } catch (t: Throwable) {
+                    Log.e(TAG, "generate failed", t)
                     null
                 } finally {
                     try { session?.close() } catch (_: Throwable) {}

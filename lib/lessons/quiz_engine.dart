@@ -59,8 +59,14 @@ class QuizEngine {
   }
 
   /// Grades, keeps the best percent for the topic, persists, returns this attempt.
-  Future<QuizResult> record(String topicId, List<int?> answers) async {
-    final result = grade(topicId, answers);
+  Future<QuizResult> record(String topicId, List<int?> answers) => _keep(grade(topicId, answers));
+
+  /// Same as [record] for a quiz whose questions were not the lesson's own (AI-written ones).
+  Future<QuizResult> recordScore(String topicId, int correct, int total) =>
+      _keep(QuizResult(topicId, correct, total, total == 0 ? 0 : (correct * 100 / total).round()));
+
+  Future<QuizResult> _keep(QuizResult result) async {
+    final topicId = result.topicId;
     if (result.percent > (_best[topicId] ?? 0)) {
       _best[topicId] = result.percent;
       await _store.saveBest(Map.of(_best));

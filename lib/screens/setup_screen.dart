@@ -6,12 +6,15 @@ import 'package:flutter/services.dart';
 import '../api/text_api.dart';
 import '../l10n/app_language.dart';
 import '../l10n/strings_home.dart';
+import '../l10n/strings_profile.dart';
 import '../l10n/strings_setup.dart';
 import '../lessons/prefs_store.dart';
 import '../models/verdict.dart';
 import '../theme/tokens.dart';
 import '../widgets/state_message.dart';
+import '../widgets/island.dart';
 import '../widgets/status_chip.dart';
+import 'model_picker_screen.dart';
 import 'page_route.dart';
 
 /// One-time setup checklist: accessibility service, Live Caption, Gemma model, overlay test.
@@ -113,11 +116,11 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Opens the model picker (device-aware recommendation, then download); re-reads status on return.
   Future<void> _download() async {
-    final r = await TextApi.downloadModel();
+    await pushTitled(context, profileT(AppLanguage.code, 'm_title'), const ModelPickerScreen());
     if (!mounted) return;
-    setState(() => _dl = r);
-    if (r['status'] == 'ERROR') _snack('${r['message']}');
+    _refresh();
   }
 
   Widget _downloadProgress() {
@@ -139,7 +142,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
     ]);
   }
 
-  void _snack(String s) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s)));
+  void _snack(String s) => showIsland(context, s, tone: IslandTone.warning);
 
   Widget _step({required String title, required bool done, required String body,
       required IconData icon, String? subtitle, List<Widget> actions = const []}) {

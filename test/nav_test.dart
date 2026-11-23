@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/main.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
+import 'package:scamshield/screens/profile_screen.dart';
 import 'package:scamshield/screens/recording_screen.dart';
 import 'package:scamshield/screens/report_screen.dart';
 
@@ -59,12 +60,25 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('T3_11_profileTabShowsProfile', (tester) async {
+    _phone(tester);
+    await tester.pumpWidget(const ScamShieldApp());
+    await tester.pump();
+
+    await tester.tap(find.byKey(const Key('nav_profile')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.byType(ProfileScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('T3_11_learnTabShowsLessons', (tester) async {
     _phone(tester);
     await tester.pumpWidget(const ScamShieldApp());
     await tester.pump();
 
-    await tester.tap(find.byTooltip('Learn'));
+    await tester.tap(find.byKey(const Key('nav_learn')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 

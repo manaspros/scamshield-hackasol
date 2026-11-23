@@ -100,9 +100,9 @@ void main() {
   for (final e in themes.entries) {
     testWidgets('lessons_screen_noOverflow_${e.key}_scale2', (t) async {
       await _show(t, e.value, LessonsScreen(store: InMemoryQuizStore(), bundle: _DiskBundle()));
-      expect(find.byKey(const Key('score_value')), findsOneWidget);
-      // Score 0: the compact one-line card, not the big StatTile.
-      expect(find.text('पहला पाठ पूरा करें — आपका स्कोर यहाँ दिखेगा'), findsOneWidget);
+      expect(t.widget<Text>(find.byKey(const Key('score_value'))).data, '0');
+      // No quiz yet: the plan card invites the first one.
+      expect(find.text('कमज़ोर हिस्से जानने के लिए एक क्विज़ दें'), findsOneWidget);
       expect(t.takeException(), isNull);
     });
 
@@ -111,7 +111,8 @@ void main() {
       await store.saveBest({'otp': 100});
       await _show(t, e.value, LessonsScreen(store: store, bundle: _DiskBundle()));
       final n = (jsonDecode(File('assets/lessons/hi.json').readAsStringSync())['lessons'] as List).length;
-      expect(find.text('पाठ 1/$n पूरे'), findsOneWidget);
+      await t.scrollUntilVisible(find.text('$n में से 1 पूरे'), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.text('$n में से 1 पूरे'), findsOneWidget);
       expect(t.widget<Text>(find.byKey(const Key('score_value'))).data, '${(100 / n).round()}');
       expect(t.takeException(), isNull);
     });

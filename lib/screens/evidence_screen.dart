@@ -8,6 +8,7 @@ import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 import '../widgets/state_message.dart';
+import '../widgets/island.dart';
 
 /// "Make evidence": builds the evidence pack as soon as it opens, then shows what went in.
 /// [alertId] limits it to one past alert; null packs every flagged event of the last 24 hours.
@@ -41,7 +42,7 @@ class _EvidenceScreenState extends State<EvidenceScreen> {
     });
   }
 
-  void _toast(String m) => ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(m)));
+  void _toast(String m) => showIsland(context, m);
 
   @override
   Widget build(BuildContext context) {

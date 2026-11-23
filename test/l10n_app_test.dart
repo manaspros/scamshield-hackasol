@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/l10n/strings_shell.dart';
 import 'package:scamshield/main.dart';
+import 'package:scamshield/widgets/floating_nav.dart';
 import 'package:scamshield/models/verdict.dart';
 import 'package:scamshield/widgets/verdict_card.dart';
 
@@ -80,10 +81,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(prefs['lang_v1'], 'en');
-    for (final label in ['Home', 'Check', 'Live', 'Learn', 'Help']) {
-      expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(label)), findsOneWidget);
+    for (final (key, label) in [('nav_home', 'Home'), ('nav_learn', 'Learn'), ('nav_profile', 'Profile')]) {
+      await tester.tap(find.byKey(Key(key)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.descendant(of: find.byType(FloatingNav), matching: find.text(label)), findsOneWidget);
     }
-    expect(find.text('Need help?'), findsOneWidget);
+    expect(find.text('Report'), findsOneWidget);
     expect(find.text('होम'), findsNothing);
 
     await tester.pumpWidget(MaterialApp(
@@ -101,12 +105,15 @@ void main() {
     await tester.pumpWidget(const ScamShieldApp());
     await tester.pump();
     await tester.pump();
-    expect(find.descendant(of: find.byType(NavigationBar), matching: find.text('मदद')), findsOneWidget);
+    expect(find.descendant(of: find.byType(FloatingNav), matching: find.text('होम')), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Help'));
+    await tester.tap(find.byKey(const Key('nav_profile')));
     await tester.pump();
-    await tester.scrollUntilVisible(find.text('सेटिंग'), 200);
-    await tester.tap(find.text('सेटिंग'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.scrollUntilVisible(find.byKey(const Key('profile_settings')), 200, scrollable: find.byType(Scrollable).first);
+    await tester.ensureVisible(find.byKey(const Key('profile_settings')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('profile_settings')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(find.byKey(const Key('settings_language_row')));
@@ -118,7 +125,7 @@ void main() {
 
     expect(prefs['lang_v1'], 'en');
     expect(AppLanguage.code, 'en');
-    expect(find.descendant(of: find.byType(NavigationBar, skipOffstage: false), matching: find.text('Help', skipOffstage: false), skipOffstage: false), findsOneWidget);
+    expect(find.descendant(of: find.byType(FloatingNav, skipOffstage: false), matching: find.text('Profile', skipOffstage: false), skipOffstage: false), findsOneWidget);
     expect(find.text('Settings'), findsWidgets); // pushed screen title followed the change
     expect(find.text('सेटिंग'), findsNothing);
     expect(tester.takeException(), isNull);
@@ -129,8 +136,8 @@ void main() {
     await tester.pumpWidget(const ScamShieldApp());
     await tester.pump();
     await tester.pump();
-    for (final tip in ['Home', 'Check', 'Live', 'Learn', 'Help']) {
-      await tester.tap(find.byTooltip(tip));
+    for (final tip in ['nav_home', 'nav_learn', 'nav_profile']) {
+      await tester.tap(find.byKey(Key(tip)));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(tester.takeException(), isNull, reason: tip);

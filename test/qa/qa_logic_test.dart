@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/lessons/lesson_model.dart';
 import 'package:scamshield/lessons/prefs_store.dart';
 import 'package:scamshield/lessons/quiz_engine.dart';
@@ -87,15 +88,23 @@ void main() {
     });
 
     testWidgets('QA_lessonsScreen_scoreShownFromStore_andLangSwitchReloads', (t) async {
+      AppLanguage.debugSet('en');
       final store = InMemoryQuizStore();
       await store.saveBest({'otp': 100, 'kyc': 50});
-      await show(t, themes['light']!(), LessonsScreen(store: store, bundle: DiskBundle(), initialLang: 'en'), scale: 1.0);
+      await show(t, themes['light']!(), LangScope(notifier: AppLanguage.current, child: LessonsScreen(store: store, bundle: DiskBundle())), scale: 1.0);
       expect(t.widget<Text>(find.byKey(const Key('score_value'))).data, '9'); // (100+50)/17 lessons = 8.82
-      expect(find.text('Best: 100%'), findsOneWidget);
-      await tapVisible(t, find.byKey(const Key('lang_hi')));
+      await reveal(t, find.byKey(const Key('best_otp')));
+      expect(t.widget<Text>(find.byKey(const Key('best_otp'))).data, '100%');
+      expect(t.widget<Text>(find.byKey(const Key('best_kyc'))).data, '50%');
+      expect(find.text('Lessons'), findsOneWidget);
+      // The top-bar language switch reloads the lessons in the new language.
+      AppLanguage.debugSet('hi');
       await t.pumpAndSettle();
-      expect(find.textContaining('सर्वश्रेष्ठ: 100%'), findsOneWidget);
-      expect(find.text('Best: 100%'), findsNothing);
+      final hiOtp = loadLessonsFromJson(File('assets/lessons/hi.json').readAsStringSync()).first.title;
+      await reveal(t, find.byKey(const Key('lesson_otp')));
+      expect(find.descendant(of: find.byKey(const Key('lesson_otp')), matching: find.text(hiOtp)), findsOneWidget);
+      expect(find.text('Lessons'), findsNothing);
+      expect(t.widget<Text>(find.byKey(const Key('score_value'), skipOffstage: false)).data, '9');
     });
   });
 

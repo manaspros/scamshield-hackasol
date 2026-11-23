@@ -63,3 +63,41 @@ class Pal {
     onAccent: Color(0xFF000000), // white on Sky Blue is only 3.0:1
   );
 }
+
+/// Soft elevation for the premium look: cards float a little, islands float a lot.
+abstract final class Elev {
+  static List<BoxShadow> card(Brightness b) => b == Brightness.dark
+      ? const [BoxShadow(color: Color(0x0DFFFFFF), spreadRadius: 1)]
+      : const [
+          BoxShadow(color: Color(0x0A000000), blurRadius: 2, offset: Offset(0, 1)),
+          BoxShadow(color: Color(0x0F000000), blurRadius: 24, offset: Offset(0, 8)),
+        ];
+
+  static List<BoxShadow> island(Brightness b) => b == Brightness.dark
+      ? const [
+          BoxShadow(color: Color(0x99000000), blurRadius: 30, offset: Offset(0, 10)),
+          BoxShadow(color: Color(0x14FFFFFF), spreadRadius: 1),
+        ]
+      : const [
+          BoxShadow(color: Color(0x24000000), blurRadius: 30, offset: Offset(0, 10)),
+          BoxShadow(color: Color(0x0D000000), spreadRadius: 1),
+        ];
+}
+
+/// Large radii used by the redesign (cards 22, islands 28).
+abstract final class RadX {
+  static const double card = 22, island = 28, sheet = 32;
+}
+
+extension PalX on Pal {
+  bool get isDark => page == Pal.dark.page;
+
+  /// Accent wash behind selected / informational things.
+  Color get accentTint => accent.withValues(alpha: isDark ? 0.18 : 0.10);
+
+  /// Island (floating overlay) fill: slightly translucent so the blur shows through.
+  Color get island => isDark ? const Color(0xF22C2C2E) : const Color(0xF5FFFFFF);
+}
+
+/// The palette for the current theme brightness.
+Pal palOf(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? Pal.dark : Pal.light;

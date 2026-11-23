@@ -15,6 +15,7 @@ import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
 import '../widgets/status_chip.dart';
 import '../widgets/verdict_card.dart';
+import '../widgets/island.dart';
 import 'report_screen.dart';
 
 /// Live view of the caption pipeline: raw captions, statements, verdicts, discovery output.
@@ -348,8 +349,7 @@ class _Helpline extends StatelessWidget {
             onTap: () async {
               final ok = await const HandoffApi().dial('1930');
               if (!ok && context.mounted) {
-                ScaffoldMessenger.maybeOf(context)
-                    ?.showSnackBar(SnackBar(content: Text(ReportStrings.of(lang)['openErr'])));
+                showIsland(context, ReportStrings.of(lang)['openErr'], tone: IslandTone.warning);
               }
             },
             child: ConstrainedBox(

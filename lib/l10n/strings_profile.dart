@@ -1,0 +1,72 @@
+import 'app_language.dart';
+
+/// Profile tab and the AI model picker.
+// hne wording is a first draft: [VERIFY] with a native Chhattisgarhi speaker. Missing hne falls back to hi.
+const profileStrings = Tri(
+  hi: {
+    'complete': 'प्रोफ़ाइल {p}% पूरी · पूरी करें', 'complete_full': 'प्रोफ़ाइल पूरी है', 'add_name': 'अपना नाम जोड़ें',
+    'details': 'निजी जानकारी', 'name': 'नाम', 'dob': 'जन्म तिथि', 'gender': 'लिंग',
+    'g_male': 'पुरुष', 'g_female': 'महिला', 'g_other': 'अन्य',
+    'district': 'ज़िला', 'work': 'काम', 'comfort': 'फ़ोन चलाने में सहजता',
+    'c_low': 'अभी सीख रहे हैं', 'c_medium': 'ठीक-ठाक', 'c_high': 'अच्छी तरह',
+    'phone': 'फ़ोन नंबर (वैकल्पिक)', 'add': 'जोड़ें', 'save': 'सेव करें', 'cancel': 'रद्द करें', 'delete': 'हटाएँ',
+    'years': '{n} साल', 'family': 'परिवार', 'add_member': '+ सदस्य जोड़ें', 'edit_member': 'सदस्य बदलें',
+    'paired': 'परिवार के फ़ोन से जुड़ा है', 'paired_s': 'परिवार कोड चालू · फ़ोन करने वाले की जाँच करें',
+    'not_paired': 'अभी जुड़ा नहीं', 'not_paired_s': 'फ़ोन करने वालों की जाँच के लिए परिवार का फ़ोन जोड़ें',
+    'relation': 'रिश्ता', 'member_name': 'नाम', 'rel_hint': 'जैसे बेटी, बेटा, पत्नी',
+    'checks': 'सुरक्षा जाँच', 'perms_s': 'सुरक्षा चालू', 'ai_ready': 'AI तैयार · बदलें', 'ai_none': 'AI मॉडल नहीं · पाएँ',
+    'ai_loading': 'AI लोड हो रहा है…', 'help': 'मदद',
+    'report': 'धोखे की रिपोर्ट · 1930', 'recording': 'कॉल रिकॉर्डिंग जाँचें', 'settings': 'सेटिंग',
+    'family_code': 'परिवार कोड', 'demo': 'डेमो लैब', 'name_hint': 'आपका नाम', 'work_hint': 'जैसे किसान, शिक्षक, दुकानदार',
+    'privacy': 'आपकी जानकारी इसी फ़ोन पर रहती है। इसका उपयोग सिर्फ़ पाठ आपके हिसाब से बनाने में होता है।',
+    'saved': 'सेव हो गया',
+    'm_title': 'AI मॉडल', 'm_intro': 'AI आपके फ़ोन पर ही चलता है, संदेश कहीं नहीं जाते। अपने फ़ोन के हिसाब से साइज़ चुनें।',
+    'm_phone': 'आपका फ़ोन', 'm_ram': 'RAM', 'm_chip': 'चिप', 'm_free': 'खाली जगह', 'm_model': 'मॉडल',
+    'm_rec': 'आपके फ़ोन के लिए सही', 'm_installed': 'डाउनलोड हो चुका', 'm_in_use': 'चालू है', 'm_soon': 'जल्द आ रहा है',
+    'm_low_ram': '{n} GB RAM चाहिए', 'm_low_storage': '{n} खाली जगह चाहिए',
+    'm_fast': 'सबसे तेज़ · आसान जवाब', 'm_balanced': 'संतुलित · हिंदी समझता है', 'm_best': 'सबसे अच्छा · धीमा',
+    'm_download': '{s} डाउनलोड करें', 'm_use': 'यह मॉडल चालू करें', 'm_wifi': 'सिर्फ़ Wi-Fi पर डाउनलोड',
+    'm_any': 'किसी भी नेटवर्क पर डाउनलोड', 'm_import': 'फ़ाइल से लाएँ', 'm_cancel': 'डाउनलोड रोकें',
+    'm_heavy_t': 'यह मॉडल भारी हो सकता है', 'm_heavy_b': 'इसे इस फ़ोन से ज़्यादा मेमोरी चाहिए। यह धीमा चल सकता है या ऐप बंद हो सकता है।',
+    'm_try': 'फिर भी डाउनलोड करें', 'm_started': 'डाउनलोड शुरू हुआ', 'm_switched': 'मॉडल बदल गया', 'm_done': 'मॉडल तैयार है',
+    'm_unknown': 'जानकारी नहीं मिली',
+  },
+  hne: {
+    'details': 'निजी जानकारी', 'add': 'जोड़व', 'save': 'सेव करव', 'cancel': 'रद्द करव', 'delete': 'हटावव',
+    'family': 'परिवार', 'add_member': '+ सदस्य जोड़व', 'help': 'मदद', 'm_title': 'AI मॉडल', 'm_phone': 'तुंहर फ़ोन',
+  },
+  en: {
+    'complete': 'Profile {p}% complete · finish', 'complete_full': 'Profile complete', 'add_name': 'Add your name',
+    'details': 'Personal details', 'name': 'Name', 'dob': 'Date of birth', 'gender': 'Gender',
+    'g_male': 'Male', 'g_female': 'Female', 'g_other': 'Other',
+    'district': 'District', 'work': 'Work', 'comfort': 'Comfort with phones',
+    'c_low': 'Just starting', 'c_medium': 'Getting there', 'c_high': 'Confident',
+    'phone': 'Phone (optional)', 'add': 'Add', 'save': 'Save', 'cancel': 'Cancel', 'delete': 'Delete',
+    'years': '{n} years', 'family': 'Family', 'add_member': '+ Add member', 'edit_member': 'Edit member',
+    'paired': 'Paired with a family phone', 'paired_s': 'Family code active · check callers',
+    'not_paired': 'Not paired yet', 'not_paired_s': 'Pair with a family phone to check callers',
+    'relation': 'Relation', 'member_name': 'Name', 'rel_hint': 'e.g. daughter, son, wife',
+    'checks': 'Protection checks', 'perms_s': 'Protections on', 'ai_ready': 'AI ready · change', 'ai_none': 'No AI model · get one',
+    'ai_loading': 'AI loading…', 'help': 'Help',
+    'report': 'Report a scam · 1930', 'recording': 'Check a call recording', 'settings': 'Settings',
+    'family_code': 'Family code', 'demo': 'Demo Lab', 'name_hint': 'Your name', 'work_hint': 'e.g. farmer, teacher, shopkeeper',
+    'privacy': 'Your details stay on this phone. They are only used to make lessons fit you.',
+    'saved': 'Saved',
+    'm_title': 'AI model', 'm_intro': 'The AI runs on your phone, so messages never leave it. Pick the size that suits this phone.',
+    'm_phone': 'Your phone', 'm_ram': 'RAM', 'm_chip': 'Chip', 'm_free': 'Free space', 'm_model': 'Model',
+    'm_rec': 'Recommended for your phone', 'm_installed': 'Installed', 'm_in_use': 'In use', 'm_soon': 'Coming soon',
+    'm_low_ram': 'Needs {n} GB RAM', 'm_low_storage': 'Needs {n} free',
+    'm_fast': 'fastest · basic answers', 'm_balanced': 'balanced · Hindi support', 'm_best': 'best quality · slower',
+    'm_download': 'Download {s}', 'm_use': 'Use this model', 'm_wifi': 'Downloads on Wi-Fi only',
+    'm_any': 'Downloads on any network', 'm_import': 'Import a file', 'm_cancel': 'Cancel download',
+    'm_heavy_t': 'This model may be too heavy', 'm_heavy_b': 'It needs more memory than this phone has. It may run slowly or close the app.',
+    'm_try': 'Download anyway', 'm_started': 'Download started', 'm_switched': 'Switched model', 'm_done': 'Model ready',
+    'm_unknown': 'Unknown',
+  },
+);
+
+String profileT(String lang, String key, [Map<String, Object?> args = const {}]) {
+  var s = profileStrings(lang, key);
+  args.forEach((k, v) => s = s.replaceAll('{$k}', '$v'));
+  return s;
+}

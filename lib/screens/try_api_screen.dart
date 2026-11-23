@@ -14,6 +14,7 @@ import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
 import '../widgets/status_chip.dart';
 import '../widgets/verdict_card.dart';
+import '../widgets/island.dart';
 import 'report_screen.dart' show HandoffApi, ReportStrings;
 
 /// Paste any SMS / WhatsApp message / call sentence and run the on-device Text API.
@@ -126,7 +127,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
   Future<void> _dial() async {
     final ok = await const HandoffApi().dial('1930'); // ACTION_DIAL only; the user presses the green button
     if (!ok && mounted) {
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(ReportStrings.of(_lang)['openErr'])));
+      showIsland(context, ReportStrings.of(_lang)['openErr'], tone: IslandTone.warning);
     }
   }
 
