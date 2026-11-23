@@ -45,6 +45,10 @@ void main() {
       expect(find.byKey(const Key('family_code')), findsOneWidget);
       for (final k in ['family_yes', 'family_no', 'family_unpair']) {
         await tapVisible(t, find.byKey(Key(k)));
+        if (k == 'family_unpair') {
+          await tapVisible(t, find.byKey(const Key('family_unpair_confirm')));
+          await t.pumpAndSettle();
+        }
         expect(t.takeException(), isNull, reason: k);
       }
       // unpair returns to the chooser and calls native

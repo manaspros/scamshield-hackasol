@@ -262,6 +262,8 @@ void main() {
       expect(find.text('Could not get the code. Try again.'), findsOneWidget);
       expect(find.byKey(const Key('family_code')), findsNothing);
       await tapVisible(t, find.byKey(const Key('family_unpair')));
+      await tapVisible(t, find.byKey(const Key('family_unpair_confirm')));
+      await t.pumpAndSettle();
       await reveal(t, find.byKey(const Key('family_show')));
       await t.pumpWidget(const SizedBox());
     });

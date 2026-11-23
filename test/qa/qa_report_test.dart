@@ -84,6 +84,12 @@ Future<void> _choose(WidgetTester t, String key) async {
   await t.pump();
 }
 
+// The screenshot-notes field sits behind the "more details" expander.
+Future<void> _expandMore(WidgetTester t) async {
+  await tapVisible(t, find.byKey(const Key('more_details')));
+  await t.pumpAndSettle();
+}
+
 Map<String, Object?> _running(int ms, {bool evidence = true}) =>
     {'started': true, 'startMs': 1, 'remainingMs': ms, 'pack': _pack(lost: true, evidence: evidence)};
 
@@ -101,6 +107,7 @@ void main() {
           await reveal(t, find.byKey(Key(k)));
           expectTapTarget(t, find.byKey(Key(k)));
         }
+        await _expandMore(t);
         for (final k in ['scammer_number', 'amount', 'utr', 'screenshots']) {
           await reveal(t, find.byKey(Key('field_$k')));
           expectTapTarget(t, find.byKey(Key('field_$k')));
@@ -137,6 +144,7 @@ void main() {
         _install();
         await _open(t, e.value(), lang: 'hne');
         await _choose(t, 'path_notyet');
+        await _expandMore(t);
         for (final k in ['btn_open_sancharsaathi.gov.in', 'btn_dial_1930', 'field_scammer_number', 'field_screenshots']) {
           await reveal(t, find.byKey(Key(k)));
         }
@@ -180,6 +188,7 @@ void main() {
       await t.enterText(find.byKey(const Key('field_scammer_number')), '+91 98765 43210');
       await t.enterText(find.byKey(const Key('field_amount')), '25000');
       await t.enterText(find.byKey(const Key('field_utr')), 'UTR9988');
+      await _expandMore(t);
       await t.enterText(find.byKey(const Key('field_screenshots')), 'शॉट1.png, shot2.png');
       await tapVisible(t, find.byKey(const Key('btn_share')));
       await t.pump();
