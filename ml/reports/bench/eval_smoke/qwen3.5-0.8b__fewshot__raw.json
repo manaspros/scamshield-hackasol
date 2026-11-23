@@ -1,0 +1,108 @@
+{
+  "system": "qwen3.5-0.8b/fewshot/raw",
+  "model": "qwen3.5-0.8b",
+  "prompt": "fewshot",
+  "template": "raw",
+  "hf_id": "Qwen/Qwen3.5-0.8B",
+  "licence": "Apache-2.0",
+  "rows": 42,
+  "binary": {
+    "overall": {
+      "precision": 0.8378378378378378,
+      "recall": 1.0,
+      "fpr": 0.5454545454545454,
+      "macro_f1": 0.8057142857142857,
+      "counts": {
+        "n": 42,
+        "tp": 31,
+        "fp": 6,
+        "fn": 0,
+        "tn": 5
+      },
+      "unparsed": 0
+    },
+    "per_language": {
+      "en": {
+        "precision": 0.7857142857142857,
+        "recall": 1.0,
+        "fpr": 0.5,
+        "macro_f1": 0.8666666666666666,
+        "counts": {
+          "n": 17,
+          "tp": 11,
+          "fp": 3,
+          "fn": 0,
+          "tn": 3
+        },
+        "unparsed": 0
+      },
+      "hi": {
+        "precision": 0.9090909090909091,
+        "recall": 1.0,
+        "fpr": 0.5,
+        "macro_f1": 0.6166666666666666,
+        "counts": {
+          "n": 12,
+          "tp": 10,
+          "fp": 1,
+          "fn": 0,
+          "tn": 1
+        },
+        "unparsed": 0
+      },
+      "hinglish": {
+        "precision": 0.8333333333333334,
+        "recall": 1.0,
+        "fpr": 0.6666666666666666,
+        "macro_f1": 0.8666666666666666,
+        "counts": {
+          "n": 13,
+          "tp": 10,
+          "fp": 2,
+          "fn": 0,
+          "tn": 1
+        },
+        "unparsed": 0
+      }
+    }
+  },
+  "labels": {
+    "accuracy": 0.7857142857142857,
+    "macro_f1": 0.6638888888888889,
+    "scam_missed_rate": 0.0,
+    "confusion": {
+      "SAFE": {
+        "SAFE": 5,
+        "SCAM": 5,
+        "SUSPICIOUS": 1,
+        "UNPARSED": 0
+      },
+      "SCAM": {
+        "SAFE": 0,
+        "SCAM": 26,
+        "SUSPICIOUS": 3,
+        "UNPARSED": 0
+      },
+      "SUSPICIOUS": {
+        "SAFE": 0,
+        "SCAM": 0,
+        "SUSPICIOUS": 2,
+        "UNPARSED": 0
+      }
+    }
+  },
+  "cost": {
+    "prompt_tokens_mean": 623.4285714285714,
+    "output_tokens_mean": 64,
+    "eos_rate": 0.0,
+    "phone_ms_estimate": 5661.36305624096,
+    "phone_ref": "Galaxy S25 Ultra, CPU",
+    "file_mb": 487,
+    "ram_mb": 1300,
+    "params_m": 752,
+    "host_batch_s": 3.0,
+    "host_single_ms_median": 516,
+    "host_device": "cuda"
+  },
+  "split": "eval_smoke"
+}

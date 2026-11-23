@@ -18,7 +18,7 @@ from pathlib import Path
 
 import yaml
 
-from scamshield_ml.data import LABELS, Row
+from scamshield_ml.data import LABELS, Row, load_rows
 from scamshield_ml.eval_heldout import POSITIVE, compute_metrics
 from scamshield_ml.parser import parse_output
 from scamshield_ml.prompt import PROMPTS
@@ -150,10 +150,11 @@ def summarize(system: str, spec: dict, model: dict, rows: list[Row], gens: list[
     }
 
 
-def run_system(system: str, cfg: dict, split: str, limit: int | None) -> dict:
+def run_system(system: str, cfg: dict, split: str, limit: int | None, csv: Path | None = None) -> dict:
     spec = cfg["systems"][system]
     model = cfg["models"][spec["model"]]
-    rows = load_split(split)[:limit] if limit else load_split(split)
+    rows = load_rows(csv) if csv else load_split(split)
+    rows = rows[:limit] if limit else rows
     adapter = ML / spec["adapter"] if spec.get("adapter") else None
     if adapter and not adapter.is_dir():
         raise SystemExit(f"adapter missing for {system}: {adapter} (run scamshield_ml.finetune first)")
@@ -166,12 +167,13 @@ def run_system(system: str, cfg: dict, split: str, limit: int | None) -> dict:
     extra = {"params_m": round(gen.params / 1e6), "host_batch_s": round(elapsed, 1),
              "host_single_ms_median": round(gen.latency_ms(prompts, raw)), "host_device": gen.device}
     rep = summarize(system, spec, model, rows, gens, extra)
-    rep["split"] = split
-    REPORTS.mkdir(parents=True, exist_ok=True)
-    with (REPORTS / f"{slug(system)}.jsonl").open("w", encoding="utf-8") as f:
+    rep["split"] = csv.stem if csv else split
+    out_dir = REPORTS / csv.stem if csv else REPORTS  # other test sets never overwrite the main reports
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with (out_dir / f"{slug(system)}.jsonl").open("w", encoding="utf-8") as f:
         for r, g in zip(rows, gens):
             f.write(json.dumps({**r, **g, "pred": parse_output(first_line(g["raw"]))}, ensure_ascii=False) + "\n")
-    (REPORTS / f"{slug(system)}.json").write_text(json.dumps(rep, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    (out_dir / f"{slug(system)}.json").write_text(json.dumps(rep, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return rep
 
 
@@ -180,6 +182,7 @@ def main() -> None:
     ap.add_argument("systems", nargs="*", help="system keys from configs/models.yaml (default: all base systems)")
     ap.add_argument("--split", default="test", choices=["train", "val", "test"])
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--csv", type=Path, help="score another dataset CSV instead (reports go to reports/bench/<stem>/)")
     ap.add_argument("--list", action="store_true")
     a = ap.parse_args()
     cfg = load_config()
@@ -187,7 +190,7 @@ def main() -> None:
         print("\n".join(cfg["systems"]))
         return
     for s in a.systems or [k for k, v in cfg["systems"].items() if not v.get("adapter")]:
-        rep = run_system(s, cfg, a.split, a.limit)
+        rep = run_system(s, cfg, a.split, a.limit, a.csv)
         b, lab = rep["binary"]["overall"], rep["labels"]
         print(f"{s}: P={b['precision']:.3f} R={b['recall']:.3f} FPR={b['fpr']:.3f} acc3={lab['accuracy']:.3f} "
               f"typeF1={b['macro_f1']:.2f} unparsed={b['unparsed']} prompt_tok={rep['cost']['prompt_tokens_mean']:.0f} "

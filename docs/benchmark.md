@@ -15,6 +15,17 @@ Base = the model with the prompt the app ships today (few-shot, raw). Fine-tuned
 | Qwen3.5 0.8B | 69.5% → **95.1%** | 65.7% → **6.5%** | 0.0% → **2.4%** | 0.49 → **0.83** | 638 → **76** |
 | Gemma 4 E2B | 71.4% → **96.9%** | 60.2% → **5.6%** | 1.2% → **0.0%** | 0.42 → **0.92** | 618 → **68** |
 
+### Second test set: `data/golden/eval_smoke.csv` (written separately, never trained on)
+
+42 hand-written messages (29 SCAM, 2 SUSPICIOUS, 11 SAFE) that were already in the repo, written separately from the v2 templates, so neither their templates nor their style are in the training data. Nearest-neighbour check: no test row in either set shares 50% or more of its 4-character chunks with any training row. Expect the fine-tuned numbers here, not the main table, to be closer to real traffic. Small set: one row is 2.4 points.
+
+| Model | Accuracy | False alarms | Scams warned (SCAM or SUSPICIOUS) |
+|---|---|---|---|
+| Qwen3.5 0.8B | 78.6% → **83.3%** | 54.5% → **9.1%** | 100.0% → **100.0%** |
+| Gemma 4 E2B | 64.3% → **78.6%** | 45.5% → **9.1%** | 87.1% → **100.0%** |
+
+Most remaining fine-tuned errors are SCAM answered SUSPICIOUS (still a warning). The two sets draw that line differently: e.g. 'KYC pending, account will be blocked' is SCAM here but SUSPICIOUS under the v2 template rules (no direct demand yet).
+
 ![Accuracy](benchmark/accuracy.png)
 
 ![False alarms](benchmark/false_alarms.png)
