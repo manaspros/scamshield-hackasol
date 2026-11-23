@@ -12,9 +12,12 @@ def tid(name):
     m = ID.search(name or "")
     return f"T{m[1]}.{m[2]}" if m else None
 res = {}  # task -> [passed, failed]
+untagged = []  # (suite, name) failures with no task ID
+suite = ""
 def add(name, ok):
     t = tid(name)
     if t: res.setdefault(t, [0, 0])[0 if ok else 1] += 1
+    elif not ok: untagged.append((suite, name))
 def lines(p):
     try: return pathlib.Path(p).read_text(errors="replace").splitlines()
     except OSError: return []
@@ -23,6 +26,7 @@ def lines(p):
 # repo-root build/app first, android/app/build as fallback
 xmls = glob.glob(str(root / "build/app/test-results/**/*.xml"), recursive=True) or \
        glob.glob(str(root / "android/app/build/test-results/**/*.xml"), recursive=True)
+suite = "kotlin"
 for f in xmls:
     try: tree = ET.parse(f)
     except ET.ParseError: continue
@@ -30,6 +34,7 @@ for f in xmls:
         if tc.find("skipped") is not None: continue
         add(tc.get("name"), tc.find("failure") is None and tc.find("error") is None)
 # Flutter --reporter json (one event per line); hidden = setUp/tearDown pseudo-tests
+suite = "flutter"
 names = {}
 for l in lines(root / "build/reports/flutter_test.jsonl"):
     try: e = json.loads(l)
@@ -38,10 +43,12 @@ for l in lines(root / "build/reports/flutter_test.jsonl"):
     elif e.get("type") == "testDone" and not e.get("hidden") and not e.get("skipped"):
         add(names.get(e["testID"]), e.get("result") == "success")
 # pytest -rA short summary
+suite = "pytest"
 for l in lines(root / "build/reports/pytest.txt"):
     m = re.match(r"(PASSED|FAILED|ERROR) (\S+)", l)
     if m: add(m[2], m[1] == "PASSED")
 # node TAP
+suite = "node"
 for l in lines(root / "build/reports/node.tap"):
     m = re.match(r"\s*(not ok|ok) \d+ - (.*)", l)
     if m and "# SKIP" not in m[2]: add(m[2], m[1] == "ok")
@@ -59,5 +66,7 @@ for t, blocked in rows:
     s = "fail" if f else "pass" if p else "blocked" if blocked else "not-run"
     bad |= s == "fail"
     print(f"{t:<7}{s:<9}{p:>5}{f:>5}")
-sys.exit(bad)
+print(f"\nUntagged failures: {len(untagged)}")
+for s, n in untagged: print(f"  {s}: {n}")
+sys.exit(int(bool(bad or untagged)))
 PY
