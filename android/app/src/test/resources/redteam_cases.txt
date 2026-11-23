@@ -1,0 +1,225 @@
+# Red-team probes for RuleScorer in rules-only mode (no Gemma). S = scam, must not be SAFE; G = genuine, must be SAFE.
+# S? / G? = known gap, documented below the line it marks and skipped by RedTeamCasesTest. <ZW> = zero-width space, \n = newline.
+# baseline scams
+S|Sir please share the OTP you just received to complete verification
+S|Aapke phone pe ek OTP aaya hoga, wo bata dijiye sir
+S|आपके फोन पर आया ओटीपी बता दीजिए
+# evasion: spacing / dots / zero / caps
+S|Sir please share the O T P you just received
+S|Sir please share the o.t.p you received
+S|Sir please share the 0TP you just received
+S|SIR PLEASE SHARE THE OTP YOU JUST RECEIVED
+S|Sir please share the O<ZW>TP you just received
+S|Sir please share the ОТР you just received
+S|Sir please share the 6 digit code you received on your phone
+S|Please send me the 6-digit number that came on your mobile, it is for verification
+S|Sir please share 🙏 the OTP 🙏 you just received
+S|Sir please\nshare\nthe OTP
+S|Aapke mobile pe 6 digit ka number aaya hai, jaldi bataiye
+S|Jo message aaya hai usme code hai, wo forward kar do please
+S|Mujhe wo code de do jo abhi aaya
+S|OTP forward kar dijiye
+S|Bhai galti se tere number pe mera OTP chala gaya, bhej de na
+S|OTP batao
+S|OTP de do sir
+S|OTP btao jaldi
+# KYC
+S|Dear customer your SBI account will be blocked today. Update KYC immediately: http://sbi-kyc-update.xyz
+S|Dear Customer, Your SBl YONO account will be suspended today. Please update your PAN card: https://bit.ly/3xYz
+S|Your account has been temporarily blocked. Click here to verify your PAN: http://hdfc.verify-now.in
+S|Your a/c will be blocked. Update PAN now http://tinyurl.com/x
+S|Dear customer, your account is blocked due to pending KYC. Contact 9876543210
+S|Dear customer, your a/c is deactivated due to pending KYC. Call 9876543210
+S|Aapka bank khata band ho jayega, KYC update karne ke liye is link par jaye
+S|प्रिय ग्राहक आपका बैंक खाता आज बंद हो जाएगा। केवाईसी अपडेट करें
+S|Dear customer your ACCOUNT WILL BE BLOCKED. Update KYC now
+S|Your account will be b.l.o.c.k.e.d today, update K Y C
+S|Your Paytm wallet is suspended. Complete KYC at paytm-kyc.com
+S|Your SBI account is frozen. Update your Aadhaar to unfreeze
+S|Your account will be freezed in 24 hours kindly update your PAN
+# digital arrest
+S|This is CBI officer. A case of money laundering registered against your Aadhaar. You are under digital arrest
+S|This is Inspector Sharma from Mumbai Police. Your Aadhaar card is linked with a money laundering case. Do not disconnect the call.
+S|This is from cyber crime department, an FIR has been filed against you. Join the Skype video call now
+S|I am calling from the Enforcement Directorate. Your bank account is used in illegal transactions, you will be arrested
+S|Aapke aadhaar se illegal transaction hua hai, aapko giraftar kiya jayega
+S|आपके आधार कार्ड से गैरकानूनी लेनदेन हुआ है, आपको गिरफ़्तार किया जाएगा
+S|Aap par case darj ho gaya hai, ED se baat kijiye
+S|Main Delhi Police se bol raha hu, aapke khilaaf FIR hai, video call pe aao
+# courier
+S|Your FedEx parcel to Taiwan contains drugs and 5 passports. Customs has seized it.
+S|Your parcel has been held at customs. Pay Rs 49 clearance fee: http://indiapost-track.top/pay
+# known gap: link phishing to a lookalike host: the context layer (Brands) raises it on SMS, rules alone cannot
+S?|India Post: Your package is held at warehouse due to incomplete address. Update within 24 hours: https://indiapost.in-tracking.com
+S|Your shipment could not be delivered due to incomplete address. Update here: https://inpost-delivery.cc/track
+S|Aapka parcel customs ne rok liya hai, usme drugs mile hain
+S|आपके पार्सल में ड्रग्स मिले हैं, मुंबई कस्टम ने उसे जब्त किया है
+# upi collect / QR
+S|I have sent you Rs 5000, please enter your UPI PIN to receive the money
+S|Paise receive karne ke liye UPI PIN daalo
+S|Accept the request in GPay and enter your PIN to get the cashback
+S|Approve the request in PhonePe and enter PIN, the refund will come in your account
+S|Scan this QR code to receive your payment
+S|Scan karo QR aur paise aapke account me aa jayenge
+S|I am army man, I will pay advance through QR, scan it
+# loan
+S|Congratulations! You are eligible for an instant loan of Rs 5,00,000 with no documents. Apply now http://loan-fast.xyz
+S|Your loan of Rs 2 lakh is approved. Pay Rs 1999 processing fee to get the amount
+S|Loan approved! Pay file charge 999 first to get disbursal
+S|Aapka loan approve ho gaya hai, 2000 file charge bhejo
+S|Repay your loan today or we will send your photos to all your contacts
+# invest
+S|Join our WhatsApp group for stock tips with guaranteed 30% returns monthly
+S|Earn 5% daily profit on your investment, join now
+S|Invest 10000 and get 50000 in 7 days. 100% safe
+S|Invest Rs 10000 get Rs 25000 in one week, contact on telegram
+S|Crypto trading se 3 guna paise kamayein, abhi judiye
+S|Paisa double karne ka mauka, 15 din me
+# job
+S|Hello, we are hiring for part time job. Earn Rs 5000 daily from home by liking YouTube videos
+S|Part time job: earn 3000-8000 per day. Contact on WhatsApp
+S|Hi, I am Priya from Amazon HR. We have a work-from-home opportunity, salary 30k/week. Interested?
+S|Hello dear, simple online work, 2 hours a day, earn ₹2000-₹5000. Reply YES
+S|घर बैठे रोज 5000 कमाएं
+S|Ghar baithe 2000 roz kamao
+# electricity
+S|Dear consumer your electricity power will be disconnected tonight at 9.30pm because your previous month bill was not updated. Please immediately contact our electricity officer 9876543210
+S|Dear Customer, your electricity connection will be disconnected tonight. Call 9876543210
+S|Your electricity supply will be stopped today at 9:30 PM due to unpaid bill. Contact officer 9876543210
+S|Aaj raat 9:30 baje aapki bijli kaat di jayegi, turant 9876543210 par call karein
+S|आज रात आपकी बिजली काट दी जाएगी, तुरंत संपर्क करें
+S|DEAR CONSUMER YOUR ELECTRICITY POWER WILL BE DISCONNECTED TONIGHT
+S|Your light connection will be cut tonight. Pay pending bill
+# sextortion
+S|I have your private video. Pay 20000 or I will send it to all your contacts
+S|Tumhara video mere paas hai, 10000 bhejo nahi to sabko bhej dunga
+S|Your video is recorded, pay or I send to your family
+# lottery
+S|Congratulations! You have won Rs 25 lakh in KBC lottery. Pay Rs 15000 tax to claim
+S|Congrats! You won an iPhone 15 in our lucky draw. Pay delivery charge 499
+S|Badhai ho aapne 25 lakh jeete hain, claim karne ke liye 12500 jama karein
+S|बधाई हो! आपने 25 लाख रुपये जीते हैं। दावा करने के लिए 10000 जमा करें
+S|You have been selected as winner of Rs 50,00,000 by WhatsApp. Contact manager
+# family emergency
+S|Mom this is my new number, my phone fell in water. Please send 15000 urgently, I'll explain later
+S|Hi Mom, my phone is broken, this is my new number. Need money urgently, can you pay a bill for me?
+S|Papa mera accident ho gaya hai, jaldi 20000 bhejo is number pe
+S|Your son has been arrested by police. Send 50000 for bail immediately
+S|Aapka beta police custody me hai, 50000 bhejo warna jail jayega
+S|पापा मेरा एक्सीडेंट हो गया है, जल्दी पैसे भेजो
+# screen share
+S|Please download AnyDesk and share the 9 digit code
+S|Please download Any Desk app and tell me the code
+S|Download the app from this link and give me the code shown on screen
+S|Install AnyDesk so I can help process your refund
+S|Please install the support app from play store and share the screen
+S|Play store se ek app install karo, main help karunga
+# refund
+S|Your refund of Rs 1500 is pending. Call our customer care at 9876543210 to process
+S|To get your refund please fill the form at http://refund-portal.xyz
+S|Your income tax refund of Rs 15,490 is approved. Submit your account details at http://incometax-refund.in
+S|Aapka refund aana hai, apna card number aur CVV bataiye
+# genuine
+G|482913 is your OTP for login to HDFC Bank NetBanking. Do not share it with anyone.
+G|Your OTP is 482913. Valid for 10 minutes. Never share your OTP with anyone. -SBI
+G|482913 is the OTP for your transaction of Rs 500 at Amazon. OTP valid for 5 mins. Do not share this OTP with anyone including bank staff.
+G|Use 482913 as your verification code for WhatsApp. Don't share this code with others
+G|Your Swiggy order is out for delivery. Share OTP 4829 with the delivery partner.
+G|Share OTP 4829 with delivery partner to receive your Flipkart order
+G|Your Amazon order will be delivered today. Please share the OTP 4829 with the delivery agent
+G|Your Uber OTP is 4829. Share it with your driver to start the trip.
+G|Rapido: OTP for your ride is 4829. Please share it with the captain.
+G|Dear customer, your electricity bill of Rs 1240 for Nov is due on 25-11-2026. Pay at bescom.co.in to avoid disconnection.
+G|Power supply will be interrupted tomorrow 10am-2pm due to maintenance work. -TPDDL
+G|Kal bijli 10 se 2 baje tak band rahegi, maintenance ke liye
+G|Bhai kal mera phone band rahega, call mat karna
+G|Bhai kal raat light chali gayi thi, AC band ho gaya
+G|Light kat gayi yaar, inverter bhi band
+G|Rs 500 debited from your a/c XX1234 on 23-11-26. If not you, call 18001234 to block your card. -SBI
+G|Your card ending 1234 has been blocked as per your request. -HDFC Bank
+G|Dear customer, complete your KYC to continue using Paytm wallet. Visit the app.
+G|Reminder: Your KYC is due for periodic update. Please visit your nearest branch. -SBI
+G|Your parcel has been shipped via BlueDart. Track at bluedart.com
+G|Your courier from Mumbai has been delivered. Thanks for choosing DTDC
+G|Your Amazon refund of Rs 499 has been processed and will reflect in 3-5 days.
+G|Mummy main hospital me hoon, dadi ko dekhne aaya, paise ki zarurat nahi
+G|Papa hospital ja rahe hain dadi ke liye, mummy ko 2000 transfer kar dena
+G|Bhai mera naya number hai ye, save kar le
+G|Kal ka match dekha? Kohli ne kya shot mara, jeet gaye!
+G|Dude I won the office lucky draw lol, got a mixer grinder
+G|Did you finish the task? Send me the code by evening
+G|Send me the code for the assignment, mine is not compiling
+G|Can you share the wifi code?
+G|Bhai wo code bhej de jo sir ne diya tha
+G|Join our family WhatsApp group for Diwali plans
+G|Don't hang up, I'm transferring the call to my manager
+G|Please send the photos from the wedding to the family group
+G|Your video call with Dr. Mehta is scheduled at 5 pm. Please keep the camera on.
+G|SIP of Rs 5000 in Axis Bluechip Fund processed. NAV 52.3
+G|Congratulations! Your salary of Rs 45000 has been credited.
+G|Delhi Police advisory: never share OTP. Report fraud at 1930
+# known gap: genuine courier customs notice still trips 'authority' (customs)
+G?|Customs duty of Rs 1200 is payable on your international shipment. Pay on delivery. -DHL
+G|Mera phone kharab ho gaya, naya lena padega
+G|Jio: Your SIM will be deactivated if not recharged within 7 days. Recharge at jio.com
+G|Your Airtel prepaid pack expires tomorrow. Recharge now to avoid service interruption.
+G|Your loan EMI of Rs 5400 is due on 5th. Please maintain sufficient balance. -HDFC
+G|Aaj office me naya task mila hai, roz 2 ghante extra kaam
+G|Earn 5% cashback daily on UPI payments with Paytm
+G|Kya tu kal stock market group me join karega? Ramesh ne add kiya
+G|Your FASTag KYC is pending. Update via your bank app.
+G|Call me immediately when you see this, Dadi is in hospital
+G|Payment of Rs 299 to Netflix failed. Please update your payment method in the app.
+# known gap: a friend asking for an OTP is flagged: sharing any OTP is risky, accepted
+G?|Tell me the OTP of the hotel booking you got, I'll check-in for both of us
+# known gap: a friend asking for an OTP is flagged: sharing any OTP is risky, accepted
+G?|Pls send otp, I'm logging into our Netflix
+S|OTP शेयर करें
+S|ओ टी पी बताइए
+S|ओ.टी.पी. बताइए
+S|ओटीपी बताएं
+S|otp bta do
+S|OTP bhejiye
+S|send kar do OTP
+S|Kripya apna OTP hamare agent ko dijiye
+S|Sir OTP aaya hoga, kisi aur ko mat batana, sirf mujhe batao
+S|Verification ke liye OTP hamare executive ko bata dijiye, kisi aur ko mat batana
+S|Please tell me the code you received. Do not share it with anyone else.
+S|Read the 6 digit OTP that you got. Never share OTP with strangers.
+S|Sir please share the ＯＴＰ you received
+S|You are under digital<NB>arrest
+S|You are under digital\narrest
+S|You are under Digital-Arrest
+S|You are under digital 🚨 arrest
+S|You are under DIGITAL  ARREST, do not tell anyone
+S|Please install a n y d e s k
+S|Please install Any-Desk app
+S|Update your K.Y.C or account will be blocked
+S|Your account will be blocked. Update K-Y-C
+S|Enter your UPI P.I.N to receive the money
+S|Enter your U P I  P I N to receive money
+S|Paise paane ke liye apna pin daalo
+S|Paise receive karne ke liye PIN dalna hoga
+S|पैसे पाने के लिए अपना यूपीआई पिन डालें
+S|Your nude video is with me, pay 10000 or it goes viral
+S|I recorded our video call, pay or I will share with your contacts
+S|आपको गिरफ़्तार किया जाएगा
+S|aapko giraftar kiya jayega
+S|aapke naam pe warrant nikla hai
+S|Bhai mera account hack ho gaya, 5000 bhej de urgent, kal lauta dunga
+S|Hi, this is your boss. I'm in a meeting, buy 5 Amazon gift cards of 2000 and send me the codes
+# known gap: brand not in Brands, so no lookalike-link flag
+S?|Your Netflix subscription has expired. Update payment: http://netflix-renew.com
+S|Your PAN card is deactivated. Update now: http://bit.ly/pan-upd
+S|SBI: Your YONO rewards points 7250 expire today. Redeem now: http://sbi-rewards.co
+S|Your electricity bill is pending, power will be disconnected at 9:30 PM tonight. Call 9876543210
+S|Bijli ka bill bakaya hai, aaj raat connection kat jayega
+S|बिजली कनेक्शन आज रात 9:30 बजे काट दिया जाएगा
+S|बिजली कनेक्शन आज रात 9:30 बजे विच्छेद कर दिया जाएगा
+S|Electricity connection will be disconnected tonight
+S|EB connection will be disconnected tonight call officer 9876543210
+S|Earn ₹500 per review on Google Maps, contact HR on WhatsApp
+S|Like YouTube videos and earn 150 per like
+S|You will get ₹50 for each like
+# known gap: IVR '5G upgrade' wording has no rule yet
+S?|aapka 5G SIM upgrade hoga, 1 dabaiye

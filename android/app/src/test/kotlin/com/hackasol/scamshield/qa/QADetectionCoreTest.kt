@@ -41,9 +41,11 @@ class QADetectionCoreTest {
         assertEquals(0.75, r.score, 1e-9); assertEquals(Label.SCAM, r.label)
     }
 
-    @Test fun `QA_rules_singleKycRuleHitsSuspiciousThresholdExactly`() {
+    @Test fun `QA_rules_kycAloneIsAHintNotAVerdict`() {
+        // A genuine "KYC due" reminder is common; KYC only counts next to a block / link / call signal.
         val r = RuleScorer.score("your KYC is pending")
-        assertEquals(0.40, r.score, 1e-9); assertEquals(Label.SUSPICIOUS, r.label)
+        assertEquals(0.35, r.score, 1e-9); assertEquals(Label.SAFE, r.label)
+        assertEquals(Label.SCAM, RuleScorer.score("Your account will be blocked today, update KYC at http://sbi-kyc.xyz").label)
     }
 
     @Test fun `QA_rules_urgencyAloneIsSafe`() {
