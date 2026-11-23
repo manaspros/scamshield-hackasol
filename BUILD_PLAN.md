@@ -156,7 +156,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T3.9 [sonnet] [UI+DATAVIZ] Policy dashboard as a static page (no build step): district ranking, scam-type trend by week, stat tiles; loads `data/trends/sample.json` or a dropped export file; accuracy panel from a copy of `ml/reports/m1.json` ("not measured" if absent)
   - **Files**: `dashboard/index.html`, `dashboard/app.js`, `dashboard/styles.css`, `dashboard/test/page.test.mjs`  **Depends on**: T3.7
   - **Done when**: `NT(page.test.mjs)` passes (every referenced file exists, `agg.mjs` imported, "not measured" path covered)
-- [ ] T3.10 [sonnet] [UI] Settings: district picker + "Export anonymised counts" (share-sheet file)
+- [x] T3.10 [sonnet] [UI] Settings: district picker + "Export anonymised counts" (share-sheet file)
   - **Files**: `lib/screens/settings_screen.dart`, `K/TrendChannel.kt`  **Depends on**: T3.8, T1.4
   - **Done when**: `APP` succeeds; `FT(settings_screen_test.dart)` passes `T3_10_exportCallsChannel`
 - [x] T3.11 [sonnet] [UI] Navigation wiring: entries for Report, Lessons, Recording, Try API/QR; `route=report` deep link
