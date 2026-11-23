@@ -127,7 +127,7 @@ object GemmaClassifier {
                     session = LlmInferenceSession.createFromOptions(engine, sOpts)
                     session.addQueryChunk(GemmaPrompt.build(text, context, contextLabel))
                     val raw = session.generateResponse()
-                    Log.d(TAG, "raw=$raw")
+                    Log.d(TAG, "rawLen=${raw.length}")   // the raw reply can echo the message text
                     LlmOutputParser.parse(raw)
                 } catch (t: Throwable) {
                     Log.e(TAG, "inference failed", t)
