@@ -107,23 +107,18 @@ object TextApi {
         Pipeline.upiRisk(qr, expectedName)?.let {
             append(VerdictEvent(0, System.currentTimeMillis(), Source.PASTE, it.label, it.confidence, ScamType.FAKE_QR, it.triggers, "upi-check"))
         }
-        val who = qr.payeeName?.takeIf { it.isNotBlank() } ?: qr.payeeAddress
         return mapOf(
             "valid" to true,
             "payeeName" to qr.payeeName,
-            "payeeVpa" to maskVpa(qr.payeeAddress),
+            "payeeVpa" to qr.payeeAddress, // the counterparty's id, shown whole: masking it hides the warning sign
             "amount" to qr.amount,
+            "amountDisplay" to qr.displayAmount(),
             "isCollect" to qr.isCollectRequest,
             "mismatch" to mismatch,
-            "framing" to qr.payFraming(),
-            "framingHi" to if (qr.amount.isNullOrBlank()) "आप $who को पैसे भेजेंगे" else "आप $who को ₹${qr.amount} भेजेंगे",
+            "riskyPayee" to qr.hasRiskyPayee(),
+            "framing" to qr.payFramingEn(),
+            "framingHi" to qr.payFramingHi(),
         )
-    }
-
-    // UpiQr guarantees exactly one '@'. "ravi.k@oksbi" -> "ra•••@oksbi"
-    private fun maskVpa(vpa: String): String {
-        val user = vpa.substringBefore('@')
-        return user.take(if (user.length > 3) 2 else 1) + "•••@" + vpa.substringAfter('@')
     }
 
     private suspend fun classifyUnlogged(req0: ClassifyRequest): Verdict {

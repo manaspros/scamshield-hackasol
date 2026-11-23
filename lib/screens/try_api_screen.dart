@@ -36,7 +36,14 @@ class _TryApiScreenState extends State<TryApiScreen> {
   static const _api = MethodChannel('scamshield/api');
   static const _qr = MethodChannel('scamshield/qr'); // Kotlin QrChannel: ML Kit code scanner (Play services UI)
   // The whole link goes to Kotlin UpiQr.parse (single implementation); Dart only finds it in pasted text.
-  static final _upiLink = RegExp(r'upi://\S+', caseSensitive: false);
+  // Plain \S+ cut 'pn=Priya Stores&am=4999' at the space (lost the name tail and &am=). A space is kept only when a later
+  // '&' is on the line (a param follows); the last param still ends at whitespace, so trailing prose is not swallowed.
+  // shortcut: prose containing '&' right after a link is absorbed (UpiQr then rejects it), upgrade if that shows up.
+  static final _upiLink = RegExp(r'upi://(?:\S|[ \t](?=[^\r\n]*&))+', caseSensitive: false);
+
+  static const _upiCautionHi = 'पैसे भेजने से पहले जाँचें';
+  static const _upiCautionEn = 'Check before paying';
+  static const _upiRiskyEn = 'This UPI ID looks like a refund, helpdesk or prize account';
 
   // Same lines as the live feed (live_feed_screen.dart _advice), Hindi first.
   static const _adviceTitle = 'घबराएँ नहीं। अभी यह करें:';
@@ -198,7 +205,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
     ]);
   }
 
-  // Result of `upi.check` {valid, payeeName, payeeVpa (already masked), amount, isCollect, mismatch, framing, framingHi}.
+  // Result of `upi.check` {valid, payeeName, payeeVpa (whole), amount, amountDisplay, riskyPayee, isCollect, mismatch, framing, framingHi}.
   Widget _upiCard() {
     final u = _upi!;
     final t = Theme.of(context);
@@ -219,9 +226,12 @@ class _TryApiScreenState extends State<TryApiScreen> {
     }
     final mismatch = u['mismatch'] == true;
     final collect = u['isCollect'] == true;
-    // A name mismatch is amber (act now), not red: the person is still in control of the payment.
-    final label = (mismatch || collect) ? RiskLabel.suspicious : RiskLabel.safe;
-    final solid = st.solid(label);
+    final risky = u['riskyPayee'] == true;
+    final warned = mismatch || collect || risky;
+    // A UPI pay intent is never green. Amber when a warning applies (the person is still in control, so not red);
+    // otherwise neutral "check before paying".
+    final label = RiskLabel.suspicious;
+    final solid = warned ? st.solid(label) : cs.onSurfaceVariant;
     Widget warn(Key k, Color c, String hi, String? imperative, String en) => Padding(
           padding: const EdgeInsets.only(top: Sp.m),
           child: Row(key: k, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -246,7 +256,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
       margin: const EdgeInsets.only(top: Sp.m),
       padding: const EdgeInsets.all(Sp.xl),
       decoration: BoxDecoration(
-        color: st.tintOver(label, cs.surface),
+        color: warned ? st.tintOver(label, cs.surface) : cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(Rad.lg),
         border: Border.all(color: solid.withValues(alpha: 0.35)),
       ),
@@ -266,7 +276,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
           if (amount.isNotEmpty) ...[
             const SizedBox(height: Sp.s),
             Text('आप भेज रहे हैं', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-            Text('₹$amount', key: const Key('upi_amount'), style: tt.displayLarge?.copyWith(fontFeatures: tabular)),
+            Text('${u['amountDisplay'] ?? '₹$amount'}', key: const Key('upi_amount'), style: tt.displayLarge?.copyWith(fontFeatures: tabular)),
           ],
         ],
         if (u['payeeVpa'] != null) ...[
@@ -277,6 +287,14 @@ class _TryApiScreenState extends State<TryApiScreen> {
             Expanded(child: Text('UPI ID: ${u['payeeVpa']}', key: const Key('upi_vpa'), style: tt.bodyLarge)),
           ]),
         ],
+        if (!warned) ...[
+          const SizedBox(height: Sp.m),
+          Text(_upiCautionHi, key: const Key('upi_caution'), style: tt.titleMedium),
+          Text(_upiCautionEn, style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
+        ],
+        if (risky)
+          warn(const Key('upi_risky'), st.suspicious, 'यह UPI ID रिफंड, हेल्पडेस्क या इनाम जैसा लगता है।',
+              'पैसे भेजने से पहले जाँचें', _upiRiskyEn),
         if (mismatch)
           warn(const Key('upi_mismatch'), st.suspicious, 'QR में नाम: $qrName — आपको बताया गया नाम: $told',
               'पैसे भेजने से पहले नाम मिलाएँ', 'Name does not match this UPI ID'),
@@ -284,7 +302,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
           warn(const Key('upi_collect'), st.suspicious,
               'यह QR पैसे माँगता है। इसे स्कैन करने से पैसे जाते हैं, आते नहीं।', null,
               'This QR requests money; scanning it sends money, it never receives money.'),
-        if (mismatch || collect) ...[
+        if (warned) ...[
           const SizedBox(height: Sp.m),
           Text(_adviceTitle, style: tt.titleMedium),
           for (final line in _payAdvice)

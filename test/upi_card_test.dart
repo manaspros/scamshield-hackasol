@@ -88,6 +88,93 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('T4_1_riskyVpaAmountNotGreen', (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final apiCalls = <MethodCall>[];
+    final messenger = tester.binding.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), (call) async {
+      apiCalls.add(call);
+      return <Object?, Object?>{
+        'valid': true,
+        'payeeName': 'Priya Stores',
+        'payeeVpa': 'refund.helpdesk@oksbi',
+        'amount': '4999',
+        'amountDisplay': '₹4,999',
+        'isCollect': false,
+        'mismatch': false,
+        'riskyPayee': true,
+        'framing': 'You will PAY ₹4,999 to Priya Stores',
+        'framingHi': 'आप Priya Stores को ₹4,999 भेजेंगे',
+      };
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null));
+
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.light(),
+      home: const Scaffold(body: TryApiScreen()),
+    ));
+    Future<void> reveal(Finder f) async {
+      await tester.ensureVisible(f);
+      await tester.pumpAndSettle();
+    }
+
+    await reveal(find.byKey(const Key('upi_section')));
+    await tester.tap(find.byKey(const Key('upi_section')));
+    await tester.pumpAndSettle();
+    await reveal(find.byKey(const Key('upi_link_field')));
+    const link = 'upi://pay?pa=refund.helpdesk@oksbi&pn=Priya Stores&am=4999';
+    await tester.enterText(find.byKey(const Key('upi_link_field')), link);
+    await reveal(find.byKey(const Key('btn_upi_check')));
+    await tester.tap(find.byKey(const Key('btn_upi_check')));
+    await tester.pumpAndSettle();
+
+    expect((apiCalls.singleWhere((c) => c.method == 'upi.check').arguments as Map)['link'], link);
+    await reveal(find.byKey(const Key('upi_card')));
+    expect(find.text('आप Priya Stores को ₹4,999 भेजेंगे'), findsOneWidget);
+    expect(find.text('You will PAY ₹4,999 to Priya Stores'), findsOneWidget);
+    expect(find.byKey(const Key('upi_amount')), findsOneWidget);
+    expect(find.text('₹4,999'), findsOneWidget);
+    await reveal(find.byKey(const Key('upi_vpa')));
+    expect(find.text('UPI ID: refund.helpdesk@oksbi'), findsOneWidget);
+    expect(find.byKey(const Key('upi_risky')), findsOneWidget);
+    expect(find.text('सुरक्षित'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('T4_1_pastedLinkWithSpaceInNameKeepsAmount', (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final calls = <MethodCall>[];
+    final messenger = tester.binding.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), (call) async {
+      calls.add(call);
+      if (call.method == 'classify') {
+        return <Object?, Object?>{
+          'text': 'x', 'label': 'SAFE', 'confidence': 0.9, 'reason': 'r', 'triggers': <String>[],
+          'engine': 'rules', 'latencyMs': 1, 'source': 'manual',
+        };
+      }
+      return <Object?, Object?>{'valid': false};
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null));
+
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light(), home: const Scaffold(body: TryApiScreen())));
+    const link = 'upi://pay?pa=refund.helpdesk@oksbi&pn=Priya Stores&am=4999';
+    await tester.enterText(find.byType(TextField).first, link);
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+    await tester.ensureVisible(find.byType(FilledButton));
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+
+    expect((calls.singleWhere((c) => c.method == 'upi.check').arguments as Map)['link'], link);
+  });
+
   testWidgets('T4_3_scanFillsLinkAndChecks', (tester) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;

@@ -39,4 +39,20 @@ class UpiQrTest {
         assertNull(UpiQr.parse("upi://pay?pa=shop%40psp&am=12abc"))
         assertNull(UpiQr.parse("upi://pay?pa=shop%40psp&pn=%ZZ"))
     }
+
+    @Test fun T4_1_amountAndRiskyVpa() {
+        val q = UpiQr.parse("upi://pay?pa=refund.helpdesk@oksbi&pn=Priya Stores&am=4999")!!
+        assertEquals("4999", q.amount)
+        assertEquals("Priya Stores", q.payeeName)
+        assertEquals("₹4,999", q.displayAmount())
+        assertEquals("You will PAY ₹4,999 to Priya Stores", q.payFramingEn())
+        assertEquals("आप Priya Stores को ₹4,999 भेजेंगे", q.payFramingHi())
+        assertTrue(q.hasRiskyPayee())
+        val risk = Pipeline.upiRisk(q, null)!!
+        assertEquals(Label.SUSPICIOUS, risk.label)
+        assertTrue(UpiQr.RISKY_PAYEE_TRIGGER in risk.triggers)
+        assertFalse(UpiQr.parse("upi://pay?pa=shop%40psp&pn=Priya")!!.hasRiskyPayee())
+        assertEquals("₹1,00,000.50", UpiQr("a@b", amount = "100000.50").displayAmount())
+        assertEquals("₹5", UpiQr("a@b", amount = "5").displayAmount())
+    }
 }

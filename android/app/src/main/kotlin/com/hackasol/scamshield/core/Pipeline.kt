@@ -53,6 +53,7 @@ object Pipeline {
         val triggers = buildList {
             if (mismatch) add("upi name mismatch")
             if (qr.isCollectRequest) add("upi collect request")
+            if (qr.hasRiskyPayee()) add(UpiQr.RISKY_PAYEE_TRIGGER)
         }
         if (triggers.isEmpty()) return null
         return UpiRisk(if (mismatch) Label.SCAM else Label.SUSPICIOUS, if (mismatch) 0.9 else 0.7, triggers)

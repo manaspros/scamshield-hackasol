@@ -24,7 +24,31 @@ data class UpiQr(
         PAY_AMOUNT_FRAMING.format(amount, payeeName?.takeIf { it.isNotBlank() } ?: payeeAddress)
     }
 
+    /** "4999" -> "₹4,999", "100000.5" -> "₹1,00,000.5" (Indian grouping); null without an amount. */
+    fun displayAmount(): String? {
+        val a = amount?.takeIf { it.isNotBlank() } ?: return null
+        val whole = a.substringBefore('.').trimStart('0').ifEmpty { "0" }
+        val head = whole.dropLast(3).reversed().chunked(2).joinToString(",").reversed()
+        val grouped = if (head.isEmpty()) whole else head + "," + whole.takeLast(3)
+        return "₹" + grouped + (if ('.' in a) "." + a.substringAfter('.') else "")
+    }
+
+    private fun who(): String = payeeName?.takeIf { it.isNotBlank() } ?: payeeAddress
+
+    /** Display framing (₹, grouped); [payFraming] keeps the plain "Rs" text for the Demo Lab. */
+    fun payFramingEn(): String = displayAmount()?.let { PAY_INR_FRAMING.format(it, who()) } ?: PAY_MONEY_FRAMING.format(who())
+
+    fun payFramingHi(): String = displayAmount()?.let { PAY_INR_FRAMING_HI.format(it, who()) } ?: PAY_MONEY_FRAMING_HI.format(who())
+
+    /** The payee id looks like a helpdesk/refund/prize account: the usual fake-QR sign. */
+    fun hasRiskyPayee(): Boolean = RISKY_PAYEE_WORDS.containsMatchIn(payeeAddress)
+
     companion object {
+        const val PAY_INR_FRAMING = "You will PAY %s to %s"
+        const val PAY_INR_FRAMING_HI = "आप %2\$s को %1\$s भेजेंगे"
+        const val PAY_MONEY_FRAMING_HI = "आप %s को पैसे भेजेंगे"
+        const val RISKY_PAYEE_WARNING = "This UPI ID looks like a refund, helpdesk or prize account"
+        const val RISKY_PAYEE_TRIGGER = "upi risky payee id"
         const val PAY_AMOUNT_FRAMING = "You will PAY Rs %s to %s"
         const val PAY_MONEY_FRAMING = "You will PAY money to %s"
         const val NAME_MISMATCH_WARNING = "Name does not match this UPI ID"
@@ -69,6 +93,8 @@ data class UpiQr(
             )
         }
 
+        private val RISKY_PAYEE_WORDS = Regex(
+            "refund|help\\s*desk|support|customer.?care|kyc|reward|cashback|lottery|prize", RegexOption.IGNORE_CASE)
         private val PAYEE_ADDRESS = Regex("^[^\\s@?&=]+@[^\\s@?&=]+$")
         private val AMOUNT = Regex("^[0-9]+(?:\\.[0-9]+)?$")
         private val COLLECT_WORDS = Regex("\\b(?:request|receive\\s+money|collect)\\b", RegexOption.IGNORE_CASE)
