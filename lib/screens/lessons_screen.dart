@@ -121,6 +121,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
                       key: Key('lang_$code'),
                       label: Text(label),
                       selected: _lang == code,
+                      checkmarkColor: Theme.of(context).colorScheme.primary,
                       onSelected: (_) => _setLang(code),
                     ),
                 ],
@@ -143,7 +144,7 @@ class _LessonsScreenState extends State<LessonsScreen> {
               key: const Key('lessons_primary'),
               style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
               onPressed: () => _open(e, next),
-              icon: Icon(e.bestFor(next.id) > 0 ? Icons.replay : Icons.play_arrow),
+              icon: Icon(e.bestFor(next.id) > 0 ? Icons.replay : Icons.play_arrow, size: 28),
               label: Text(
                 '${e.bestFor(next.id) > 0 ? s['again'] : s['new']}: ${next.title}',
                 textAlign: TextAlign.center,

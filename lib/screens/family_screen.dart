@@ -129,7 +129,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
   Future<void> _init() async {
     try {
       final st = await widget.channel.invokeMapMethod<String, Object?>('family.status');
-      if (st?['paired'] == true) return _startCode();
+      if (st?['paired'] == true) return await _startCode();
     } catch (_) {}
     if (mounted) setState(() => _stage = _Stage.choose);
   }
@@ -201,6 +201,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
               key: Key('lang_$code'),
               label: Text(label),
               selected: _lang == code,
+              checkmarkColor: Theme.of(context).colorScheme.primary,
               onSelected: (_) => setState(() => _lang = code),
             ),
         ]),
@@ -219,17 +220,28 @@ class _FamilyScreenState extends State<FamilyScreen> {
     );
   }
 
-  Widget _big(Key key, IconData icon, String label, VoidCallback onTap, {Color? bg, Color? fg}) =>
+  Widget _big(Key key, IconData icon, String label, VoidCallback onTap, {Color? bg}) =>
       Padding(
         padding: const EdgeInsets.only(bottom: Sp.m),
-        child: FilledButton.icon(
-          key: key,
-          onPressed: onTap,
-          style: FilledButton.styleFrom(
-              backgroundColor: bg, foregroundColor: fg, minimumSize: const Size.fromHeight(kTouch)),
-          icon: Icon(icon, size: 32),
-          label: Text(label, textAlign: TextAlign.center),
-        ),
+        // A coloured answer (yes/no) is outlined so two equal choices never look like two primaries.
+        child: bg != null
+            ? OutlinedButton.icon(
+                key: key,
+                onPressed: onTap,
+                style: OutlinedButton.styleFrom(
+                    foregroundColor: bg,
+                    side: BorderSide(color: bg, width: 2),
+                    minimumSize: const Size.fromHeight(kTouch)),
+                icon: Icon(icon, size: 32),
+                label: Text(label, textAlign: TextAlign.center),
+              )
+            : FilledButton.icon(
+                key: key,
+                onPressed: onTap,
+                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
+                icon: Icon(icon, size: 32),
+                label: Text(label, textAlign: TextAlign.center),
+              ),
       );
 
   List<Widget> _choose(ThemeData theme) => [
@@ -352,10 +364,8 @@ class _FamilyScreenState extends State<FamilyScreen> {
       const SizedBox(height: Sp.l),
       Text(t('ask'), textAlign: TextAlign.center, style: theme.textTheme.headlineSmall),
       const SizedBox(height: Sp.m),
-      _big(const Key('family_yes'), Icons.check_circle, t('yes'), () => setState(() => _match = true),
-          bg: yes, fg: theme.colorScheme.surface),
-      _big(const Key('family_no'), Icons.cancel, t('no'), () => setState(() => _match = false),
-          bg: no, fg: theme.colorScheme.surface),
+      _big(const Key('family_yes'), Icons.check_circle, t('yes'), () => setState(() => _match = true), bg: yes),
+      _big(const Key('family_no'), Icons.cancel, t('no'), () => setState(() => _match = false), bg: no),
       if (_match == true)
         _banner(const Key('family_yes_msg'), Icons.check_circle, t('yesMsg'), yes, theme),
       if (_match == false)

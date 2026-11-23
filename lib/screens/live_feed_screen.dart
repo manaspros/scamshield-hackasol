@@ -242,7 +242,7 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
         child: FilledButton.icon(
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
           onPressed: onTap,
-          icon: Icon(icon),
+          icon: Icon(icon, size: 28),
           label: Text(label, textAlign: TextAlign.center),
         ),
       );

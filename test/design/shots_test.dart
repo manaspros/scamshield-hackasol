@@ -10,11 +10,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/lessons/lesson_model.dart';
 import 'package:scamshield/lessons/quiz_engine.dart';
 import 'package:scamshield/models/verdict.dart';
+import 'package:scamshield/screens/family_screen.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/quiz_screen.dart';
 import 'package:scamshield/screens/setup_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
+import 'package:scamshield/theme/text_styles.dart';
 import 'package:scamshield/widgets/action_tile.dart';
 import 'package:scamshield/widgets/charts/bar_chart.dart';
 import 'package:scamshield/widgets/section_header.dart';
@@ -161,9 +163,15 @@ void main() {
           'perm.notificationAccessGranted' => true,
           _ => null,
         });
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/family'), (c) async => switch (c.method) {
+          'family.status' => {'paired': true},
+          'family.code' => {'code': '123456', 'remainingSec': 20},
+          _ => null,
+        });
     addTearDown(() {
       messenger.setMockMethodCallHandler(const MethodChannel('scamshield/events'), null);
       messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/family'), null);
     });
     final lessons = loadLessonsFromJson(File('assets/lessons/hi.json').readAsStringSync());
     final store = InMemoryQuizStore();
@@ -177,7 +185,14 @@ void main() {
       final theme = base.copyWith(
           textTheme: base.textTheme.apply(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']),
           appBarTheme: base.appBarTheme.copyWith(titleTextStyle: f(base.appBarTheme.titleTextStyle)),
-          chipTheme: base.chipTheme.copyWith(labelStyle: f(base.chipTheme.labelStyle)));
+          chipTheme: base.chipTheme.copyWith(labelStyle: f(base.chipTheme.labelStyle)),
+          // Buttons set their own text style, so give them the Devanagari fallback too.
+          filledButtonTheme: FilledButtonThemeData(
+              style: base.filledButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+              style: base.outlinedButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))),
+          textButtonTheme: TextButtonThemeData(
+              style: base.textButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))));
       tester.view.physicalSize = const Size(720, 1600);
       tester.view.devicePixelRatio = 2;
       addTearDown(tester.view.reset);
@@ -187,13 +202,22 @@ void main() {
         'quiz': QuizScreen(lesson: lessons.first, engine: engine, lang: 'hi'),
         'setup': const SetupScreen(),
         'live_feed': const LiveFeedScreen(),
+        'family': const FamilyScreen(initialLang: 'hi'),
+        'setup_2x': const SetupScreen(),
+        'live_feed_2x': const LiveFeedScreen(),
       };
       for (final e in screens.entries) {
         final key = GlobalKey();
+        final scale = e.key.endsWith('_2x') ? 2.0 : 1.0;
+        // Unmount the previous screen first: its event-channel cancel would otherwise
+        // clear the handler the next screen just registered.
+        await tester.pumpWidget(const SizedBox());
         await tester.pumpWidget(MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: theme,
-          home: RepaintBoundary(key: key, child: Scaffold(appBar: AppBar(title: Text(e.key)), body: e.value)),
+          builder: (c, child) =>
+              MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: child!),
+          home:RepaintBoundary(key: key, child: Scaffold(appBar: AppBar(title: Text(e.key)), body: e.value)),
         ));
         await tester.pumpAndSettle();
         if (e.key == 'quiz') {
@@ -206,7 +230,7 @@ void main() {
           await tester.tap(find.byKey(const Key('option_1')));
           await tester.pumpAndSettle();
         }
-        if (e.key == 'live_feed') {
+        if (e.key.startsWith('live_feed')) {
           messenger.handlePlatformMessage(
               'scamshield/events',
               const StandardMethodCodec().encodeSuccessEnvelope({
@@ -229,9 +253,12 @@ void main() {
           final b = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
           final img = await b.toImage(pixelRatio: 1);
           final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
-          File('$_out/screen_${e.key}_${dark ? 'dark' : 'light'}.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+          final name = e.key.replaceAll('_2x', '');
+          final suffix = scale == 2.0 ? '_2x' : '';
+          File('$_out/ux_${name}_${dark ? 'dark' : 'light'}$suffix.png').writeAsBytesSync(bytes!.buffer.asUint8List());
         });
       }
+      await tester.pumpWidget(const SizedBox()); // dispose the family countdown timer
     }
   });
 }
