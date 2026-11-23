@@ -28,6 +28,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
   Map<Object?, Object?>? _upi; // last `upi.check` result (Kotlin: TextApi.upiCheck)
 
   static const _api = MethodChannel('scamshield/api');
+  static const _qr = MethodChannel('scamshield/qr'); // Kotlin QrChannel: ML Kit code scanner (Play services UI)
   // The whole link goes to Kotlin UpiQr.parse (single implementation); Dart only finds it in pasted text.
   static final _upiLink = RegExp(r'upi://\S+', caseSensitive: false);
 
@@ -82,6 +83,21 @@ class _TryApiScreenState extends State<TryApiScreen> {
     }
   }
 
+  // Scanner value goes through the SAME path as a pasted link: fill the field, then upi.check -> UpiQr.
+  Future<void> _scanQr() async {
+    try {
+      final raw = (await _qr.invokeMethod<String>('qr.scan'))?.trim();
+      if (raw == null || raw.isEmpty) return; // cancelled
+      _upiCtrl.text = raw;
+      await _checkUpi(raw);
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.code == 'UNAVAILABLE'
+          ? 'QR स्कैनर उपलब्ध नहीं है। लिंक चिपकाएँ। · QR scanner not available; paste the link instead.'
+          : '${e.message}');
+    }
+  }
+
   Future<void> _dial() async {
     final ok = await const HandoffApi().dial('1930'); // ACTION_DIAL only; the user presses the green button
     if (!ok && mounted) {
@@ -131,6 +147,14 @@ class _TryApiScreenState extends State<TryApiScreen> {
     if (!_upiOpen) return const SizedBox.shrink();
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const SizedBox(height: Sp.s),
+          OutlinedButton.icon(
+            key: const Key('btn_upi_scan'),
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
+            onPressed: _scanQr,
+            icon: const Icon(Icons.qr_code_scanner),
+            label: const Text('QR स्कैन करें · Scan QR', textAlign: TextAlign.center),
+          ),
+          const SizedBox(height: Sp.m),
           TextField(
             key: const Key('upi_link_field'),
             controller: _upiCtrl,

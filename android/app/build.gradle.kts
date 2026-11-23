@@ -51,5 +51,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     // Offline STT (DEP6). 0.3.75 published 2025-12-08; its pom pulls net.java.dev.jna:jna:5.18.1@aar transitively.
     implementation("com.alphacephei:vosk-android:0.3.75")
+    // QR scan (DEP7). 16.1.0 published 2023-08-01 (latest on Google Maven); Play services hosts the camera UI, no CAMERA permission.
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
     testImplementation("junit:junit:4.13.2")
 }

@@ -170,7 +170,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T4.2 [sonnet] [UI] Fake-QR checker in Try API: `upi://` in pasted/shared text (or manual link) + optional "name I was told" -> card with PAY framing and mismatch warning; also logs a FAKE_QR verdict event
   - **Files**: `lib/screens/try_api_screen.dart`, `K/MainActivity.kt`  **Depends on**: T4.1, T2.1, T3.11
   - **Done when**: `APP` succeeds; `FT(upi_card_test.dart)` passes `T4_2_mismatchWarning`
-- [ ] T4.3 [sonnet] [NEEDS-OK:DEP7] [OPTIONAL: if time remains after P3] ML Kit code scanner button feeding T4.2
+- [x] T4.3 [sonnet] [NEEDS-OK:DEP7] [OPTIONAL: if time remains after P3] ML Kit code scanner button feeding T4.2
   - **Files**: `K/QrChannel.kt`, `android/app/build.gradle(.kts)`, `lib/screens/try_api_screen.dart`  **Depends on**: T4.2
   - **Done when**: `APP` and `REL` succeed; the scanner result is passed to the same parser (`KT(UpiQrTest)` still green)
 - [x] T4.4 [codex] [NEEDS-OK:DEP4] [OPTIONAL: only if P0-P3 done and a human asks] New-scam clustering on exported trigger features (HDBSCAN from scikit-learn), cluster summaries JSON for the dashboard

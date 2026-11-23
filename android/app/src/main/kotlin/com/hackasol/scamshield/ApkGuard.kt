@@ -22,14 +22,19 @@ object ApkGuard {
     /** [uri] is a content:// or file:// Uri (or a bare path) of an .apk. Null if it cannot be parsed. */
     fun check(ctx: Context, uri: Uri): ApkRiskResult? {
         val path = toLocalPath(ctx, uri) ?: return null
-        val pm = ctx.packageManager
-        val info = if (Build.VERSION.SDK_INT >= 33)
-            pm.getPackageArchiveInfo(path, PackageManager.PackageInfoFlags.of(PackageManager.GET_PERMISSIONS.toLong()))
-        else @Suppress("DEPRECATION") pm.getPackageArchiveInfo(path, PackageManager.GET_PERMISSIONS)
-        return info?.let {
-            val r = ApkRisk.assess(it.requestedPermissions?.toList().orEmpty(), fromUnknownSource = true, packageName = it.packageName)
-            if (r.level != ApkRiskLevel.LOW) warn(ctx, it.packageName, r)
-            r
+        try {
+            val pm = ctx.packageManager
+            val info = if (Build.VERSION.SDK_INT >= 33)
+                pm.getPackageArchiveInfo(path, PackageManager.PackageInfoFlags.of(PackageManager.GET_PERMISSIONS.toLong()))
+            else @Suppress("DEPRECATION") pm.getPackageArchiveInfo(path, PackageManager.GET_PERMISSIONS)
+            return info?.let {
+                val r = ApkRisk.assess(it.requestedPermissions?.toList().orEmpty(), fromUnknownSource = true, packageName = it.packageName)
+                if (r.level != ApkRiskLevel.LOW) warn(ctx, it.packageName, r)
+                r
+            }
+        } finally {
+            // Only the cache copy made from a content:// stream; never delete the caller's own file:// path.
+            if (uri.scheme != null && uri.scheme != "file") File(path).delete()
         }
     }
 

@@ -87,4 +87,49 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('T4_3_scanFillsLinkAndChecks', (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    const scanned = 'upi://pay?pa=ravi.k@oksbi&pn=Ravi%20Kumar&am=500';
+    final apiCalls = <MethodCall>[];
+    final messenger = tester.binding.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/qr'), (call) async => scanned);
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), (call) async {
+      apiCalls.add(call);
+      return <Object?, Object?>{'valid': false};
+    });
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/qr'), null);
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.light(),
+      home: MediaQuery(
+        data: const MediaQueryData(size: Size(360, 800), textScaler: TextScaler.linear(2.0)),
+        child: const Scaffold(body: TryApiScreen()),
+      ),
+    ));
+
+    Future<void> reveal(Finder f) async {
+      await tester.ensureVisible(f);
+      await tester.pumpAndSettle();
+    }
+
+    await reveal(find.byKey(const Key('upi_section')));
+    await tester.tap(find.byKey(const Key('upi_section')));
+    await tester.pumpAndSettle();
+    await reveal(find.byKey(const Key('btn_upi_scan')));
+    await tester.tap(find.byKey(const Key('btn_upi_scan')));
+    await tester.pumpAndSettle();
+
+    final check = apiCalls.singleWhere((c) => c.method == 'upi.check');
+    expect((check.arguments as Map)['link'], scanned);
+    await reveal(find.byKey(const Key('upi_link_field')));
+    expect(tester.widget<TextField>(find.byKey(const Key('upi_link_field'))).controller!.text, scanned);
+    expect(tester.takeException(), isNull);
+  });
 }

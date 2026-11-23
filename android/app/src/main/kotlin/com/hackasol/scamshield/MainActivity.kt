@@ -62,6 +62,7 @@ class MainActivity : FlutterActivity() {
         TextApi.init(this)
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         FamilyChannel.register(messenger, this)
+        QrChannel.register(messenger, this)
         HandoffChannel(this, scope).register(messenger)
         recording = RecordingChannel(this, scope).also { it.register(messenger) }
 
