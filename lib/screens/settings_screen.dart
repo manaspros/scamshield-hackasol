@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import '../api/text_api.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
-import '../widgets/action_tile.dart';
 import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
 
@@ -196,6 +195,115 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// One 56dp+ row: location icon, label, current value, chevron.
+  Widget _districtRow(ThemeData t, String? d) {
+    final cs = t.colorScheme;
+    return Semantics(
+      button: true,
+      child: Material(
+        color: cs.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Rad.lg),
+          side: BorderSide(color: cs.outline),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: const Key('districtPicker'),
+          onTap: _pickDistrict,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: kTouch),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Sp.l,
+                vertical: Sp.m,
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on, size: 28, color: cs.primary),
+                  const SizedBox(width: Sp.m),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'आपका ज़िला',
+                          style: t.textTheme.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          d ?? 'ज़िला चुनें',
+                          style: t.textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 32,
+                    color: cs.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// What is shared, and what never leaves the phone.
+  Widget _trustCard(ThemeData t, StatusColors st) {
+    final cs = t.colorScheme;
+    Widget item(IconData icon, String word) => Padding(
+      padding: const EdgeInsets.only(top: Sp.s),
+      child: Row(
+        children: [
+          Icon(icon, size: 24, color: cs.onSurfaceVariant),
+          const SizedBox(width: Sp.m),
+          Expanded(child: Text(word, style: t.textTheme.bodyLarge)),
+        ],
+      ),
+    );
+    return Container(
+      padding: const EdgeInsets.all(Sp.l),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(Rad.lg),
+        border: Border.all(color: cs.outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'सिर्फ़ ज़िला, ठगी का प्रकार और तारीख',
+            style: t.textTheme.titleMedium,
+          ),
+          item(Icons.location_on, 'ज़िला'),
+          item(Icons.category, 'ठगी का प्रकार'),
+          item(Icons.event, 'तारीख'),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: Sp.m),
+            child: Divider(),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.lock, size: 28, color: st.safe),
+              const SizedBox(width: Sp.m),
+              Expanded(
+                child: Text(
+                  'आपके मैसेज, कॉल, नंबर और नाम कभी फ़ोन से बाहर नहीं जाते',
+                  style: t.textTheme.bodyLarge,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _trendSection(BuildContext context) {
     final t = Theme.of(context);
     final cs = t.colorScheme;
@@ -211,58 +319,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'ठगी की गिनती भेजें',
             subtitle: 'Share scam counts (optional)',
           ),
-          Container(
-            padding: const EdgeInsets.all(Sp.l),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(Rad.lg),
-              border: Border.all(color: cs.outline),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          _districtRow(t, d),
+          const SizedBox(height: Sp.l),
+          _trustCard(t, st),
+          const SizedBox(height: Sp.l),
+          // Secondary on purpose: settings has no single primary action.
+          OutlinedButton(
+            key: const Key('exportButton'),
+            onPressed: d == null || _busy ? null : _export,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.lock, size: 32, color: cs.primary),
-                const SizedBox(width: Sp.m),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'सिर्फ़ 3 चीज़ें फ़ोन से बाहर जाती हैं: ज़िला, ठगी का प्रकार, तारीख़। मैसेज या नंबर नहीं।',
-                        style: t.textTheme.bodyLarge,
-                      ),
-                      Text(
-                        'Only 3 things leave your phone: district, scam type, date. No message text, no numbers.',
-                        style: t.textTheme.bodySmall?.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
+                Text(
+                  _busy ? 'तैयार हो रहा है…' : 'गिनती साझा करें',
+                  textAlign: TextAlign.center,
+                ),
+                const Text(
+                  'Export anonymised counts',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: Sp.m),
-          ActionTile(
-            key: const Key('districtPicker'),
-            icon: Icons.location_on,
-            label: d ?? 'अपना ज़िला चुनें',
-            caption: d == null
-                ? 'Choose your district'
-                : 'ज़िला बदलें · Change',
-            onTap: _pickDistrict,
-          ),
-          const SizedBox(height: Sp.m),
-          ActionTile(
-            key: const Key('exportButton'),
-            icon: Icons.ios_share,
-            label: _busy ? 'तैयार हो रहा है…' : 'गिनती भेजें (गुमनाम)',
-            caption: d == null
-                ? 'पहले ज़िला चुनें · Choose a district first'
-                : 'Export anonymised counts',
-            onTap: d == null || _busy ? null : _export,
-          ),
+          if (d == null)
+            Padding(
+              padding: const EdgeInsets.only(top: Sp.s),
+              child: Text(
+                'पहले ज़िला चुनें · Choose a district first',
+                textAlign: TextAlign.center,
+                style: t.textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ),
           if (_hi != null)
             Padding(
               padding: const EdgeInsets.only(top: Sp.m),
@@ -341,6 +431,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
     return ListView(
       children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: Sp.l),
+          child: SectionHeader(
+            icon: Icons.shield,
+            title: 'चेतावनी की सेटिंग',
+            subtitle: 'Warning settings',
+          ),
+        ),
         _switch(
           'useLlm',
           'Use on-device Gemma',
@@ -382,12 +480,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           'Log text of every window to the Live tab to find your phone\'s caption package',
         ),
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(Sp.l),
           child: TextField(
             controller: _pkgCtrl,
             decoration: const InputDecoration(
               labelText: 'Caption source packages (comma separated)',
-              helperText: 'Found with discovery mode. Packages containing "caption" are always included.',
+              helperText:
+                  'Found with discovery mode. Packages containing "caption" are always included.',
               border: OutlineInputBorder(),
             ),
             onSubmitted: (v) => _set('captionPackages', v),

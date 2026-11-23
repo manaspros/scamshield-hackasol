@@ -15,6 +15,7 @@ import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/quiz_screen.dart';
 import 'package:scamshield/screens/report_screen.dart';
+import 'package:scamshield/screens/settings_screen.dart';
 import 'package:scamshield/screens/setup_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 import 'package:scamshield/theme/text_styles.dart';
@@ -293,6 +294,57 @@ void main() {
       }
       await tester.pumpWidget(const SizedBox()); // dispose the family countdown timer
     }
+  });
+
+  testWidgets('shots: settings light + dark + 2x, district saved, scrolled to the export card', (tester) async {
+    if (!await _loadFonts(tester)) return;
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'),
+        (c) async => c.method == 'getSettings' ? <String, Object?>{'useLlm': true, 'overlayEnabled': true} : null);
+    messenger.setMockMethodCallHandler(
+        const MethodChannel('scamshield/prefs'), (c) async => c.method == 'getString' ? 'Raipur' : null);
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'), null);
+    });
+    for (final (name, dark, scale) in [('light', false, 1.0), ('dark', true, 1.0), ('light_2x', false, 2.0)]) {
+      final base = dark ? AppTheme.dark() : AppTheme.light();
+      TextStyle? f(TextStyle? s) => s?.copyWith(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']);
+      final theme = base.copyWith(
+          textTheme: base.textTheme.apply(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']),
+          appBarTheme: base.appBarTheme.copyWith(titleTextStyle: f(base.appBarTheme.titleTextStyle)),
+          // ListTile text styles bypass the textTheme, so give them the Devanagari fallback too.
+          listTileTheme: base.listTileTheme.copyWith(
+              titleTextStyle: f(base.listTileTheme.titleTextStyle), subtitleTextStyle: f(base.listTileTheme.subtitleTextStyle)),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+              style: base.outlinedButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))));
+      tester.view.physicalSize = const Size(720, 1600);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.reset);
+      final key = GlobalKey();
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        builder: (c, child) => RepaintBoundary(
+            key: key,
+            child: MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: child!)),
+        home: Scaffold(appBar: AppBar(title: const Text('सेटिंग')), body: const SettingsScreen()),
+      ));
+      await tester.pumpAndSettle();
+      // Bottom of the list: district, trust card, export.
+      await tester.scrollUntilVisible(find.byKey(const Key('exportButton')), 300,
+          scrollable: find.byType(Scrollable).first, maxScrolls: 100);
+      await tester.drag(find.byType(ListView), const Offset(0, -2000));
+      await tester.pumpAndSettle();
+      await tester.runAsync(() async {
+        final b = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        final img = await b.toImage(pixelRatio: 1);
+        final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+        File('$_out/ux_settings_$name.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+      });
+    }
+    await tester.pumpWidget(const SizedBox());
   });
 
   testWidgets('shots: verdict card with masked 40-char triggers, 2.0x', (tester) async {

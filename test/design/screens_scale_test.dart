@@ -10,6 +10,7 @@ import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/quiz_screen.dart';
 import 'package:scamshield/screens/report_screen.dart';
+import 'package:scamshield/screens/settings_screen.dart';
 import 'package:scamshield/screens/setup_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 import 'package:scamshield/widgets/verdict_card.dart';
@@ -190,6 +191,33 @@ void main() {
         await t.pumpAndSettle();
         expect(t.takeException(), isNull);
         await t.pumpWidget(const SizedBox()); // cancels the golden-hour ticker
+      });
+    }
+
+    for (final saved in [true, false]) {
+      testWidgets('settings_screen_${saved ? 'districtSaved' : 'noDistrict'}_noOverflow_${e.key}_scale2', (t) async {
+        final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+        messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'),
+            (c) async => c.method == 'getSettings' ? <String, Object?>{'useLlm': true} : null);
+        messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'),
+            (c) async => saved && c.method == 'getString' ? 'Durg' : null);
+        messenger.setMockMethodCallHandler(const MethodChannel('scamshield/trend'), (_) async => {'count': 3});
+        addTearDown(() {
+          messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
+          messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'), null);
+          messenger.setMockMethodCallHandler(const MethodChannel('scamshield/trend'), null);
+        });
+        addTearDown(() => t.pumpWidget(const SizedBox())); // registered after the mocks: runs before they go away
+        await _show(t, e.value, const SettingsScreen());
+        expect(t.takeException(), isNull);
+        await t.scrollUntilVisible(find.byKey(const Key('exportButton')), 300,
+            scrollable: find.byType(Scrollable).first, maxScrolls: 100);
+        await t.pumpAndSettle();
+        expect(find.byKey(const Key('districtPicker')), findsOneWidget);
+        expect(find.text(saved ? 'Durg' : 'ज़िला चुनें'), findsOneWidget);
+        expect(find.text('आपके मैसेज, कॉल, नंबर और नाम कभी फ़ोन से बाहर नहीं जाते'), findsOneWidget);
+        expect(t.getSize(find.byKey(const Key('exportButton'))).height, greaterThanOrEqualTo(56));
+        expect(t.takeException(), isNull);
       });
     }
 
