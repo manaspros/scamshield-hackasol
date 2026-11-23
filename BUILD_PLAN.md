@@ -132,7 +132,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T3.1 [codex] `ReportPack` (pure): targets (money lost: 1930 + cybercrime.gov.in; not yet: Chakshu/Sanchar Saathi + 1930) as `[VERIFY]` constants; evidence checklist pre-filled from recent `VerdictEvent`s (time, scam type, source, triggers; user adds number, amount, UTR, screenshots)
   - **Files**: `K/core/ReportPack.kt`, `KT/core/ReportPackTest.kt`  **Depends on**: T1.3
   - **Done when**: `KT(ReportPackTest)` passes `T3_1_prefillsFromEvents`, `T3_1_lostVsNotYetTargets`
-- [ ] T3.2 [sonnet] [UI] Report screen: two paths ("I lost money" / "not yet"), checklist, buttons for 1930 (`ACTION_DIAL`, never auto-call), cybercrime.gov.in, Chakshu; opened by the alert's Report action (`route=report`)
+- [x] T3.2 [sonnet] [UI] Report screen: two paths ("I lost money" / "not yet"), checklist, buttons for 1930 (`ACTION_DIAL`, never auto-call), cybercrime.gov.in, Chakshu; opened by the alert's Report action (`route=report`)
   - **Files**: `lib/screens/report_screen.dart`, `K/HandoffChannel.kt`, `K/MainActivity.kt`  **Depends on**: T3.1, T1.4, T1.7
   - **Done when**: `APP` succeeds; `FT(report_screen_test.dart)` passes `T3_2_prefillsFromEvent`, `T3_2_dialIsDialNotCall`
 - [x] T3.3 [codex] Lessons data + Dart model: 8 lessons (OTP, UPI PIN, ATM PIN, QR, digital arrest, KYC, courier, loan app), 3 cards + 3 quiz questions each, `en/hi/hne` JSON in `assets/lessons/` (hne drafts `[VERIFY:hne]`)
@@ -190,7 +190,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T5.4 [codex] `GoldenHour` + `EvidenceZip` (pure): 60-minute timer model, case card pre-filled from the log and graph, ZIP of `card.json` + events + SHA-256 manifest via `java.util.zip`
   - **Files**: `K/core/GoldenHour.kt`, `K/core/EvidenceZip.kt`, `KT/core/GoldenHourTest.kt`  **Depends on**: T3.1
   - **Done when**: `KT(GoldenHourTest)` passes `T5_4_cardPrefilled`, `T5_4_zipManifestVerifies`
-- [ ] T5.5 [sonnet] [UI] Golden-hour mode in the Report screen: "I got scammed" -> timer, pre-filled card, 1930 dial, share ZIP via FileProvider
+- [x] T5.5 [sonnet] [UI] Golden-hour mode in the Report screen: "I got scammed" -> timer, pre-filled card, 1930 dial, share ZIP via FileProvider
   - **Files**: `lib/screens/report_screen.dart`, `K/HandoffChannel.kt`, `android/app/src/main/AndroidManifest.xml`, `android/app/src/main/res/xml/file_paths.xml`  **Depends on**: T5.4, T3.2
   - **Done when**: `APP` succeeds; `FT(report_screen_test.dart)` passes `T5_5_timerAndCard`
 - [x] T5.6 [codex] Family code (pure): TOTP RFC 6238 via `javax.crypto`, 30 s step, shared secret as base32 pairing string; offline only (no relay: it would be a new endpoint)

@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T3.2+T5.5 [sonnet] Report screen (lost money / not yet, evidence checklist from verdict log, 1930 via ACTION_DIAL, cybercrime.gov.in, Chakshu) + golden-hour mode (60-min timer, case card, evidence ZIP shared via FileProvider) — 2026-11-23 — flutter test test/report_screen_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T5.7 [sonnet] Family screen (pair via base32 secret, rotating TOTP code with countdown, match Yes/No), scamshield/family channel, nav entry — 2026-11-23 — flutter test test/family_screen_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T1.7 [sonnet] AlertDispatcher (heads-up notification + Report action -> route=report, bubble via OverlayController), POST_NOTIFICATIONS step in Setup — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*AlertDispatcherMappingTest*' && flutter build apk --debug --android-skip-build-dependency-validation && flutter test
 - T2.3 [sonnet] ScamNotificationListener (SMS/WhatsApp/Telegram notifications -> NotificationMapper -> TextApi -> AlertDispatcher), Notification-access step in Setup; no READ_SMS — 2026-11-23 — ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*ListenerWiringTest*' && flutter build apk --debug --android-skip-build-dependency-validation (flutter test: 2 failures in another session's untracked test/design/screens_scale_test.dart, not T2.3)
@@ -48,6 +49,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
 ## Decisions
+- 2026-11-23: T3.2 and T5.5 committed together: they share report_screen.dart and HandoffChannel.kt and cannot be split cleanly. route=report reuses T1.7's app.initialRoute (navigation in T3.11). FileProvider exposes only cache/evidence/.
 - 2026-11-23: T5.7 secret stored in MODE_PRIVATE SharedPreferences (shortcut, flagged security-relevant: move to EncryptedSharedPreferences/Keystore before release). Family nav entry added before T3.11 at user priority; Settings tab index moves 3 -> 4.
 - 2026-11-23: T2.3 made AlertDispatcher's overlay nullable (the listener has no AccessibilityService; non-caption sources never bubble per AlertPolicy).
 - 2026-11-23: T1.7 follows AlertPolicy: SAFE live captions no longer show a green bubble, and a red bubble is not auto-replaced by a later SAFE line (a warning should not be dismissed by the next benign statement). MainActivity overrides getInitialRoute()="/" because FlutterActivity treats the intent extra "route" as its own initial route; route=report reaches Dart via scamshield/api app.initialRoute.

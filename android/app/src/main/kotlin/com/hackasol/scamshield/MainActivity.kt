@@ -59,6 +59,7 @@ class MainActivity : FlutterActivity() {
         TextApi.init(this)
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         FamilyChannel.register(messenger, this)
+        HandoffChannel(this, scope).register(messenger)
 
         MethodChannel(messenger, "scamshield/api").setMethodCallHandler { call, result ->
             when (call.method) {
