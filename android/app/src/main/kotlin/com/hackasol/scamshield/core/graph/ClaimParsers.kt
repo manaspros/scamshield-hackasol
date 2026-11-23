@@ -38,7 +38,7 @@ object ClaimParsers {
         "(?<![@\\w.-])(?:(?:https?://|www\\.)\\S+|(?:[a-z0-9-]+\\.)+" +
             "(?:com|in|co|net|org|xyz|top|info|link|ly|me|cc|app|site|online|vip|club|live|shop|icu|click|page)\\b(?:/\\S*)?)",
     )
-    private val PHONE = UnicodeRegex.of("(?<!\\d)(?:\\+?91[\\s-]?)?([6-9]\\d{9})(?!\\d)")
+    private val PHONE = UnicodeRegex.of("(?<!\\d)(?:\\+?91[\\s-]?|0)?([6-9]\\d{9})(?!\\d)")
 
     // Claims: what a message asserts.
     private val BILL = UnicodeRegex.of("\\b(?:bill|invoice|statement|due date|overdue)\\b|बिल")

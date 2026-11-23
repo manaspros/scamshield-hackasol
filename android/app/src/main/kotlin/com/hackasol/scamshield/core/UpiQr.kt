@@ -73,7 +73,10 @@ data class UpiQr(
         private val AMOUNT = Regex("^[0-9]+(?:\\.[0-9]+)?$")
         private val COLLECT_WORDS = Regex("\\b(?:request|receive\\s+money|collect)\\b", RegexOption.IGNORE_CASE)
 
+        // Keep letters, combining marks (Devanagari matras) and digits; isLetterOrDigit dropped the marks.
+        private val NAME_NOISE = UnicodeRegex.of("[^\\p{L}\\p{M}\\p{N}]")
+
         private fun decode(value: String): String = URLDecoder.decode(value, StandardCharsets.UTF_8.name())
-        private fun normalizeName(value: String): String = value.lowercase().filter { it.isLetterOrDigit() }
+        private fun normalizeName(value: String): String = value.lowercase().replace(NAME_NOISE, "")
     }
 }

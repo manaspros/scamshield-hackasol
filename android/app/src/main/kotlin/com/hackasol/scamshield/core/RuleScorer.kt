@@ -15,7 +15,7 @@ object RuleScorer {
     private val SHARE = "(batao|bataiye|bataye|bata do|bata dijiye|share|bhejo|bhej do|tell|send|read out|bol do|बताइए|बताओ|बता दो|बता दीजिए|भेजो|भेज दो)"
 
     private val rules = listOf(
-        Rule("otp_share", 0.90, "(otp|ओटीपी|o\\.t\\.p|verification code|code|कोड)\\W+(?:\\w+\\W+){0,5}$SHARE"),
+        Rule("otp_share", 0.90, "(otp|ओटीपी|o\\.t\\.p|verification code|code|कोड)\\W+(?:\\w+\\W+){0,5}$SHARE|\\b(?:share|tell|read out)\\W+(?:\\w+\\W+){0,3}(?:otp|ओटीपी|verification code)"),
         Rule("otp", 0.50, "\\botp\\b|ओटीपी|one[- ]time password"),
         Rule("pin", 0.75, "upi pin|atm pin|mpin|cvv|पिन (नंबर|बताओ|बताइए)|pin (batao|bataiye|daalo|dalo|enter)"),
         Rule("digital_arrest", 0.92, "digital arrest|डिजिटल अरेस्ट|डिजिटल गिरफ्तारी"),
@@ -63,12 +63,36 @@ object RuleScorer {
     const val SCAM_AT = 0.75
     const val SUSPICIOUS_AT = 0.40
 
-    fun score(text: String): RuleResult {
+    /** "do not share / never share / साझा न करें": a warning, not a request. Removed before the OTP rules run. */
+    private val NO_SHARE = UnicodeRegex.of("(?:do not|don'?t|never|not to)\\s+(?:share|disclose)|\\bshare\\s+(?:na|nahi|mat)\\s+kar\\w*|\\b(?:na|nahi|mat)\\s+bata\\w*|(?:साझा|शेयर)\\s+(?:न|ना|नहीं|मत)\\s+कर\\S*")
+
+    /** Digit runs (OTP, card, account) and UPI-like ids never leave the scorer: triggers reach the log and evidence ZIP. */
+    private val SENSITIVE = Regex("\\p{Nd}{4,}|[\\w.\\-]{2,}(?=@[A-Za-z])")
+
+    private const val MAX_TRIGGER = 40
+
+    private fun mask(s: String) = SENSITIVE.replace(s, "•••")
+
+    /** Mask, then cap at [MAX_TRIGGER] chars (ellipsis included) so a trigger never carries a long span of the message. */
+    private fun maskSensitive(s: String): String =
+        mask(s).let { if (it.length > MAX_TRIGGER) it.take(MAX_TRIGGER - 1) + "…" else it }
+
+    private fun matches(text: String): List<Pair<Rule, String>> {
+        val noShare = NO_SHARE.replace(text, " ")
+        val notice = noShare != text
         val matched = mutableListOf<Pair<Rule, String>>()
         for (r in rules) {
-            val m = r.regex.find(text) ?: continue
-            matched += r to m.value.trim()
+            val isOtp = r.tag == "otp_share" || r.tag == "otp"
+            // A do-not-share notice with no ask is a genuine OTP delivery: the bare "otp" mention is cancelled too.
+            if (r.tag == "otp" && notice && matched.none { it.first.tag == "otp_share" }) continue
+            val m = r.regex.find(if (isOtp) noShare else text) ?: continue
+            matched += r to maskSensitive(m.value.trim())
         }
+        return matched
+    }
+
+    fun score(text: String): RuleResult {
+        val matched = matches(text)
         var keep = 1.0
         for ((r, _) in matched) keep *= (1 - r.weight)
         val score = 1 - keep
@@ -90,7 +114,7 @@ object RuleScorer {
      */
     fun scamType(text: String): ScamType? {
         if (score(text).label == Label.SAFE) return null
-        val tags = rules.filter { it.regex.find(text) != null }.map { it.tag }.toSet()
+        val tags = matches(text).map { it.first.tag }.toSet()
         return typeFromTags(tags)
     }
 

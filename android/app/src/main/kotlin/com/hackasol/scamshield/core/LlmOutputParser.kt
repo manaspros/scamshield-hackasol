@@ -14,7 +14,8 @@ object LlmOutputParser {
     private val scamTypeRe = Regex("\"?scam_?type\"?\\s*[:=]\\s*\"?([A-Za-z_]+)", RegexOption.IGNORE_CASE)
     private val confRe = Regex("\"?confidence\"?\\s*[:=]\\s*\"?([0-9]*\\.?[0-9]+)\\s*(%)?", RegexOption.IGNORE_CASE)
     private val reasonRe = Regex("\"?reason\"?\\s*[:=]\\s*\"([^\"]*)\"", RegexOption.IGNORE_CASE)
-    private val bareLabelRe = Regex("\\b(SCAM|SUSPICIOUS|SAFE)\\b")
+    // Skips a label negated by a preceding "not" ("NOT SAFE" must never parse as SAFE).
+    private val bareLabelRe = Regex("(?<![Nn][Oo][Tt]\\s)\\b(SCAM|SUSPICIOUS|SAFE)\\b")
 
     fun parse(raw: String): LlmResult? {
         val text = raw.replace("```json", "").replace("```", "").trim()

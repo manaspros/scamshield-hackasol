@@ -28,7 +28,7 @@ class InMemoryVerdictLog : VerdictLog {
     @Synchronized override fun since(tsMs: Long): List<VerdictEvent> =
         events.filter { it.tsMs >= tsMs }.sortedBy { it.tsMs }
 
-    @Synchronized override fun latest(): VerdictEvent? = events.maxByOrNull { it.tsMs }
+    @Synchronized override fun latest(): VerdictEvent? = events.asReversed().maxByOrNull { it.tsMs }  // reversed: on a ts tie the last appended wins, like Sqlite (ts DESC, id DESC)
 
     /** Events with a null scamType are not counted. */
     @Synchronized override fun countsByType(): Map<ScamType, Int> =

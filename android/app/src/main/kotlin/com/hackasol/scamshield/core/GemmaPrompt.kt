@@ -44,7 +44,7 @@ STATEMENT: "Your order will be delivered tomorrow between 10 and 12"
 
     fun build(text: String, context: List<String>, contextLabel: String = CALL_CONTEXT_LABEL): String {
         val sb = StringBuilder(HEADER)
-        val ctx = context.takeLast(2).filter { it.isNotBlank() }
+        val ctx = context.filter { it.isNotBlank() }.takeLast(2)
         if (ctx.isNotEmpty()) sb.append('\n').append(contextLabel).append(": ").append(ctx.joinToString(" | ") { "\"${it.take(150)}\"" }).append('\n')
         sb.append("STATEMENT: \"").append(text.take(300).replace("\"", "'")).append("\"\n")
         return sb.toString()
