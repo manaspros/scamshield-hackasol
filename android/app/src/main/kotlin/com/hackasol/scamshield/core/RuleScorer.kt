@@ -66,8 +66,11 @@ object RuleScorer {
     /** "do not share / never share / साझा न करें": a warning, not a request. Removed before the OTP rules run. */
     private val NO_SHARE = UnicodeRegex.of("(?:do not|don'?t|never|not to)\\s+(?:share|disclose)|\\bshare\\s+(?:na|nahi|mat)\\s+kar\\w*|\\b(?:na|nahi|mat)\\s+bata\\w*|(?:साझा|शेयर)\\s+(?:न|ना|नहीं|मत)\\s+कर\\S*")
 
-    /** Digit runs (OTP, card, account) and UPI-like ids never leave the scorer: triggers reach the log and evidence ZIP. */
-    private val SENSITIVE = Regex("\\p{Nd}{4,}|[\\w.\\-]{2,}(?=@[A-Za-z])")
+    /**
+     * Every digit (ASCII and Devanagari) and UPI-like id never leaves the scorer: triggers reach the log and evidence ZIP.
+     * All digits, not only 4+ runs, so separator-split values ("482-913", "482 913") cannot leak.
+     */
+    private val SENSITIVE = Regex("[\\w.\\-]{2,}(?=@[A-Za-z])|\\p{Nd}+")
 
     private const val MAX_TRIGGER = 40
 

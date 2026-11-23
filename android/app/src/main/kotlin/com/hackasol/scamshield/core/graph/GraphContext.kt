@@ -42,6 +42,9 @@ object GraphContext {
         if (graph.isEmpty || (ClaimVsContext.isDltHeader(s) && ClaimParsers.eventTypes(message).isNotEmpty())) {
             flags = flags.filter { it.kind != FlagKind.NO_MATCHING_EVENT }
         }
+        // Cold graph: weak signals (normal number, unknown link) are what every new user's first messages look like;
+        // stacked, they would raise SAFE to SUSPICIOUS on no real evidence.
+        if (graph.isEmpty) flags = flags.filter { it.kind != FlagKind.NON_DLT_SENDER && it.kind != FlagKind.LINK_NOT_ALLOWLISTED }
         return flags + ContextRules.mistakenTransfer(message, graph, nowMs)
     }
 
