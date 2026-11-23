@@ -1,10 +1,13 @@
 package com.hackasol.scamshield.core.demo
 
+import com.hackasol.scamshield.core.FusedResult
+import com.hackasol.scamshield.core.Fusion
 import com.hackasol.scamshield.core.InMemoryVerdictLog
 import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.LlmResult
 import com.hackasol.scamshield.core.ScamType
 import com.hackasol.scamshield.core.TrendExport
+import com.hackasol.scamshield.core.graph.ContextFlag
 import com.hackasol.scamshield.core.graph.ContextRules
 import com.hackasol.scamshield.core.graph.FlagKind
 import com.hackasol.scamshield.core.graph.GraphContext
@@ -28,7 +31,8 @@ class DemoScenariosTest {
         assertEquals(Label.SAFE, r.steps[0].fused.label)
         val call = r.steps[1]
         assertEquals(listOf(FlagKind.FAKE_CREDIT), call.actualFlags)
-        assertTrue(call.fused.label != Label.SAFE)
+        assertEquals(Label.SCAM, call.fused.label)   // fake credit + return request: SCAM, so the heads-up alert fires
+        assertNotNull(call.alert)
         assertEquals(ContextRules.MISTAKEN_A_TEXT, call.fused.reason)
         assertEquals(ScamType.MISTAKEN_TRANSFER, call.fused.scamType)
         assertEquals(listOf("FAKE_CREDIT"), call.fused.raisedBy)
@@ -98,5 +102,15 @@ class DemoScenariosTest {
             assertEquals("${s.id}: ${r.note} $bad", s.steps.size, r.steps.size)
             assertTrue("${s.id} failed: $bad ${r.note}", r.pass)
         }
+    }
+
+    @Test fun T8_1_fakeCreditReturnRaisesOnlyWithFlag() {
+        fun fr(l: Label) = FusedResult(l, 0.5, null, emptyList(), "rules-only", "r")
+        val fake = listOf(ContextFlag(FlagKind.FAKE_CREDIT, "no money arrived"))
+        assertEquals(Label.SCAM, Fusion.raiseForFakeCreditReturn(fr(Label.SUSPICIOUS), fake).label)
+        assertEquals(Label.SAFE, Fusion.raiseForFakeCreditReturn(fr(Label.SAFE), fake).label)
+        assertEquals(Label.SUSPICIOUS, Fusion.raiseForFakeCreditReturn(fr(Label.SUSPICIOUS), emptyList()).label)
+        val other = listOf(ContextFlag(FlagKind.RETURN_VIA_BANK_ONLY, "b"), ContextFlag(FlagKind.NON_DLT_SENDER, "n"))
+        assertEquals(Label.SUSPICIOUS, Fusion.raiseForFakeCreditReturn(fr(Label.SUSPICIOUS), other).label)
     }
 }

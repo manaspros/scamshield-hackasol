@@ -71,7 +71,7 @@ object DemoScenarios {
                 "The graph holds no real credit alert, so the request is flagged.",
             listOf(
                 sms("9800000010", "आपके खाते में ₹5,000 जमा हुए। कृपया अपना बैलेंस देखें।", Label.SAFE, setOf(FlagKind.NON_DLT_SENDER), FIRST),
-                call("9800000010", "Maine galti se aapko 5000 bhej diye, please wapas kar do", Label.SUSPICIOUS, setOf(FlagKind.FAKE_CREDIT)),
+                call("9800000010", "Maine galti se aapko 5000 bhej diye, please wapas kar do", Label.SCAM, setOf(FlagKind.FAKE_CREDIT)),
             ),
         ),
         DemoScenario(

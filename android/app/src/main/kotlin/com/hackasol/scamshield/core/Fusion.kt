@@ -25,6 +25,9 @@ object FusionWeights {
     const val MAX_CONTEXT_REASONS = 3
 
     /** Weak signals (normal number, unknown link) must not raise a SAFE message on their own. */
+    /** "No money arrived" plus a return-money request: confidence once the context layer has raised it to SUSPICIOUS. */
+    const val FAKE_CREDIT_RETURN_CONF = 0.85
+
     fun contextWeight(k: FlagKind): Double = when (k) {
         FlagKind.NO_MATCHING_EVENT -> 0.5
         FlagKind.FAKE_CREDIT -> 0.6
@@ -95,4 +98,14 @@ object Fusion {
             reason = reasons.first(),
         )
     }
+
+    /**
+     * FAKE_CREDIT is only ever flagged together with a return-money request (ContextRules.mistakenTransfer), and no money
+     * arrived: that pair is a scam. Raises a SUSPICIOUS result to SCAM; never lowers, never touches SAFE (raiseForContext
+     * already turned SAFE into SUSPICIOUS when it fired). A lone fake-credit SMS carries no FAKE_CREDIT flag, so it is unchanged.
+     */
+    fun raiseForFakeCreditReturn(fused: FusedResult, flags: List<ContextFlag>): FusedResult =
+        if (fused.label == Label.SUSPICIOUS && flags.any { it.kind == FlagKind.FAKE_CREDIT })
+            fused.copy(label = Label.SCAM, confidence = maxOf(fused.confidence, FusionWeights.FAKE_CREDIT_RETURN_CONF))
+        else fused
 }
