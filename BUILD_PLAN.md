@@ -218,10 +218,10 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
   - **Done when**: latency and M1 on-device logged; adopted only if better
 
 ## Phase 7 — Docs, demo, gate
-- [ ] T7.1 [sonnet] `ARCHITECTURE.md`: one diagram + sections (pipeline, fusion rule, SLM fine-tune + eval harness, sources, verdict log, privacy), under 120 lines, each claim cites a FINAL_PLAN section
+- [x] T7.1 [sonnet] `ARCHITECTURE.md`: one diagram + sections (pipeline, fusion rule, SLM fine-tune + eval harness, sources, verdict log, privacy), under 120 lines, each claim cites a FINAL_PLAN section
   - **Files**: `ARCHITECTURE.md`  **Depends on**: T1.15, T2.7, T3.11
   - **Done when**: file exists, under 120 lines
-- [ ] T7.2 [sonnet] `DEMO.md`: merge handoff §10 with FINAL_PLAN scenarios; mark which steps need the phone; fallbacks (pre-recorded audio, Try API paste); answers for "why not Truecaller/Google" and "how do you hear the call"
+- [x] T7.2 [sonnet] `DEMO.md`: merge handoff §10 with FINAL_PLAN scenarios; mark which steps need the phone; fallbacks (pre-recorded audio, Try API paste); answers for "why not Truecaller/Google" and "how do you hear the call"
   - **Files**: `DEMO.md`  **Depends on**: T3.11, T5.5
   - **Done when**: file exists, every step names its feature task
 - [ ] T7.3 [sonnet] Full gate and test summary
