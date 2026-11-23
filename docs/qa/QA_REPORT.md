@@ -51,7 +51,7 @@ Observation (not a bug, not tested): `upi://collect` links return null (only `pa
 
 ## How to run
 
-- Kotlin: use a writable Gradle home (the default ~/.gradle is root-owned here), run offline with `-PskipDependencyChecks=true`, for example `GRADLE_USER_HOME=<writable dir> gradle test --offline -PskipDependencyChecks=true` (exact task name not recorded in the QA notes).
+- Kotlin (set `GRADLE_USER_HOME` to a writable cache dir, because ~/.gradle is root-owned here): `cd android && ./gradlew --offline -PskipDependencyChecks=true :app:testDebugUnitTest --tests 'com.hackasol.scamshield.qa.*'`
 - Flutter: `flutter test test/qa/qa_logic_test.dart test/qa/qa_screens_test.dart` (35 tests); `flutter test test/qa` for all 65.
 - ML: `pytest tests` (from `ml/`).
 - Dashboard: `node --test dashboard/test/`
