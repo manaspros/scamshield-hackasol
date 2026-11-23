@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../lessons/prefs_store.dart';
+import '../l10n/app_language.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
@@ -109,6 +109,7 @@ class ReportStrings {
     'openErr': 'यह नहीं खुल सका। 1930 खुद डायल करें।',
     'shareErr': 'सबूत नहीं बन सका। फिर कोशिश करें।',
     'startErr': 'घड़ी शुरू नहीं हो सकी। 1930 पर कॉल करें।',
+    'minLeft': '{n} मिनट बाकी',
   });
 
   static const hne = ReportStrings({
@@ -147,6 +148,7 @@ class ReportStrings {
     'openErr': 'ए नइ खुल सकिस। 1930 खुद डायल करव।',
     'shareErr': 'सबूत नइ बन सकिस। फेर कोसिस करव।',
     'startErr': 'घड़ी सुरू नइ हो सकिस। 1930 म फोन करव।',
+    'minLeft': '{n} मिनट बाकी',
   });
 
   static const en = ReportStrings({
@@ -202,6 +204,7 @@ class ReportStrings {
     'openErr': 'Could not open this. Dial 1930 yourself.',
     'shareErr': 'Could not build the evidence file. Try again.',
     'startErr': 'Could not start the clock. Call 1930.',
+    'minLeft': '{n} minutes left',
   });
 
   static const all = {'hi': hi, 'hne': hne, 'en': en};
@@ -231,15 +234,17 @@ class _Pack {
 /// path 2 "no money lost yet" (Chakshu + 1930). Constructible standalone; T3.11 wires navigation.
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key, this.initialLang, this.api = const HandoffApi()});
-  final String? initialLang; // null: use the stored first-run choice, else Hindi
+  final String? initialLang; // null: follow the app-wide language
   final HandoffApi api;
   @override
   State<ReportScreen> createState() => _ReportScreenState();
 }
 
 class _ReportScreenState extends State<ReportScreen> {
-  late String _lang = widget.initialLang ?? 'hi';
-  bool _langPicked = false; // a chip tap beats the stored choice
+  // The language chips are a TEMPORARY per-view override: _lang starts from the app-wide language
+  // (an explicit initialLang wins for the first read) and re-syncs whenever the global value changes.
+  late String _lang = widget.initialLang ?? AppLanguage.code;
+  String? _lastGlobal;
   final _detailKey = GlobalKey();
   bool? _lost; // null until the user picks a path
   _Pack? _pack;
@@ -251,13 +256,19 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialLang == null) _loadLang();
     _restore();
   }
 
-  Future<void> _loadLang() async {
-    final stored = await PrefsStrings().get(PrefsStrings.langKey);
-    if (mounted && !_langPicked && ReportStrings.all.containsKey(stored)) setState(() => _lang = stored!);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final g = AppLanguage.of(context);
+    if (_lastGlobal == null) {
+      if (widget.initialLang == null) _lang = g;
+    } else if (g != _lastGlobal) {
+      _lang = g;
+    }
+    _lastGlobal = g;
   }
 
   // Bring the chosen path's detail into view; the tiles alone show no change above the fold.
@@ -356,10 +367,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     label: Text(label),
                     selected: _lang == code,
                     checkmarkColor: t.colorScheme.primary,
-                    onSelected: (_) => setState(() {
-                      _lang = code;
-                      _langPicked = true;
-                    }),
+                    onSelected: (_) => setState(() => _lang = code),
                   ),
               ]),
               if (_lost == true && _remainingMs != null) _golden(t, s),
@@ -523,7 +531,7 @@ class _ReportScreenState extends State<ReportScreen> {
           LinearProgressIndicator(
               value: ms / _goldenMs,
               // semanticsValue must be numeric in Flutter, so the unit lives in the label.
-              semanticsLabel: '${(ms / 60000).ceil()} मिनट बाकी',
+              semanticsLabel: s['minLeft'].replaceFirst('{n}', '${(ms / 60000).ceil()}'),
               color: st.scam,
               backgroundColor: t.colorScheme.surface),
           const SizedBox(height: Sp.m),

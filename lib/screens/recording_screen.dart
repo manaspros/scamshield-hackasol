@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/app_language.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart' show StatusColors;
 import '../theme/tokens.dart';
@@ -195,8 +196,8 @@ enum _Phase { idle, working, done, error }
 /// Recorded-call screen: pick an audio file (or receive a shared one), watch progress, then read the
 /// per-statement timeline and the overall risk. Constructible standalone; T3.11 wires navigation.
 class RecordingScreen extends StatefulWidget {
-  const RecordingScreen({super.key, this.initialLang = 'hi', this.api});
-  final String initialLang;
+  const RecordingScreen({super.key, this.initialLang, this.api});
+  final String? initialLang; // null: follow the app-wide language
 
   /// Injected in tests; the default talks to the native channel.
   final RecordingApi? api;
@@ -206,7 +207,10 @@ class RecordingScreen extends StatefulWidget {
 
 class _RecordingScreenState extends State<RecordingScreen> {
   late final RecordingApi _api = widget.api ?? RecordingApi();
-  late String _lang = widget.initialLang;
+  // The language chips are a TEMPORARY per-view override: _lang starts from the app-wide language
+  // (an explicit initialLang wins for the first read) and re-syncs whenever the global value changes.
+  late String _lang = widget.initialLang ?? AppLanguage.code;
+  String? _lastGlobal;
   StreamSubscription<Object?>? _sub;
   _Phase _phase = _Phase.idle;
   bool _modelReady = true; // optimistic until native says otherwise, so the pick tile never flickers
@@ -222,6 +226,18 @@ class _RecordingScreenState extends State<RecordingScreen> {
     super.initState();
     _sub = _api.events.listen(_onEvent, onError: (_) {});
     _restore();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final g = AppLanguage.of(context);
+    if (_lastGlobal == null) {
+      if (widget.initialLang == null) _lang = g;
+    } else if (g != _lastGlobal) {
+      _lang = g;
+    }
+    _lastGlobal = g;
   }
 
   @override

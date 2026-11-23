@@ -40,6 +40,7 @@ class LessonStrings {
     'progress': 'पाठ {x}/{y} पूरे',
     'scoreWord': 'स्कोर',
     'pts': '+{n} अंक',
+    'emptyScore': 'पहला पाठ पूरा करें — आपका स्कोर यहाँ दिखेगा',
   });
   static const hne = LessonStrings({
     'title': 'सीखव',
@@ -67,6 +68,7 @@ class LessonStrings {
     'progress': 'पाठ {x}/{y} पूरा',
     'scoreWord': 'स्कोर',
     'pts': '+{n} अंक',
+    'emptyScore': 'पहिली पाठ पूरा करव — तुंहर स्कोर इहाँ दिखही',
   });
   static const en = LessonStrings({
     'title': 'Learn',
@@ -94,6 +96,7 @@ class LessonStrings {
     'progress': '{x}/{y} lessons done',
     'scoreWord': 'Score',
     'pts': '+{n} pts',
+    'emptyScore': 'Finish your first lesson — your score will show here',
   });
 
   static LessonStrings of(String lang) => switch (lang) {

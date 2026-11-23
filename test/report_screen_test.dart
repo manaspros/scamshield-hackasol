@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/screens/report_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 
@@ -88,6 +89,7 @@ Future<void> _tap(WidgetTester t, Finder f) async {
 }
 
 void main() {
+  setUp(() => AppLanguage.debugSet('hi')); // these tests read the default Hindi from the app-wide language
   testWidgets('T3_2_prefillsFromEvent', (t) async {
     final fake = await _setup(t);
     await _show(t);

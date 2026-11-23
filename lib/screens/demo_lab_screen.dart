@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/app_language.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
@@ -123,6 +124,9 @@ class DemoStrings {
     'runErr': 'यह डेमो नहीं चल सका',
     'emptyTitle': 'अभी कोई डेमो नहीं है',
     'emptySub': 'इस ऐप में डेमो कहानियाँ नहीं मिलीं',
+    'h_safe': 'सुरक्षित',
+    'h_suspicious': 'सावधान',
+    'h_scam': 'धोखाधड़ी!',
   });
 
   static const hne = DemoStrings({
@@ -184,6 +188,9 @@ class DemoStrings {
     'runErr': 'ये डेमो नइ चलिस',
     'emptyTitle': 'अभी कोनो डेमो नइ हे',
     'emptySub': 'ये ऐप म डेमो कहिनी नइ मिलिस',
+    'h_safe': 'सुरक्षित',
+    'h_suspicious': 'सावधान',
+    'h_scam': 'धोखाधड़ी!',
   });
 
   static const en = DemoStrings({
@@ -245,6 +252,9 @@ class DemoStrings {
     'runErr': 'This demo could not run',
     'emptyTitle': 'No demos yet',
     'emptySub': 'No demo stories were found in this build',
+    'h_safe': 'Safe',
+    'h_suspicious': 'Be careful',
+    'h_scam': 'Scam!',
   });
 
   static const all = {'hi': hi, 'hne': hne, 'en': en};
@@ -277,11 +287,8 @@ const _maxDelayMs = 1500;
 /// Widest the content grows on a tablet or a mirrored screen.
 const _maxWidth = 720.0;
 
-String _headline(RiskLabel l) => switch (l) {
-      RiskLabel.safe => 'सुरक्षित',
-      RiskLabel.suspicious => 'सावधान',
-      RiskLabel.scam => 'धोखाधड़ी!',
-    };
+/// Localized headline for a label; in English the caller shows the English title instead.
+String _headline(DemoStrings s, RiskLabel l) => s['h_${l.name}'];
 
 String _join(List<String> l) => l.isEmpty ? '—' : l.join(', ');
 
@@ -336,8 +343,8 @@ class _MonoBoxState extends State<_MonoBox> {
 /// Feature-flagged test bench: runs scripted SMS / call stories through the real pipeline
 /// (graph context, rules, Gemma, fusion, alert) and shows every stage with a PASS / FAIL badge.
 class DemoLabScreen extends StatefulWidget {
-  const DemoLabScreen({super.key, this.initialLang = 'hi', this.api = const DemoApi()});
-  final String initialLang;
+  const DemoLabScreen({super.key, this.initialLang, this.api = const DemoApi()});
+  final String? initialLang; // null: follow the app-wide language
   final DemoApi api;
 
   @override
@@ -345,7 +352,10 @@ class DemoLabScreen extends StatefulWidget {
 }
 
 class _DemoLabScreenState extends State<DemoLabScreen> {
-  late String _lang = widget.initialLang;
+  // The language chips are a TEMPORARY per-view override: _lang starts from the app-wide language
+  // (an explicit initialLang wins for the first read) and re-syncs whenever the global value changes.
+  late String _lang = widget.initialLang ?? AppLanguage.code;
+  String? _lastGlobal;
   List<Map<String, Object?>>? _scenarios;
   bool _loading = true, _modelReady = false, _gemma = true, _cold = false, _skip = false;
   String? _busyId; // '*' while Run all is going
@@ -365,6 +375,18 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final g = AppLanguage.of(context);
+    if (_lastGlobal == null) {
+      if (widget.initialLang == null) _lang = g;
+    } else if (g != _lastGlobal) {
+      _lang = g;
+    }
+    _lastGlobal = g;
   }
 
   @override
@@ -545,8 +567,8 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
             subtitle: Text(!_modelReady
                 ? s['noModel']
                 : _useGemma
-                    ? 'Gemma + नियम · Gemma + rules'
-                    : 'सिर्फ़ नियम · Rules only'),
+                    ? _bi(s, 'engineGemma')
+                    : _bi(s, 'engineRules')),
             value: _useGemma,
             onChanged: _modelReady && !busy ? (v) => setState(() => _gemma = v) : null,
           ),
@@ -612,7 +634,8 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
     );
   }
 
-  Widget _chip(RiskLabel l) => StatusChip(label: l, text: '${_headline(l)} · ${l.title}');
+  Widget _chip(DemoStrings s, RiskLabel l) =>
+      StatusChip(label: l, text: _lang == 'en' ? l.title : '${_headline(s, l)} · ${l.title}');
 
   Widget _tag(ThemeData t, String text) => Container(
         padding: const EdgeInsets.symmetric(horizontal: Sp.m, vertical: Sp.xs),
@@ -761,7 +784,7 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
           if (gemma == null)
             Text(s['rulesOnly'], style: muted)
           else ...[
-            Align(alignment: Alignment.centerLeft, child: _chip(parseLabel(gemma['label']))),
+            Align(alignment: Alignment.centerLeft, child: _chip(s, parseLabel(gemma['label']))),
             const SizedBox(height: Sp.s),
             _MonoBox(
               lines: [
@@ -776,7 +799,7 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
           ],
         ]),
         _stage(t, s, 5, Icons.gavel, tone: st.solid(fusedLabel), [
-          Align(alignment: Alignment.centerLeft, child: _chip(fusedLabel)),
+          Align(alignment: Alignment.centerLeft, child: _chip(s, fusedLabel)),
           const SizedBox(height: Sp.xs),
           Text('${s['engine']}: ${_engineName(s, engineUsed)}', style: t.textTheme.bodyMedium),
           if (confText != null) Text('${s['conf']}: $confText', style: t.textTheme.bodyMedium),
@@ -827,8 +850,9 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
       const SizedBox(width: Sp.m),
       Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(_s(sc['titleHi']), style: t.textTheme.titleMedium),
-          Text(_s(sc['titleEn']), style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+          // Scenario titles come from native in Hindi and English: English shows only its own line.
+          Text(_lang == 'en' ? _s(sc['titleEn']) : _s(sc['titleHi']), style: t.textTheme.titleMedium),
+          if (_lang != 'en') Text(_s(sc['titleEn']), style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
         ]),
       ),
       if (res != null) Padding(padding: const EdgeInsets.only(left: Sp.s), child: Icon(open ? Icons.expand_less : Icons.expand_more, size: 28, color: cs.onSurfaceVariant)),
@@ -854,7 +878,7 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
         Text(_lang == 'en' ? _s(sc['storyEn']) : _s(sc['storyHi']), style: t.textTheme.bodyMedium),
         const SizedBox(height: Sp.s),
         Wrap(spacing: Sp.m, runSpacing: Sp.s, crossAxisAlignment: WrapCrossAlignment.center, children: [
-          if (expected != null) StatusChip(key: Key('demo_expected_$id'), label: expected, text: '${s['expected']}: ${_headline(expected)}'),
+          if (expected != null) StatusChip(key: Key('demo_expected_$id'), label: expected, text: '${s['expected']}: ${_headline(s, expected)}'),
           if (res != null && done) _badge(t, st, res['pass'] == true, key: Key('demo_badge_$id')),
           if (res != null && done) Text('$passed/${steps.length}', style: t.textTheme.labelMedium),
           Text('${(sc['steps'] as num?)?.toInt() ?? steps.length} ${s['steps']}', style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
@@ -975,7 +999,7 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
                       onSelected: (_) => setState(() => _lang = code),
                     ),
                 ]),
-                SectionHeader(title: s['title'], icon: Icons.science, subtitle: 'Demo Lab'),
+                SectionHeader(title: s['title'], icon: Icons.science, subtitle: _lang == 'en' ? null : DemoStrings.en['title']),
                 _about(t, s),
                 const SizedBox(height: Sp.l),
                 _controls(t, s),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/lessons/lesson_model.dart';
 import 'package:scamshield/lessons/quiz_engine.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
@@ -39,6 +40,7 @@ Future<void> _pump(WidgetTester t, QuizStore store) async {
 }
 
 void main() {
+  setUp(() => AppLanguage.debugSet('hi')); // these tests read the default Hindi from the app-wide language
   testWidgets('T3_5_hindiCardsRender', (t) async {
     await _phone(t);
     await _pump(t, InMemoryQuizStore());

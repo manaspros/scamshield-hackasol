@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/app_language.dart';
 import '../lessons/lesson_model.dart';
-import '../lessons/prefs_store.dart';
+import '../lessons/prefs_store.dart' show PrefsQuizStore;
 import '../lessons/quiz_engine.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
@@ -21,7 +22,7 @@ class LessonsScreen extends StatefulWidget {
   final QuizStore? _store;
   final AssetBundle? bundle;
 
-  /// Null = use the first-run language choice, else Hindi.
+  /// Null = follow the app-wide language.
   final String? initialLang;
   @override
   State<LessonsScreen> createState() => _LessonsScreenState();
@@ -40,8 +41,10 @@ const _icons = <String, IconData>{
 
 class _LessonsScreenState extends State<LessonsScreen> {
   late final QuizStore _store = widget._store ?? PrefsQuizStore();
-  late String _lang = widget.initialLang ?? 'hi';
-  bool _picked = false; // a chip tap beats the stored choice
+  // The language chips are a TEMPORARY per-view override: _lang starts from the app-wide language
+  // (an explicit initialLang wins for the first read) and re-syncs (reloading lessons) when the global changes.
+  late String _lang = widget.initialLang ?? AppLanguage.code;
+  String? _lastGlobal;
   QuizEngine? _engine;
   bool _failed = false;
 
@@ -49,13 +52,18 @@ class _LessonsScreenState extends State<LessonsScreen> {
   void initState() {
     super.initState();
     _load();
-    if (widget.initialLang == null) _loadLang();
   }
 
-  // Not awaited before _load: an unanswered prefs channel must never block the lessons.
-  Future<void> _loadLang() async {
-    final v = await PrefsStrings().get(PrefsStrings.langKey);
-    if (mounted && !_picked && v != null && v != _lang && const {'hi', 'hne', 'en'}.contains(v)) _setLang(v);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final g = AppLanguage.of(context);
+    if (_lastGlobal == null) {
+      if (widget.initialLang == null) _setLang(g); // no-op unless the scope differs from AppLanguage.code
+    } else if (g != _lastGlobal) {
+      _setLang(g);
+    }
+    _lastGlobal = g;
   }
 
   Future<void> _load() async {
@@ -131,16 +139,13 @@ class _LessonsScreenState extends State<LessonsScreen> {
                       label: Text(label),
                       selected: _lang == code,
                       checkmarkColor: Theme.of(context).colorScheme.primary,
-                      onSelected: (_) {
-                        _picked = true;
-                        _setLang(code);
-                      },
+                      onSelected: (_) => _setLang(code),
                     ),
                 ],
               ),
               const SizedBox(height: Sp.m),
               if (e == null || !e.lessons.any((l) => e.bestFor(l.id) > 0))
-                _emptyScore(context)
+                _emptyScore(context, s)
               else
                 ProgressCard(engine: e, strings: s, scoreKey: const Key('score_value')),
               content,
@@ -167,13 +172,9 @@ class _LessonsScreenState extends State<LessonsScreen> {
 
   /// Score 0: one compact line instead of a big empty score card. The number stays
   /// in the tree under `score_value` for tests and screen readers.
-  Widget _emptyScore(BuildContext context) {
+  Widget _emptyScore(BuildContext context, LessonStrings s) {
     final t = Theme.of(context);
-    final msg = switch (_lang) {
-      'en' => 'Finish your first lesson — your score will show here',
-      'hne' => 'पहिली पाठ पूरा करव — तुंहर स्कोर इहाँ दिखही',
-      _ => 'पहला पाठ पूरा करें — आपका स्कोर यहाँ दिखेगा',
-    };
+    final msg = s['emptyScore'];
     return Container(
       padding: const EdgeInsets.all(Sp.l),
       decoration: BoxDecoration(

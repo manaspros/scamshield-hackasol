@@ -4,7 +4,7 @@ import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../lessons/prefs_store.dart' show PrefsStrings;
+import '../l10n/app_language.dart';
 import '../theme/app_theme.dart' show StatusColors;
 import '../theme/text_styles.dart';
 import '../theme/tokens.dart';
@@ -20,7 +20,7 @@ class FamilyScreen extends StatefulWidget {
   });
   final MethodChannel channel;
 
-  /// Null = use the first-run language choice, else Hindi.
+  /// Null = follow the app-wide language.
   final String? initialLang;
   @override
   State<FamilyScreen> createState() => _FamilyScreenState();
@@ -119,9 +119,15 @@ const _s = <String, Map<String, String>>{
   },
 };
 
+/// The string tables, for the l10n key-parity test.
+@visibleForTesting
+const familyStrings = _s;
+
 class _FamilyScreenState extends State<FamilyScreen> {
-  late String _lang = widget.initialLang ?? 'hi';
-  bool _picked = false; // a chip tap beats the stored choice
+  // The language chips are a TEMPORARY per-view override: _lang starts from the app-wide language
+  // (an explicit initialLang wins for the first read) and re-syncs whenever the global value changes.
+  late String _lang = widget.initialLang ?? AppLanguage.code;
+  String? _lastGlobal;
   _Stage _stage = _Stage.loading;
   String _secret = '';
   String _code = '';
@@ -137,13 +143,19 @@ class _FamilyScreenState extends State<FamilyScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialLang == null) _loadLang();
     _init();
   }
 
-  Future<void> _loadLang() async {
-    final v = await PrefsStrings().get(PrefsStrings.langKey);
-    if (mounted && !_picked && const {'hi', 'hne', 'en'}.contains(v)) setState(() => _lang = v!);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final g = AppLanguage.of(context);
+    if (_lastGlobal == null) {
+      if (widget.initialLang == null) _lang = g;
+    } else if (g != _lastGlobal) {
+      _lang = g;
+    }
+    _lastGlobal = g;
   }
 
   @override
@@ -258,7 +270,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
               label: Text(label),
               selected: _lang == code,
               checkmarkColor: Theme.of(context).colorScheme.primary,
-              onSelected: (_) => setState(() { _picked = true; _lang = code; }),
+              onSelected: (_) => setState(() => _lang = code),
             ),
         ]),
         const SizedBox(height: Sp.m),

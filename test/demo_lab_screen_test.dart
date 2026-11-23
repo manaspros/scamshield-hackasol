@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/demo/demo_flag.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/main.dart';
 import 'package:scamshield/screens/demo_lab_screen.dart';
 
@@ -34,7 +35,10 @@ Map<String, Object?> _step(int i, {required int delayMs, required String text, r
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUp(() => DemoFlag.enabled.value = kDebugMode);
+  setUp(() {
+    DemoFlag.enabled.value = kDebugMode;
+    AppLanguage.debugSet('hi'); // these tests read the default Hindi from the app-wide language
+  });
 
   testWidgets('T8_1_hiddenWhenFlagOff', (t) async {
     t.view.physicalSize = const Size(360, 740);

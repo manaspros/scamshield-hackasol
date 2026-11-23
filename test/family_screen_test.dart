@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/screens/family_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 
 void main() {
+  setUp(() => AppLanguage.debugSet('hi')); // these tests read the default Hindi from the app-wide language
   TestWidgetsFlutterBinding.ensureInitialized();
   const ch = MethodChannel('scamshield/family');
 
