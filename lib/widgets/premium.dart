@@ -57,31 +57,37 @@ class PSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final th = Theme.of(context);
+    // The link sits flush with the right edge of the content below it. (It used to be Flexible next to an
+    // Expanded title, which split the row 50/50 and left "See all" / "Add member" floating mid-row.)
     return Padding(
       padding: const EdgeInsets.only(top: Sp.l + 4, bottom: Sp.s + 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Semantics(
-              header: true,
-              child: Text(title, style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 20)),
-            ),
-          ),
-          if (action != null)
-            Flexible(
-              child: TextButton(
-                key: actionKey,
-                style: TextButton.styleFrom(
-                  minimumSize: const Size(48, 44),
-                  padding: const EdgeInsets.symmetric(horizontal: Sp.s),
-                  textStyle: th.textTheme.titleSmall,
-                ),
-                onPressed: onAction,
-                child: Text(action!, textAlign: TextAlign.end),
+      child: LayoutBuilder(
+        builder: (context, box) => Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Semantics(
+                header: true,
+                child: Text(title, style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 20)),
               ),
             ),
-        ],
+            if (action != null)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: box.maxWidth * 0.5),
+                child: TextButton(
+                  key: actionKey,
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(48, 44),
+                    padding: const EdgeInsets.only(left: Sp.m),
+                    alignment: Alignment.centerRight,
+                    textStyle: th.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  onPressed: onAction,
+                  child: Text(action!, textAlign: TextAlign.end, maxLines: 2),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -154,7 +160,10 @@ class PRow extends StatelessWidget {
               ),
             ),
             if (value != null)
+              // Tight: the value box always spans to the chevron, so "Add" / values line up on the right edge
+              // in every row (loose, it shrank to its text and floated mid-row).
               Flexible(
+                fit: FlexFit.tight,
                 child: Padding(
                   padding: const EdgeInsets.only(left: Sp.s),
                   child: Text(
