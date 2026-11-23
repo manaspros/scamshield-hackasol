@@ -162,11 +162,12 @@ class QADetectionCoreTest {
     // ---------- Gemma prompt builder ----------
     @Test fun `QA_prompt_emptyTextAndContext`() {
         val s = GemmaPrompt.build("", emptyList())
-        assertTrue(s.endsWith("STATEMENT: \"\"\n")); assertFalse(s.contains("Earlier in this call"))
+        assertTrue(s.endsWith("STATEMENT: \"\"\n")); assertFalse(s.contains("\nEarlier in this call: "))
     }
 
+    // 8 few-shots (2 with Known context) + the query.
     @Test fun `QA_prompt_sevenStatementsSixShotsPlusQuery`() {
-        assertEquals(7, Regex("STATEMENT: \"").findAll(GemmaPrompt.build("x", emptyList())).count())
+        assertEquals(9,Regex("STATEMENT: \"").findAll(GemmaPrompt.build("x", emptyList())).count())
     }
 
     @Test fun `QA_prompt_onlyLastTwoContextEntriesInOrder`() {

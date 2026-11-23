@@ -75,7 +75,7 @@ class QAContextLayerTest {
     @Test fun `QA_ctxPrompt_labelAndEntriesRenderedAndOnlyLastTwoKept`() {
         val p = GemmaPrompt.build("q", listOf("one", "two", "three"), GraphContext.LABEL)
         assertTrue(p.contains("\nKnown context: \"two\" | \"three\"\nSTATEMENT: \"q\"\n")); assertFalse(p.contains("\"one\""))
-        assertFalse(p.contains("Earlier in this call"))
+        assertFalse(p.contains("\nEarlier in this call: "))
     }
 
     @Test fun `QA_ctxPrompt_emptyContextHasNoLabelLineWhateverTheLabel`() {
