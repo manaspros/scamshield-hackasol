@@ -14,6 +14,7 @@ import 'family_screen.dart';
 import 'page_route.dart';
 import 'profile_screen.dart';
 import 'setup_screen.dart';
+import '../widgets/shield_logo.dart';
 
 /// Whether first-run onboarding is finished, stored under `onboarded_v1` on the native prefs channel.
 /// `done` is null until the stored value has been read, so onboarding never flashes for returning users.
@@ -294,11 +295,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
               width: 116,
               height: 116,
               decoration: BoxDecoration(
-                color: p.accent,
+                color: kBrandBlue,
                 borderRadius: BorderRadius.circular(36),
-                boxShadow: [BoxShadow(color: p.accent.withValues(alpha: 0.38), blurRadius: 36, offset: const Offset(0, 16))],
+                boxShadow: [BoxShadow(color: kBrandBlue.withValues(alpha: 0.38), blurRadius: 36, offset: const Offset(0, 16))],
               ),
-              child: Icon(Icons.verified_user_rounded, color: p.onAccent, size: 62),
+              child: const Center(child: ShieldLogo(size: 80, style: ShieldStyle.onBrand, semanticLabel: 'ScamShield')),
             ),
           ),
           Positioned(left: 0, top: 26, child: chip(t('ob_chip_otp'), st.scam, 0)),
