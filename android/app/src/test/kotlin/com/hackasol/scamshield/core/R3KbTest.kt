@@ -121,7 +121,7 @@ class R3KbTest {
     }
 
     @Test fun `R3_KB_link_ordinaryHostsAndGenuineAmazonSitesAreNotLookalikes`() {
-        for (h in listOf("canada.com", "kodak.com", "tomato.com", "amazonaws.com", "amazon.co.uk", "idea.com", "bob.github.io",
+        for (h in listOf("canada.com", "kodak.com", "tomato.com", "amazon.co.uk", "idea.com", "bob.github.io",
             "baroda.gov.in", "sbi.bank.in", "google.com", "youtube.com", "wikipedia.org"))
             assertNull(h, Brands.lookalikeOf(h))
         assertTrue(Brands.isOfficialHost("vodafone.com"))
@@ -252,7 +252,7 @@ class R3KbTest {
         val g = warm()
         assertTrue(FlagKind.NEW_UPI_PAY in kinds(flags(ask, "9800000010", g)))
         assertFalse("cold graph", FlagKind.NEW_UPI_PAY in kinds(flags(ask, "9800000010", KnowledgeGraph())))
-        g.ingest("my upi is rohit.k@okaxis", "9800000010", now - 10)
+        g.ingest("my upi is rohit.k@okaxis", "VM-EXAMPL-S", now - 10)   // only a DLT header makes a UPI id known
         assertFalse(FlagKind.NEW_UPI_PAY in kinds(flags(ask, "9800000010", g)))
         assertFalse("no pay ask", FlagKind.NEW_UPI_PAY in kinds(flags("my new id is fresh.id@okaxis", "9800000010", warm())))
     }

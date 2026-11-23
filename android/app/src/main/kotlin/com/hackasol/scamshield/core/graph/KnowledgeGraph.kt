@@ -30,7 +30,7 @@ open class KnowledgeGraph(private val store: GraphStore? = null, private val clo
     private fun restore(s: GraphSnapshot) {
         ingested = s.ingested
         s.senders.forEach { senders[it.sender] = it }
-        val fallback = System.currentTimeMillis()
+        val fallback = clock()
         s.numbers.forEach { numbers[it] = s.numberLastSeen[it] ?: fallback }
         s.upiIds.forEach { upiIds[it] = s.upiLastSeen[it] ?: fallback }
         events += s.events
@@ -55,9 +55,11 @@ open class KnowledgeGraph(private val store: GraphStore? = null, private val clo
             senders[s] = if (old == null) SenderRecord(s, tsMs, tsMs, 1, dlt)
             else old.copy(firstSeenMs = minOf(old.firstSeenMs, tsMs), lastSeenMs = maxOf(old.lastSeenMs, tsMs), count = old.count + 1)
         }
-        val nums = (c.numbers + ClaimParsers.numbers(s)).distinct()
+        // Numbers and UPI ids become "known" only from a registered header: a benign line from any number must not seed them.
+        val nums = if (dlt) (c.numbers + ClaimParsers.numbers(s)).distinct() else emptyList()
+        val upis = if (dlt) c.upiIds else emptyList()
         nums.forEach { numbers[it] = maxOf(numbers[it] ?: 0L, tsMs) }
-        c.upiIds.forEach { upiIds[it] = maxOf(upiIds[it] ?: 0L, tsMs) }
+        upis.forEach { upiIds[it] = maxOf(upiIds[it] ?: 0L, tsMs) }
         // The header decides whose event it is: a text naming another brand ("HDFC credited" from VK-PROMOX) records nothing.
         val headerBrand = ClaimParsers.senderBrand(s)
         val textBrand = ClaimParsers.brandFromText(message)
@@ -72,7 +74,7 @@ open class KnowledgeGraph(private val store: GraphStore? = null, private val clo
                 .filter { e -> events.none { it.brand == e.brand && it.type == e.type && it.sender == e.sender && it.tsMs == e.tsMs } }
         } else emptyList()
         events += added
-        store?.apply(IngestDelta(s, tsMs, dlt, nums, c.upiIds, added))
+        store?.apply(IngestDelta(s, tsMs, dlt, nums, upis, added))
         maybePrune()
     }
 

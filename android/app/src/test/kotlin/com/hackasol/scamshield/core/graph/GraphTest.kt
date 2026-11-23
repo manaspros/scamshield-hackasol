@@ -23,7 +23,8 @@ class GraphTest {
         assertTrue(g.knownUpi("example@upi"))
 
         g.ingest("call me", "9800000001", 1100L)
-        assertTrue(g.knownNumber("9800000001"))
+        assertFalse("a normal number cannot make numbers known", g.knownNumber("9800000001"))
+        assertTrue(g.knownSender("9800000001"))
         assertFalse(g.knownSender("9800000002"))
 
         // A normal number cannot create an event, even if the text says so.
