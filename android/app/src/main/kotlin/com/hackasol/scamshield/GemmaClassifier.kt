@@ -112,7 +112,7 @@ object GemmaClassifier {
     }
 
     /** Returns null if the model isn't ready or the output couldn't be parsed. */
-    suspend fun classify(text: String, context: List<String>): LlmResult? {
+    suspend fun classify(text: String, context: List<String>, contextLabel: String = GemmaPrompt.CALL_CONTEXT_LABEL): LlmResult? {
         val engine = llm ?: return null
         if (status != Status.READY) return null
         return withContext(Dispatchers.IO) {
@@ -125,7 +125,7 @@ object GemmaClassifier {
                         .setRandomSeed(0)
                         .build()
                     session = LlmInferenceSession.createFromOptions(engine, sOpts)
-                    session.addQueryChunk(GemmaPrompt.build(text, context))
+                    session.addQueryChunk(GemmaPrompt.build(text, context, contextLabel))
                     val raw = session.generateResponse()
                     Log.d(TAG, "raw=$raw")
                     LlmOutputParser.parse(raw)

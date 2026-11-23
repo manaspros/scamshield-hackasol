@@ -1,5 +1,7 @@
 package com.hackasol.scamshield.core
 
+import com.hackasol.scamshield.core.graph.ContextFlag
+
 /** Pure-Kotlin data types for the Text API (no Android deps, so unit-testable). */
 
 enum class Label { SAFE, SUSPICIOUS, SCAM;
@@ -37,6 +39,10 @@ data class ClassifyRequest(
     val text: String,
     val context: List<String> = emptyList(),
     val source: Source = Source.PASTE,
+    /** Prompt label for [context]: default "Earlier in this call"; graph context uses "Known context". */
+    val contextLabel: String = GemmaPrompt.CALL_CONTEXT_LABEL,
+    /** Claim-vs-context / context-rule hits; TextApi applies them via Fusion.raiseForContext (raise only). */
+    val contextFlags: List<ContextFlag> = emptyList(),
 )
 
 data class RuleResult(

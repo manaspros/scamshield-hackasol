@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T5.3 [sonnet] SQLite knowledge graph (PersistentKnowledgeGraph) fed by the notification listener; claim-vs-context + context rules raise verdicts (never downgrade; Fusion.raiseForContext, weights in FusionWeights); graph context fed into the Gemma prompt as "Known context" — 2026-11-23 — ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*GraphRowMapperTest*' --tests '*GraphWiringTest*' && flutter build apk --debug --android-skip-build-dependency-validation
 - T3.2+T5.5 [sonnet] Report screen (lost money / not yet, evidence checklist from verdict log, 1930 via ACTION_DIAL, cybercrime.gov.in, Chakshu) + golden-hour mode (60-min timer, case card, evidence ZIP shared via FileProvider) — 2026-11-23 — flutter test test/report_screen_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T5.7 [sonnet] Family screen (pair via base32 secret, rotating TOTP code with countdown, match Yes/No), scamshield/family channel, nav entry — 2026-11-23 — flutter test test/family_screen_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T1.7 [sonnet] AlertDispatcher (heads-up notification + Report action -> route=report, bubble via OverlayController), POST_NOTIFICATIONS step in Setup — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*AlertDispatcherMappingTest*' && flutter build apk --debug --android-skip-build-dependency-validation && flutter test
@@ -49,6 +50,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
 ## Decisions
+- 2026-11-23: Context layer (user must-have): GraphContext.forMessage gives <=2 items (cold-start text, missing ORDER/BILL event for the brand, first message from sender), passed to GemmaPrompt with contextLabel "Known context" (default "Earlier in this call" keeps the old format byte-identical). Golden grows 19 -> 21 (first 19 unchanged); ML parity needs prompt.py context_label + test count 21. Check runs before ingest; NO_MATCHING_EVENT is dropped on an empty graph and for DLT event reports. WhatsApp sender left blank. Persistence lives in PersistentKnowledgeGraph so KnowledgeGraph's fields stay as QA's privacy test expects.
 - 2026-11-23: T3.2 and T5.5 committed together: they share report_screen.dart and HandoffChannel.kt and cannot be split cleanly. route=report reuses T1.7's app.initialRoute (navigation in T3.11). FileProvider exposes only cache/evidence/.
 - 2026-11-23: T5.7 secret stored in MODE_PRIVATE SharedPreferences (shortcut, flagged security-relevant: move to EncryptedSharedPreferences/Keystore before release). Family nav entry added before T3.11 at user priority; Settings tab index moves 3 -> 4.
 - 2026-11-23: T2.3 made AlertDispatcher's overlay nullable (the listener has no AccessibilityService; non-caption sources never bubble per AlertPolicy).

@@ -1,5 +1,7 @@
 package com.hackasol.scamshield.core
 
+import com.hackasol.scamshield.core.graph.GraphContext
+import com.hackasol.scamshield.core.graph.KnowledgeGraph
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -37,7 +39,10 @@ class ScamTypeTest {
         assertEquals(Label.SAFE, RuleScorer.score("Beta khana kha liya?").label)
     }
 
-    private class Case(val id: String, val input: String, val output: String)
+    private class Case(
+        val id: String, val input: String, val output: String,
+        val context: List<String> = emptyList(), val contextLabel: String = GemmaPrompt.CALL_CONTEXT_LABEL,
+    )
 
     private val cases = listOf(
         Case("otp_en", "Sir, please share the OTP you just received to verify your account",
@@ -78,6 +83,13 @@ class ScamTypeTest {
             """{"label":"SCAM","scam_type":"OTP","confidence":0.7,"reason":"Quoted OTP request"}"""),
         Case("edge_long_input", "ab ".repeat(150) + "tail beyond the 300 character cut",
             """{"label":"SAFE","scam_type":"NONE","confidence":0.6,"reason":"Gibberish"}"""),
+        // Graph context (T5.3): label "Known context"; ML ports must reproduce `<label>: "a" | "b"`.
+        Case("graph_ctx_no_order", "Your order is held at customs, pay the fee at the link to release it",
+            """{"label":"SCAM","scam_type":"COURIER_CUSTOMS","confidence":0.9,"reason":"No order on record, fee demand"}""",
+            listOf("No ORDER event from examplecourier since install", GraphContext.SENDER_FIRST_TEXT), GraphContext.LABEL),
+        Case("graph_ctx_cold_start", "Your bill is overdue, pay now or the service will be cut",
+            """{"label":"SUSPICIOUS","scam_type":"OTHER","confidence":0.6,"reason":"Cannot confirm this bill"}""",
+            listOf(KnowledgeGraph.COLD_START_TEXT), GraphContext.LABEL),
     )
 
     private fun esc(s: String): String = buildString {
@@ -103,7 +115,8 @@ class ScamTypeTest {
             sb.append("  {\n")
                 .append("    \"id\": ").append(q(c.id)).append(",\n")
                 .append("    \"input_text\": ").append(q(c.input)).append(",\n")
-                .append("    \"prompt\": ").append(q(GemmaPrompt.build(c.input, emptyList()))).append(",\n")
+                .append(if (c.context.isEmpty()) "" else "    \"context\": [${c.context.joinToString(", ") { q(it) }}],\n    \"context_label\": ${q(c.contextLabel)},\n")
+                .append("    \"prompt\": ").append(q(GemmaPrompt.build(c.input, c.context, c.contextLabel))).append(",\n")
                 .append("    \"model_output\": ").append(q(c.output)).append(",\n")
                 .append("    \"parsed\": {\"label\": ").append(q(r.label.name))
                 .append(", \"confidence\": ").append(r.confidence.toString())

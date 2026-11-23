@@ -4,14 +4,16 @@ package com.hackasol.scamshield.core
  * Few-shot prompt for on-device Gemma. Pure Kotlin; the Python port (ml/scamshield_ml/prompt.py)
  * must reproduce `build` byte for byte (see data/golden/prompt_golden.json).
  *
- * Format of `build(text, context)`:
+ * Format of `build(text, context, contextLabel = "Earlier in this call")`:
  *  1. HEADER: fixed text ending with the "Answer with ONLY one line of JSON: ..." line, a blank line,
  *     then 6 few-shot pairs. Each pair is `STATEMENT: "<example>"\n` + one JSON answer line + `\n`.
  *     Answer shape: {"label":"SAFE|SUSPICIOUS|SCAM","scam_type":"<TYPE|NONE>","confidence":<0..1>,"reason":"<text>"}
  *     scam_type is one of the ScamType names, or NONE when label is SAFE.
  *  2. Optional context: the last 2 non-blank entries of `context` (in order), each cut to 150 chars with
  *     `"` kept as is, wrapped in double quotes and joined by " | ", emitted as
- *     `\nEarlier in this call: <joined>\n` (note the leading blank line).
+ *     `\n<contextLabel>: <joined>\n` (note the leading blank line). The default label is "Earlier in this call"
+ *     (live call captions); notification context from the knowledge graph uses "Known context".
+ *     `contextLabel` is a trusted constant, never user text, and is not escaped.
  *  3. Query: `STATEMENT: "<text>"\n` where text is cut to the first 300 chars and every `"` becomes `'`.
  * The model is expected to continue with one JSON line (parsed by [LlmOutputParser]).
  * Lengths are in UTF-16 code units (Kotlin String.take); Python must slice the same way for non-BMP text.
@@ -38,10 +40,12 @@ STATEMENT: "Your order will be delivered tomorrow between 10 and 12"
 {"label":"SAFE","scam_type":"NONE","confidence":0.85,"reason":"Routine delivery update"}
 """
 
-    fun build(text: String, context: List<String>): String {
+    const val CALL_CONTEXT_LABEL = "Earlier in this call"
+
+    fun build(text: String, context: List<String>, contextLabel: String = CALL_CONTEXT_LABEL): String {
         val sb = StringBuilder(HEADER)
         val ctx = context.takeLast(2).filter { it.isNotBlank() }
-        if (ctx.isNotEmpty()) sb.append("\nEarlier in this call: ").append(ctx.joinToString(" | ") { "\"${it.take(150)}\"" }).append('\n')
+        if (ctx.isNotEmpty()) sb.append('\n').append(contextLabel).append(": ").append(ctx.joinToString(" | ") { "\"${it.take(150)}\"" }).append('\n')
         sb.append("STATEMENT: \"").append(text.take(300).replace("\"", "'")).append("\"\n")
         return sb.toString()
     }

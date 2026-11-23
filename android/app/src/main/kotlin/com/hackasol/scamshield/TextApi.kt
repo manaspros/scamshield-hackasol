@@ -71,7 +71,6 @@ object TextApi {
     private suspend fun record(v: Verdict) {
         val log = verdictLog ?: return
         try {
-            // scamType is null until T1.15 adds Verdict.scamType.
             val e = VerdictEvent(0, System.currentTimeMillis(), v.source, v.label, v.confidence, v.scamType, v.triggers, v.engine)
             withContext(Dispatchers.IO) { log.append(e) }
         } catch (t: Throwable) {
@@ -82,9 +81,9 @@ object TextApi {
     private suspend fun classifyUnlogged(req: ClassifyRequest): Verdict {
         val t0 = SystemClock.elapsedRealtime()
         val rules = RuleScorer.score(req.text)
-        val llm = if (AppSettings.useLlm) GemmaClassifier.classify(req.text, req.context) else null
+        val llm = if (AppSettings.useLlm) GemmaClassifier.classify(req.text, req.context, req.contextLabel) else null
         val elapsed = SystemClock.elapsedRealtime() - t0
-        val f = Fusion.fuse(llm, rules, RuleScorer.scamType(req.text))
+        val f = Fusion.raiseForContext(Fusion.fuse(llm, rules, RuleScorer.scamType(req.text)), req.contextFlags)
         return Verdict(req.text, f.label, f.confidence, f.reason, f.triggers, f.engine, elapsed, req.source, scamType = f.scamType)
     }
 

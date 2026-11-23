@@ -8,6 +8,11 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import com.hackasol.scamshield.core.ClassifyRequest
+import com.hackasol.scamshield.core.GemmaPrompt
+import com.hackasol.scamshield.core.graph.ClaimParsers
+import com.hackasol.scamshield.core.graph.GraphContext
+import com.hackasol.scamshield.core.graph.KnowledgeGraph
+import com.hackasol.scamshield.core.graph.PersistentKnowledgeGraph
 import com.hackasol.scamshield.core.NotificationMapper
 import com.hackasol.scamshield.core.Source
 import com.hackasol.scamshield.core.Verdict
@@ -28,15 +33,34 @@ data class NotificationInfo(
     val postTime: Long,
 )
 
-/** mapper -> classify -> dispatch. Pure; the service injects TextApi and AlertDispatcher. */
+/**
+ * mapper -> classify -> dispatch. Pure; the service injects TextApi and AlertDispatcher.
+ * With [graph] and [classifyRequest] set, every mapped notification is checked against the graph and
+ * only then ingested (checking after would compare a message with itself), and the graph lines and rule
+ * flags travel in the ClassifyRequest. Without them it is the plain T2.3 path.
+ */
 class ListenerWiring(
     private val mapper: NotificationMapper,
     private val classify: suspend (String, Source) -> Verdict,
     private val dispatch: (Verdict, Source) -> Unit,
+    private val graph: KnowledgeGraph? = null,
+    private val classifyRequest: (suspend (ClassifyRequest) -> Verdict)? = null,
 ) {
     suspend fun onPosted(n: NotificationInfo) {
         val m = mapper.map(n.pkg, n.text, n.ongoing, n.groupSummary, n.postTime) ?: return
-        dispatch(classify(m.text, m.source), m.source)
+        val g = graph
+        val classifyReq = classifyRequest
+        if (g == null || classifyReq == null) { dispatch(classify(m.text, m.source), m.source); return }
+        // Only an SMS title is a sender header; a WhatsApp title is a contact name and must not be judged as one.
+        val sender = if (m.source == Source.SMS) n.title.trim() else ""
+        val flags = GraphContext.flagsFor(m.text, sender, g, n.postTime)
+        val lines = GraphContext.forMessage(ClaimParsers.parse(m.text, sender), g, n.postTime, sender)
+        val req = ClassifyRequest(
+            m.text, lines, m.source,
+            if (lines.isEmpty()) GemmaPrompt.CALL_CONTEXT_LABEL else GraphContext.LABEL, flags,
+        )
+        val v = try { classifyReq(req) } finally { g.ingest(m.text, sender, n.postTime) }
+        dispatch(v, m.source)
     }
 }
 
@@ -51,11 +75,16 @@ class ScamNotificationListener : NotificationListenerService() {
     // AlertDispatcher needs an OverlayController (accessibility-service only), but non-CAPTION
     // sources never bubble, so the dispatcher is built with overlay = null.
     private val dispatcher by lazy { AlertDispatcher(this, null) }
-    private val wiring = ListenerWiring(
-        NotificationMapper(),
-        { text, src -> TextApi.classify(ClassifyRequest(text, source = src)) },
-        { v, _ -> main.post { safe("dispatch") { dispatcher.dispatch(v, v.label, v.label, v.risk) } } },
-    )
+    // Lazy: first built inside the notification coroutine, so the graph DB load stays off the main thread.
+    private val wiring by lazy {
+        ListenerWiring(
+            NotificationMapper(),
+            { text, src -> TextApi.classify(ClassifyRequest(text, source = src)) },
+            { v, _ -> main.post { safe("dispatch") { dispatcher.dispatch(v, v.label, v.label, v.risk) } } },
+            PersistentKnowledgeGraph(SqliteKnowledgeGraph(this)),
+            TextApi::classify,
+        )
+    }
 
     private inline fun safe(where: String, block: () -> Unit) {
         try { block() } catch (t: Throwable) { Log.e(TAG, "error in $where", t) }

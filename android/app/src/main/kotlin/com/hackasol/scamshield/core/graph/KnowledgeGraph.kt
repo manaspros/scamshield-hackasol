@@ -8,8 +8,9 @@ data class GraphEvent(val brand: String, val type: EventType, val tsMs: Long, va
  * In-memory entity store, fed only by messages seen since install. Stores extracted entities only, never raw text.
  * Events are recorded only from DLT-header senders, so a scammer's "credited" or "order placed" text cannot create one.
  * "Known" means "seen before", not "trusted": T5.3 decides what to ingest.
+ * Persistence lives in [PersistentKnowledgeGraph]; this class keeps its original fields.
  */
-class KnowledgeGraph {
+open class KnowledgeGraph {
     private var ingested = 0
     private val senders = mutableSetOf<String>()
     private val brands = mutableSetOf<String>()
@@ -25,13 +26,27 @@ class KnowledgeGraph {
         if (s.isNotEmpty()) senders += s
         val c = ClaimParsers.parse(message, s)
         c.brand?.let { brands += it }
-        numbers += c.numbers
-        numbers += ClaimParsers.numbers(s)
+        val nums = c.numbers + ClaimParsers.numbers(s)
+        numbers += nums
         upiIds += c.upiIds
         val brand = c.brand
-        if (brand != null && ClaimVsContext.isDltHeader(s)) {
-            ClaimParsers.eventTypes(message).forEach { events += GraphEvent(brand, it, tsMs, s) }
-        }
+        val dlt = ClaimVsContext.isDltHeader(s)
+        val added = if (brand != null && dlt) ClaimParsers.eventTypes(message).map { GraphEvent(brand, it, tsMs, s) } else emptyList()
+        events += added
+        onIngested(IngestDelta(s, tsMs, dlt, nums.distinct(), c.upiIds, added))
+    }
+
+    /** Hook for subclasses that persist; called under the graph lock after the in-memory update. */
+    protected open fun onIngested(delta: IngestDelta) {}
+
+    /** For subclasses: load a stored snapshot into the in-memory sets. */
+    @Synchronized
+    protected fun restore(s: GraphSnapshot) {
+        ingested = s.ingested
+        s.senders.mapTo(senders) { it.sender }
+        numbers += s.numbers
+        upiIds += s.upiIds
+        events += s.events
     }
 
     @Synchronized
@@ -58,4 +73,11 @@ class KnowledgeGraph {
     companion object {
         const val COLD_START_TEXT = "No record since ScamShield was installed"
     }
+}
+
+/** A [KnowledgeGraph] that loads from and writes through to a [GraphStore]. */
+class PersistentKnowledgeGraph(private val store: GraphStore) : KnowledgeGraph() {
+    init { restore(store.load()) }
+
+    override fun onIngested(delta: IngestDelta) = store.apply(delta)
 }
