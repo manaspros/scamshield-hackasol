@@ -135,27 +135,37 @@ class QACallPipelineTest {
     }
 
     @Test fun `QA_tracker_levelThresholds`() {
-        val t = CallRiskTracker(); t.record(qaVerdict(Label.SAFE, 0.0), 0); assertEquals(Label.SAFE, t.level())   // 0.30
-        val s = CallRiskTracker(); s.record(qaVerdict(Label.SUSPICIOUS, 0.0), 0); assertEquals(Label.SUSPICIOUS, s.level()) // 0.40
-        val c = CallRiskTracker(); c.record(qaVerdict(Label.SCAM, 0.0), 0); assertEquals(Label.SCAM, c.level())  // 0.60
+        val t = CallRiskTracker(); t.record(qaVerdict(Label.SAFE, 0.0), 0); assertEquals(Label.SAFE, t.level())
+        assertEquals(CallRiskTracker.PRIOR, t.risk, 1e-9)   // SAFE never goes below the prior
+        val s = CallRiskTracker(); s.record(qaVerdict(Label.SUSPICIOUS, 0.7), 0); assertEquals(Label.SUSPICIOUS, s.level())
+        val c = CallRiskTracker(); c.record(qaVerdict(Label.SCAM, 0.7), 0); assertEquals(Label.SCAM, c.level())
+        val w = CallRiskTracker(); w.record(qaVerdict(Label.SCAM, 0.0), 0); assertEquals(Label.SUSPICIOUS, w.level())
     }
 
-    @Test fun `QA_tracker_flickerGuardBoundaryAt0_9`() {
-        assertEquals(Label.SUSPICIOUS, CallRiskTracker().record(qaVerdict(Label.SCAM, 0.89), 0))
-        assertEquals(Label.SCAM, CallRiskTracker().record(qaVerdict(Label.SCAM, 0.9), 0))
-        val t = CallRiskTracker(); t.record(qaVerdict(Label.SCAM, 0.89), 0)
-        assertEquals(Label.SCAM, t.record(qaVerdict(Label.SCAM, 0.89), 1))
+    @Test fun `QA_tracker_scamShownRedOnlyWhenCallIsScam`() {
+        for (c in listOf(0.0, 0.2, 0.4, 0.6, 0.9, 1.0)) {
+            val t = CallRiskTracker(); val shown = t.record(qaVerdict(Label.SCAM, c), 0)
+            assertEquals(if (t.level() == Label.SCAM) Label.SCAM else Label.SUSPICIOUS, shown)
+        }
     }
 
-    @Test fun `QA_tracker_safeBetweenScamsResetsFlickerGuard`() {
+    @Test fun `QA_tracker_scamCallStaysRedThroughOneSafeLine`() {
         val t = CallRiskTracker(); t.record(qaVerdict(Label.SCAM, 0.95), 0); t.record(qaVerdict(Label.SAFE, 0.9), 1)
-        assertEquals(Label.SUSPICIOUS, t.record(qaVerdict(Label.SCAM, 0.8), 2))
+        assertEquals(Label.SCAM, t.level())
+        assertEquals(Label.SCAM, t.record(qaVerdict(Label.SCAM, 0.5), 2))
     }
 
-    @Test fun `QA_tracker_peakHoldsRiskAgainstLongSafeTail`() {
+    @Test fun `QA_tracker_fewSafeLinesDoNotClearAScam`() {
         val t = CallRiskTracker(); t.record(qaVerdict(Label.SCAM, 1.0), 0)
-        for (i in 1..50) t.record(qaVerdict(Label.SAFE, 1.0), i.toLong())
-        assertEquals(Label.SCAM, t.level()); assertTrue(t.risk >= 0.8 - 1e-9)
+        for (i in 1..3) t.record(qaVerdict(Label.SAFE, 1.0), i.toLong())
+        assertEquals(Label.SCAM, t.level())
+    }
+
+    @Test fun `QA_tracker_longSafeTailBringsRiskBackDown`() {
+        val t = CallRiskTracker(); t.record(qaVerdict(Label.SCAM, 1.0), 0)
+        var last = t.risk
+        for (i in 1..30) { t.record(qaVerdict(Label.SAFE, 1.0), i.toLong()); assertTrue(t.risk <= last); last = t.risk }
+        assertEquals(Label.SAFE, t.level())
     }
 
     @Test fun `QA_tracker_expiryBoundary`() {

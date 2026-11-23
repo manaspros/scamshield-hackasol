@@ -158,7 +158,6 @@ class CaptionAccessibilityService : AccessibilityService() {
     private fun onTick() {
         val now = SystemClock.elapsedRealtime()
         handleStatements(segmenter.onTick(now))
-        tracker.maybeExpire(now)
 
         val am = getSystemService(AudioManager::class.java)
         val callNow = am.mode == AudioManager.MODE_IN_CALL || am.mode == AudioManager.MODE_IN_COMMUNICATION
