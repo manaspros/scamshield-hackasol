@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/main.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
+import 'package:scamshield/screens/recording_screen.dart';
 import 'package:scamshield/screens/report_screen.dart';
 
 void _phone(WidgetTester tester, {String? route}) {
@@ -29,6 +30,16 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.byType(ReportScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('T3_11_deepLinkOpensRecording', (tester) async {
+    _phone(tester, route: 'recording');
+    await tester.pumpWidget(const ScamShieldApp());
+    await tester.pump(); // post-frame callback fires the deep link
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.byType(RecordingScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

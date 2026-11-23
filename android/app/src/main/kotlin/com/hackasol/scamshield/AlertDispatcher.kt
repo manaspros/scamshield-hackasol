@@ -16,7 +16,7 @@ import com.hackasol.scamshield.core.Verdict
  * Report action. Main thread only (OverlayController requirement). Policy runs on the SHOWN label
  * (call-level tracker may differ from the raw verdict).
  */
-class AlertDispatcher(private val ctx: Context, private val overlay: OverlayController?) {
+class AlertDispatcher(private val ctx: Context, private val overlay: OverlayController?, private val titlePrefix: String = "") {
     private val nm = ctx.getSystemService(NotificationManager::class.java)
     private var channelReady = false
 
@@ -30,7 +30,7 @@ class AlertDispatcher(private val ctx: Context, private val overlay: OverlayCont
         ensureChannel(f.channelId)
         val b = Notification.Builder(ctx, f.channelId)
             .setSmallIcon(ctx.applicationInfo.icon)
-            .setContentTitle(f.title)
+            .setContentTitle(titlePrefix + f.title)
             .setContentText(f.text)
             .setStyle(Notification.BigTextStyle().bigText(f.text))
             .setCategory(Notification.CATEGORY_ALARM)

@@ -66,10 +66,15 @@ Future<void> show(WidgetTester t, ThemeData theme, Widget home,
 /// Builds (lazy lists) and scrolls [f] into view; fails if it does not exist.
 Future<void> reveal(WidgetTester t, Finder f) async {
   if (f.evaluate().isEmpty) {
-    final sc = find.byType(Scrollable).first;
-    await t.drag(sc, const Offset(0, 20000)); // lazy lists: start from the top, then scan down
+    // Lazy lists: jump to the top, then scan down. Driven by the controller, not drag gestures, because a
+    // drag that starts on a text field selects text instead of scrolling.
+    final pos = t.state<ScrollableState>(find.byType(Scrollable).first).position;
+    pos.jumpTo(pos.minScrollExtent);
     await t.pump();
-    if (f.evaluate().isEmpty) await t.scrollUntilVisible(f, 150, scrollable: sc, maxScrolls: 80);
+    while (f.evaluate().isEmpty && pos.pixels < pos.maxScrollExtent) {
+      pos.jumpTo((pos.pixels + 150).clamp(pos.minScrollExtent, pos.maxScrollExtent));
+      await t.pump();
+    }
   }
   expect(f, findsOneWidget, reason: 'action not found');
   await t.ensureVisible(f);
@@ -78,7 +83,13 @@ Future<void> reveal(WidgetTester t, Finder f) async {
 /// Scrolls [f] into view and taps it; fails if it cannot be hit.
 Future<void> tapVisible(WidgetTester t, Finder f) async {
   await reveal(t, f);
-  await t.pump();
+  // a just-typed text field scrolls itself into view with a short animation: let it finish before aiming the tap
+  await t.pump(const Duration(milliseconds: 400));
+  // layout can still shift under a focused field (action bar, caret scroll): re-aim until the target is hittable
+  for (var i = 0; i < 4 && f.hitTestable().evaluate().isEmpty; i++) {
+    await reveal(t, f);
+    await t.pump(const Duration(milliseconds: 400));
+  }
   await t.tap(f);
   await t.pump(const Duration(milliseconds: 50));
 }

@@ -100,10 +100,10 @@ void main() {
       final api = FakeChannel('scamshield/api', (c) async => c.method == 'classify' ? _okVerdict : null)..install();
       await show(t, theme(), const TryApiScreen());
       await t.enterText(find.byType(TextField), 'OTP bata do');
-      await tapVisible(t, find.text('Analyse'));
+      await tapVisible(t, find.byType(FilledButton));
       await t.pumpAndSettle();
       expect(api.named('classify').single.arguments['text'], 'OTP bata do');
-      expect(find.byType(VerdictCard), findsOneWidget);
+      await reveal(t, find.byType(VerdictCard)); // result sits below the fold at 2.0 scale
       expect(t.takeException(), isNull);
     });
 

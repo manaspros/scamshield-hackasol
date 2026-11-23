@@ -5,6 +5,9 @@ import android.os.SystemClock
 import com.hackasol.scamshield.core.ClassifyRequest
 import com.hackasol.scamshield.core.Fusion
 import com.hackasol.scamshield.core.Label
+import com.hackasol.scamshield.core.Pipeline
+import com.hackasol.scamshield.core.graph.KnowledgeGraph
+import com.hackasol.scamshield.core.graph.PersistentKnowledgeGraph
 import com.hackasol.scamshield.core.RuleScorer
 import com.hackasol.scamshield.core.ScamType
 import com.hackasol.scamshield.core.UpiQr
@@ -37,7 +40,19 @@ object TextApi {
     @Volatile var verdictLog: VerdictLog? = null
         private set
 
+    @Volatile private var appContext: Context? = null
+    @Volatile private var sharedGraph: KnowledgeGraph? = null
+
+    /**
+     * The one knowledge graph (graph.db), shared by the notification listener and the call-caption path.
+     * Opened lazily, so call it off the main thread (PersistentKnowledgeGraph loads the DB in its constructor).
+     */
+    fun graph(ctx: Context): KnowledgeGraph = sharedGraph ?: synchronized(this) {
+        sharedGraph ?: PersistentKnowledgeGraph(SqliteKnowledgeGraph(ctx.applicationContext)).also { sharedGraph = it }
+    }
+
     fun init(ctx: Context) {
+        appContext = ctx.applicationContext
         AppSettings.init(ctx)
         if (verdictLog == null) synchronized(this) {
             if (verdictLog == null) verdictLog = SqliteVerdictLog(ctx.applicationContext)
@@ -89,13 +104,8 @@ object TextApi {
     suspend fun upiCheck(link: String, expectedName: String?): Map<String, Any?> {
         val qr = UpiQr.parse(link) ?: return mapOf("valid" to false)
         val mismatch = qr.nameMismatch(expectedName)
-        val triggers = buildList {
-            if (mismatch) add("upi name mismatch")
-            if (qr.isCollectRequest) add("upi collect request")
-        }
-        if (triggers.isNotEmpty()) {
-            append(VerdictEvent(0, System.currentTimeMillis(), Source.PASTE, if (mismatch) Label.SCAM else Label.SUSPICIOUS,
-                if (mismatch) 0.9 else 0.7, ScamType.FAKE_QR, triggers, "upi-check"))
+        Pipeline.upiRisk(qr, expectedName)?.let {
+            append(VerdictEvent(0, System.currentTimeMillis(), Source.PASTE, it.label, it.confidence, ScamType.FAKE_QR, it.triggers, "upi-check"))
         }
         val who = qr.payeeName?.takeIf { it.isNotBlank() } ?: qr.payeeAddress
         return mapOf(
@@ -116,12 +126,17 @@ object TextApi {
         return user.take(if (user.length > 3) 2 else 1) + "•••@" + vpa.substringAfter('@')
     }
 
-    private suspend fun classifyUnlogged(req: ClassifyRequest): Verdict {
+    private suspend fun classifyUnlogged(req0: ClassifyRequest): Verdict {
         val t0 = SystemClock.elapsedRealtime()
+        // Calls (captions, recordings) get the call-side context rules from the shared graph; caller number unknown here.
+        val req = if (Pipeline.isCall(req0.source)) {
+            val g = withContext(Dispatchers.IO) { appContext?.let(::graph) }
+            if (g == null) req0 else Pipeline.withCallContext(req0, g, System.currentTimeMillis())
+        } else req0
         val rules = RuleScorer.score(req.text)
         val llm = if (AppSettings.useLlm) GemmaClassifier.classify(req.text, req.context, req.contextLabel) else null
         val elapsed = SystemClock.elapsedRealtime() - t0
-        val f = Fusion.raiseForContext(Fusion.fuse(llm, rules, RuleScorer.scamType(req.text)), req.contextFlags)
+        val f = Pipeline.decide(req.text, rules, llm, req.contextFlags)
         return Verdict(req.text, f.label, f.confidence, f.reason, f.triggers, f.engine, elapsed, req.source, scamType = f.scamType)
     }
 

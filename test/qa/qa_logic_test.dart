@@ -106,9 +106,9 @@ void main() {
 
     testWidgets('QA_tryApi_emptyAndWhitespaceInput_doesNotCallNative', (t) async {
       final api = await pump(t, (c) async => _v('SAFE'));
-      await tapVisible(t, find.text('Analyse'));
+      await tapVisible(t, find.byType(FilledButton));
       await t.enterText(find.byType(TextField), '   \n  ');
-      await tapVisible(t, find.text('Analyse'));
+      await tapVisible(t, find.byType(FilledButton));
       await t.pumpAndSettle();
       expect(api.named('classify'), isEmpty);
       expect(find.byType(VerdictCard), findsNothing);
@@ -122,7 +122,7 @@ void main() {
       testWidgets('QA_tryApi_${name}_textReachesNativeUnmangled_andVerdictShown', (t) async {
         final api = await pump(t, (c) async => _v(label, text: text, conf: 0.77));
         await t.enterText(find.byType(TextField), '  $text  ');
-        await tapVisible(t, find.text('Analyse'));
+        await tapVisible(t, find.byType(FilledButton));
         await t.pumpAndSettle();
         final args = api.named('classify').single.arguments as Map;
         expect(args['text'], text); // trimmed, no mojibake
@@ -135,7 +135,7 @@ void main() {
       final long = 'OTP बताइए ' * 3000; // ~30k chars, mixed script
       final api = await pump(t, (c) async => _v('SCAM', text: long));
       await t.enterText(find.byType(TextField), long);
-      await tapVisible(t, find.text('Analyse'));
+      await tapVisible(t, find.byType(FilledButton));
       await t.pumpAndSettle();
       expect((api.named('classify').single.arguments as Map)['text'], long.trim());
       expect(find.byType(VerdictCard), findsOneWidget);
@@ -146,21 +146,21 @@ void main() {
       final gate = Completer<Object?>();
       final api = await pump(t, (c) => gate.future);
       await t.enterText(find.byType(TextField), 'hello');
-      await tapVisible(t, find.text('Analyse'));
-      expect(find.text('Analysing on device…'), findsOneWidget);
+      await tapVisible(t, find.byType(FilledButton));
+      expect(find.descendant(of: find.byType(FilledButton), matching: find.byType(CircularProgressIndicator)), findsOneWidget);
       expect(t.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNull);
       await t.tap(find.byType(FilledButton), warnIfMissed: false);
       expect(api.named('classify'), hasLength(1)); // double tap ignored
       gate.complete(_v('SAFE'));
       await t.pumpAndSettle();
-      expect(find.text('Analyse'), findsOneWidget);
+      expect(find.descendant(of: find.byType(FilledButton), matching: find.byType(CircularProgressIndicator)), findsNothing);
       expect(t.widget<FilledButton>(find.byType(FilledButton)).onPressed, isNotNull);
     });
 
     testWidgets('QA_tryApi_nativeError_showsMessage_andButtonReenabled', (t) async {
       await pump(t, (c) async => throw PlatformException(code: 'MODEL', message: 'model not loaded'));
       await t.enterText(find.byType(TextField), 'hello');
-      await tapVisible(t, find.text('Analyse'));
+      await tapVisible(t, find.byType(FilledButton));
       await t.pumpAndSettle();
       expect(find.textContaining('model not loaded'), findsOneWidget);
       expect(find.byType(VerdictCard), findsNothing);
@@ -174,18 +174,22 @@ void main() {
         await t.enterText(find.byType(TextField), 'msg $i');
         FocusManager.instance.primaryFocus?.unfocus();
         await t.pump();
-        await tapVisible(t, find.text('Analyse'));
+        await tapVisible(t, find.byType(FilledButton));
         await t.pumpAndSettle();
       }
-      final cards = find.byType(VerdictCard);
-      expect(cards, findsNWidgets(2));
-      expect(find.descendant(of: cards.at(0), matching: find.text('सुरक्षित')), findsOneWidget); // newest (2nd call) first
+      // newest (2nd call, SAFE) must sit above the older SCAM check, whether that one is a card or a history row
+      final newest = find.text('सुरक्षित');
+      final older = find.textContaining('धोखाधड़ी');
+      await reveal(t, older);
+      expect(newest, findsOneWidget);
+      expect(t.getTopLeft(newest).dy, lessThan(t.getTopLeft(older).dy));
     });
 
-    testWidgets('QA_tryApi_sampleChip_fillsField', (t) async {
+    testWidgets('QA_tryApi_oneTapExample_fillsField', (t) async {
       await pump(t, (c) async => _v('SAFE'));
-      await tapVisible(t, find.textContaining('Beta khana kha liya'));
-      expect(t.widget<TextField>(find.byType(TextField)).controller!.text, startsWith('Beta khana kha liya'));
+      final example = find.byKey(const Key('try_example'));
+      await tapVisible(t, example);
+      expect(t.widget<TextField>(find.byType(TextField)).controller!.text, isNotEmpty);
     });
   });
 

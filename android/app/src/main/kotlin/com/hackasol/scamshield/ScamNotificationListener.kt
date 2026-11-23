@@ -13,7 +13,6 @@ import com.hackasol.scamshield.core.GemmaPrompt
 import com.hackasol.scamshield.core.graph.ClaimParsers
 import com.hackasol.scamshield.core.graph.GraphContext
 import com.hackasol.scamshield.core.graph.KnowledgeGraph
-import com.hackasol.scamshield.core.graph.PersistentKnowledgeGraph
 import com.hackasol.scamshield.core.NotificationMapper
 import com.hackasol.scamshield.core.Source
 import com.hackasol.scamshield.core.Verdict
@@ -82,7 +81,7 @@ class ScamNotificationListener : NotificationListenerService() {
             NotificationMapper(),
             { text, src -> TextApi.classify(ClassifyRequest(text, source = src)) },
             { v, _ -> main.post { safe("dispatch") { dispatcher.dispatch(v, v.label, v.label, v.risk) } } },
-            PersistentKnowledgeGraph(SqliteKnowledgeGraph(this)),
+            TextApi.graph(this),   // the same instance the caption path reads
             TextApi::classify,
         )
     }

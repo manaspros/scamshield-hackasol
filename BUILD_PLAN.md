@@ -228,6 +228,11 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
   - **Files**: `scripts/check.sh`  **Depends on**: all unblocked tasks
   - **Done when**: `bash scripts/check.sh && bash scripts/trace_report.sh` exits 0 and `REL` succeeds; each ID pass or blocked, none failing
 
+## Phase 8 — Demo Lab
+- [x] T8.1 [sonnet] [UI] Demo Lab: feature-flagged (demo_mode: on in debug, Settings switch, 7 taps on the version row in release) scenario runner in Help; 11 scripted synthetic scenarios drive the real pipeline (core/Pipeline.kt shared with TextApi) on an isolated demo graph + log and show a 6-stage timeline (event, Known context, masked rule hits, Gemma output, fusion raisedBy, [DEMO] alert) with PASS/FAIL per step
+  - **Files**: `K/core/Pipeline.kt`, `K/core/demo/DemoScenarios.kt`, `K/core/demo/DemoRunner.kt`, `K/DemoChannel.kt`, `K/TextApi.kt`, `K/AlertDispatcher.kt`, `K/MainActivity.kt`, `K/ScamNotificationListener.kt`, `K/core/graph/GraphContext.kt`, `KT/core/demo/DemoScenariosTest.kt`, `lib/screens/demo_lab_screen.dart`, `lib/demo/demo_flag.dart`, `lib/main.dart`, `lib/screens/settings_screen.dart`, `test/demo_lab_screen_test.dart`  **Depends on**: T5.3, T2.7, T4.2, T5.8
+  - **Done when**: `KT(DemoScenariosTest)` passes T8_1_*; `FT(demo_lab_screen_test.dart)` passes `T8_1_hiddenWhenFlagOff`, `T8_1_runShowsTimeline`; `APP` succeeds; KALL and flutter test green
+
 ## Traceability
 PS must-haves and bonus (handoff §3 rows):
 | Item | Tasks |

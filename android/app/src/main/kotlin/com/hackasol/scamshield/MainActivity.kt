@@ -37,7 +37,7 @@ class MainActivity : FlutterActivity() {
 
     companion object { private const val REQ_IMPORT = 4201
         private const val REQ_NOTIF = 4203
-        private val PREF_KEYS = setOf("lesson_best_v1", "district", "lang_v1", "captions_ack_v1") }
+        private val PREF_KEYS = setOf("lesson_best_v1", "district", "lang_v1", "captions_ack_v1", "demo_mode") }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
@@ -170,6 +170,7 @@ class MainActivity : FlutterActivity() {
         })
 
         TrendChannel.register(this, messenger)
+        DemoChannel.register(this, messenger)
     }
 
     private fun isServiceEnabled(): Boolean {

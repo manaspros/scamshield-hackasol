@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'demo/demo_flag.dart';
+import 'screens/demo_lab_screen.dart';
 import 'screens/family_screen.dart';
 import 'screens/lessons_screen.dart';
 import 'screens/live_feed_screen.dart';
@@ -57,6 +59,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    DemoFlag.load(); // re-reads demo_mode; _HelpHub listens to DemoFlag.enabled
     WidgetsBinding.instance.addPostFrameCallback((_) => _openInitialRoute());
   }
 
@@ -176,6 +179,21 @@ class _HelpHub extends StatelessWidget {
           label: 'कॉल रिकॉर्डिंग',
           caption: 'Check a recorded call',
           onTap: () => onOpen('रिकॉर्डिंग', const RecordingScreen()),
+        ),
+        ValueListenableBuilder<bool>(
+          valueListenable: DemoFlag.enabled,
+          builder: (_, on, _) => on
+              ? Padding(
+                  padding: const EdgeInsets.only(top: Sp.m),
+                  child: ActionTile(
+                    key: const Key('tile_demo_lab'),
+                    icon: Icons.science,
+                    label: 'डेमो लैब',
+                    caption: 'Demo Lab',
+                    onTap: () => onOpen('डेमो लैब', const DemoLabScreen()),
+                  ),
+                )
+              : const SizedBox.shrink(),
         ),
       ],
     );

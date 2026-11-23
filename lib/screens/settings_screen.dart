@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../api/text_api.dart';
+import '../demo/demo_flag.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 import '../widgets/section_header.dart';
@@ -62,11 +63,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? _district;
   bool _loaded = false, _failed = false, _busy = false, _ok = true;
   String? _hi, _en; // export result message, Hindi first
+  int _versionTaps = 0;
 
   @override
   void initState() {
     super.initState();
     _load();
+    DemoFlag.load();
   }
 
   @override
@@ -395,6 +398,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// Hidden enable for release builds: 7 taps on the version row turn Demo mode on.
+  void _versionTap() {
+    if (++_versionTaps < 7) return;
+    _versionTaps = 0;
+    DemoFlag.set(true);
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+      const SnackBar(content: Text('डेमो मोड चालू · Demo mode on')),
+    );
+  }
+
   Future<void> _set(String key, Object? value) async {
     final s = await TextApi.setSettings({key: value});
     if (mounted) setState(() => _s = s);
@@ -493,6 +506,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         _trendSection(context),
+        const Divider(),
+        ValueListenableBuilder<bool>(
+          valueListenable: DemoFlag.enabled,
+          builder: (_, on, _) => SwitchListTile(
+            key: const Key('demoModeSwitch'),
+            title: const Text('Demo mode'),
+            subtitle: const Text('डेमो मोड: मदद टैब में "डेमो लैब" दिखाएँ'),
+            value: on,
+            onChanged: DemoFlag.set,
+          ),
+        ),
+        ListTile(
+          key: const Key('appVersion'),
+          title: const Text('ScamShield'),
+          subtitle: const Text('Version $kAppVersion'),
+          onTap: _versionTap,
+        ),
       ],
     );
   }

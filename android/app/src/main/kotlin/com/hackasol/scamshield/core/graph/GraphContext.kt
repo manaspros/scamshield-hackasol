@@ -45,7 +45,8 @@ object GraphContext {
         // Cold graph: weak signals (normal number, unknown link) are what every new user's first messages look like;
         // stacked, they would raise SAFE to SUSPICIOUS on no real evidence.
         if (graph.isEmpty) flags = flags.filter { it.kind != FlagKind.NON_DLT_SENDER && it.kind != FlagKind.LINK_NOT_ALLOWLISTED }
-        return flags + ContextRules.mistakenTransfer(message, graph, nowMs)
+        // Mistaken-transfer first: when it raises, its reason leads the alert (the weak claim flags follow).
+        return ContextRules.mistakenTransfer(message, graph, nowMs) + flags
     }
 
     private fun ago(ms: Long): String = when {
