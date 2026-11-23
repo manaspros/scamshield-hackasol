@@ -33,6 +33,8 @@ object ClaimParsers {
     private val AMOUNT_PREFIX = UnicodeRegex.of("(?:₹|\\brs\\.?|\\binr\\b|रुपये|रुपए|रु\\.?)\\s*$NUM$MULT")
     private val AMOUNT_SUFFIX = UnicodeRegex.of("$NUM$MULT\\s*(?:रुपये|रुपए|रुपया|rupees|rupee|rupaye|rupay)")
     private val AMOUNT_WORD = UnicodeRegex.of("$NUM\\s*($WORD_MULT)")
+    // "the 1K" with no rupee word: last resort, so "Rs 1,000" and "1 hazaar" still win.
+    private val AMOUNT_K = UnicodeRegex.of("(?<![\\p{L}0-9.,])([0-9]{1,3}(?:\\.[0-9])?)\\s?(k)(?![\\p{L}0-9])")
     // shortcut: no domain-suffix list for UPI handles; the lookahead only rejects emails like a@b.com. Upgrade if real handles false-match.
     private val UPI = UnicodeRegex.of("(?<![\\w.@-])[a-z0-9._-]{2,}@[a-z][a-z0-9]+(?![a-z0-9]|\\.[a-z])")
     // shortcut: bare hosts need a common TLD (avoids "Dear customer.Your" -> host); a link on a rare TLD without a scheme is missed. Upgrade with a real TLD list.
@@ -56,7 +58,7 @@ object ClaimParsers {
     private val EV_BILL = UnicodeRegex.of(
         "\\b(?:bill|invoice)\\b.{0,40}\\b(?:generated|due|ready|payable|baaki|bakaya|baki)\\b|\\bdue date\\b|बिल.{0,40}बकाया",
     )
-    private val EV_CREDIT = UnicodeRegex.of("\\bcredited\\b|\\bcredit of\\b|\\bjama\\s+(?:ho|hue|kiye|kar)|\\bcredit\\s+ho\\s+gaye|जमा")
+    private val EV_CREDIT = UnicodeRegex.of("\\bcredited\\b|\\bdeposited\\b|\\bcredit of\\b|\\bjama\\s+(?:ho|hue|kiye|kar)|\\bcredit\\s+ho\\s+gaye|जमा")
     private val EV_DEBIT = UnicodeRegex.of(
         "\\bdebited\\b|\\bdebit of\\b|\\bspent\\b|\\bcharged\\b|\\bdeducted\\b|\\bwithdrawn\\b|\\bkat\\s+(?:gaye|gaya|gayi)\\b|\\bkate\\s+(?:gaye|hain|hai)\\b|\\bpaise\\s+kate\\b|कट गए|कटे|डेबिट(?!\\s*कार्ड)",
     )
@@ -103,7 +105,7 @@ object ClaimParsers {
 
     fun amountRupees(text: String): Double? {
         val t = devanagariDigitsToAscii(text)
-        val m = AMOUNT_PREFIX.find(t) ?: AMOUNT_SUFFIX.find(t) ?: AMOUNT_WORD.find(t) ?: return null
+        val m = AMOUNT_PREFIX.find(t) ?: AMOUNT_SUFFIX.find(t) ?: AMOUNT_WORD.find(t) ?: AMOUNT_K.find(t) ?: return null
         val n = m.groupValues[1].replace(",", "").toDoubleOrNull() ?: return null
         return n * multiplier(m.groupValues.getOrElse(2) { "" })
     }

@@ -20,6 +20,9 @@ open class KnowledgeGraph(private val store: GraphStore? = null, private val clo
     private val events = mutableListOf<GraphEvent>()
     private val trust = mutableMapOf<Pair<EntityKind, String>, TrustRecord>()
     private val alertRefs = mutableMapOf<Long, AlertRef>()
+    // shortcut: in memory only (not in graph.db). The "send it back" follow-up comes within hours, while the listener
+    // process is alive; a process restart forgets these. Persist them if follow-ups after a restart are missed.
+    private val spoofedCredits = mutableListOf<GraphEvent>()
     private var lastPruneMs = 0L
 
     init {
@@ -45,7 +48,8 @@ open class KnowledgeGraph(private val store: GraphStore? = null, private val clo
 
     @Synchronized
     fun ingest(message: String, sender: String, tsMs: Long, trusted: Boolean = true) {
-        if (!trusted) return   // a flagged message writes nothing, not even the cold-start counter
+        noteSpoofedCredit(message, sender.trim(), tsMs)   // runs for flagged messages too: it is a record of a fake, never trust
+        if (!trusted) return   // a flagged message writes nothing else, not even the cold-start counter
         ingested++
         val s = sender.trim()
         val c = ClaimParsers.parse(message, s)
@@ -78,6 +82,21 @@ open class KnowledgeGraph(private val store: GraphStore? = null, private val clo
         maybePrune()
     }
 
+    /**
+     * A "money credited" alert from a non-DLT sender is a fake bank SMS. Kept apart from [events] (it is not a real
+     * event and must never make a brand or sender look known), so a later "send it back" can be tied to it.
+     */
+    private fun noteSpoofedCredit(message: String, s: String, tsMs: Long) {
+        if (s.isEmpty() || ClaimVsContext.isDltHeader(s) || EventType.CREDIT !in ClaimParsers.eventTypes(message)) return
+        if (!ContextRules.isBankAlertShape(message)) return
+        spoofedCredits += GraphEvent(ClaimParsers.brandFromText(message).orEmpty(), EventType.CREDIT, tsMs, s, ClaimParsers.amountRupees(message))
+        if (spoofedCredits.size > MAX_SPOOFED) spoofedCredits.removeAt(0)   // bounded; prune() drops old ones
+    }
+
+    /** Fake credit alerts (from a non-DLT sender) seen since [sinceMs]. */
+    @Synchronized
+    fun recentSpoofedCredits(sinceMs: Long): List<GraphEvent> = spoofedCredits.filter { it.tsMs >= sinceMs }
+
     // Wall clock, not the message time: a forged far-future timestamp must not trigger a prune or defer the next one.
     private fun maybePrune() {
         val nowMs = clock()
@@ -95,6 +114,7 @@ open class KnowledgeGraph(private val store: GraphStore? = null, private val clo
         numbers.values.removeAll { it < entityCut }
         upiIds.values.removeAll { it < entityCut }
         alertRefs.keys.removeAll { it < entityCut }
+        spoofedCredits.removeAll { it.tsMs < nowMs - ContextRules.CREDIT_WINDOW_MS }
         store?.prune(entityCut)
     }
 
@@ -102,7 +122,7 @@ open class KnowledgeGraph(private val store: GraphStore? = null, private val clo
     @Synchronized
     fun clear(): Boolean {
         ingested = 0
-        senders.clear(); numbers.clear(); upiIds.clear(); events.clear(); trust.clear(); alertRefs.clear()
+        senders.clear(); numbers.clear(); upiIds.clear(); events.clear(); trust.clear(); alertRefs.clear(); spoofedCredits.clear()
         lastPruneMs = 0L
         return store?.clear() ?: true
     }
@@ -182,6 +202,7 @@ open class KnowledgeGraph(private val store: GraphStore? = null, private val clo
 
     companion object {
         const val COLD_START_TEXT = "No record since ScamShield was installed"
+        private const val MAX_SPOOFED = 50
     }
 }
 

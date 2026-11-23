@@ -3,7 +3,7 @@ package com.hackasol.scamshield.core.graph
 enum class FlagKind {
     NO_MATCHING_EVENT, NON_DLT_SENDER, LINK_NOT_ALLOWLISTED,
     FAKE_CREDIT, RETURN_VIA_BANK_ONLY, NON_1600_BANK_CALL, UNVERIFIED_DELIVERY,
-    LOOKALIKE_LINK, NEW_UPI_PAY, DEBIT_SCARE, REPORTED_ENTITY,
+    LOOKALIKE_LINK, NEW_UPI_PAY, DEBIT_SCARE, REPORTED_ENTITY, SPOOFED_BANK_SMS,
 }
 
 /** A reason to raise suspicion. Flags only ever raise a verdict; T5.3 wires that. */

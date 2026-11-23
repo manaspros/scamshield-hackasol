@@ -76,6 +76,14 @@ object Brands {
         b("ola", "Ola", "olacabs", "olacabs.com"),
     )
 
+    /** Brand ids that are banks (their alerts come only from DLT headers). */
+    private val BANK_IDS = setOf(
+        "hdfcbank", "sbi", "icicibank", "axisbank", "kotak", "pnb", "bankofbaroda", "canara", "unionbank", "yesbank", "indusind", "idfc",
+    )
+
+    /** True when [brand] (any alias) is a bank, or an unknown name ending in "bank" ("ExampleBank"). */
+    fun isBank(brand: String): Boolean = canonical(brand).let { it in BANK_IDS || it.endsWith("bank") }
+
     /** Aliases too ordinary as English words to spot a brand in free text; they still resolve DLT headers. */
     private val TEXT_STOP = setOf("vi", "axis", "ola", "bob", "lic", "baroda", "adani", "aadhaar")
 

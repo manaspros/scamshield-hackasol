@@ -73,11 +73,13 @@ object DemoScenarios {
         DemoScenario(
             "mistaken_a", "sms",
             "गलती से भेजे पैसे: नकली क्रेडिट SMS", "Mistaken transfer: fake credit SMS",
-            "आम नंबर से SMS आता है कि ₹5,000 जमा हुए। फिर उसी का कॉल: 'गलती से भेज दिए, वापस कर दो'। बैंक का कोई असली क्रेडिट अलर्ट नहीं मिला, इसलिए चेतावनी।",
-            "A normal-number SMS claims Rs 5,000 arrived, then the same person calls: 'sent by mistake, send it back'. " +
-                "The graph holds no real credit alert, so the request is flagged.",
+            "आम नंबर से SMS आता है कि ₹5,000 जमा हुए: बैंक ऐसे अलर्ट आम नंबर से नहीं भेजते, इसलिए सावधान। फिर उसी का कॉल: " +
+                "'गलती से भेज दिए, वापस कर दो'। वह SMS नकली था, कोई पैसा नहीं आया, इसलिए ठगी।",
+            "A normal-number SMS claims Rs 5,000 arrived: banks never send alerts from a mobile number, so it is flagged. " +
+                "Then the same person calls: 'sent by mistake, send it back'. That SMS was fake and no money arrived: scam.",
             listOf(
-                sms("9800000010", "आपके खाते में ₹5,000 जमा हुए। कृपया अपना बैलेंस देखें।", Label.SAFE, setOf(FlagKind.NON_DLT_SENDER), FIRST),
+                sms("9800000010", "आपके खाते में ₹5,000 जमा हुए। कृपया अपना बैलेंस देखें।", Label.SUSPICIOUS,
+                    setOf(FlagKind.SPOOFED_BANK_SMS, FlagKind.NON_DLT_SENDER), FIRST),
                 call("9800000010", "Maine galti se aapko 5000 bhej diye, please wapas kar do", Label.SCAM, setOf(FlagKind.FAKE_CREDIT)),
             ),
         ),
@@ -100,7 +102,7 @@ object DemoScenarios {
             "A normal-number SMS says Rs 9,999 was debited, 'call to cancel'. The caller then asks for the OTP.",
             listOf(
                 sms("9800000020", "Your a/c debited Rs 9,999. If not you, call 98XXXXXX10 to cancel", Label.SUSPICIOUS,
-                    setOf(FlagKind.DEBIT_SCARE, FlagKind.NON_DLT_SENDER), FIRST),
+                    setOf(FlagKind.SPOOFED_BANK_SMS, FlagKind.DEBIT_SCARE, FlagKind.NON_DLT_SENDER), FIRST),
                 call("9800000030", "Main bank se bol raha hoon, OTP batao cancel karne ke liye", Label.SCAM, setOf(FlagKind.NON_1600_BANK_CALL)),
             ),
         ),
