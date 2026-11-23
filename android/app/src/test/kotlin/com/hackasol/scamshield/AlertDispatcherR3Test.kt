@@ -8,6 +8,7 @@ import com.hackasol.scamshield.core.Source
 import com.hackasol.scamshield.core.Verdict
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -82,6 +83,18 @@ class AlertDispatcherR3Test {
         d.dispatch(v(Label.SUSPICIOUS, Source.SMS), Label.SUSPICIOUS, Label.SUSPICIOUS, 0.5)
         sched.runAll()
         assertEquals(listOf(AlertNotificationMapper.CHANNEL_ID_SILENT, AlertNotificationMapper.CHANNEL_ID_ALERTS), posted.map { it.channelId })
+    }
+
+    @Test fun R3_ALERT_suspiciousDoesNotReplaceScamInShade() {
+        val d = dispatcher()
+        d.dispatch(v(Label.SCAM, Source.SMS), Label.SCAM, Label.SCAM, 0.9)
+        sched.runAll()   // the 6000 ms heads-up fires
+        d.dispatch(v(Label.SUSPICIOUS, Source.SMS), Label.SUSPICIOUS, Label.SUSPICIOUS, 0.5)
+        assertEquals(2, posted.size)
+        val (scam, susp) = posted
+        assertNotEquals(scam.notificationId, susp.notificationId)
+        assertEquals(7001, scam.notificationId)
+        assertEquals(AlertNotificationMapper.CHANNEL_ID_SILENT, susp.channelId)
     }
 
     @Test fun R3_ALERT_pasteScamHeadsUpIsImmediate() {

@@ -64,12 +64,10 @@ class AndroidNotificationPoster(private val ctx: Context) : NotificationPoster {
             b.setContentIntent(pi)   // tapping the body opens the last action's route
         }
         // onlyAlertOnce would mute a second, different scam while the first is still in the shade: cancel so it is a new post.
-        if (spec.onlyAlertOnce) nm.cancel(NOTIFICATION_ID)
+        if (spec.onlyAlertOnce) nm.cancel(spec.notificationId)
         // Without POST_NOTIFICATIONS (Android 13+) notify() is a silent no-op; nothing to catch.
-        nm.notify(NOTIFICATION_ID, b.build())
+        nm.notify(spec.notificationId, b.build())   // fixed id per tier: a newer alert replaces the older one of the same tier only
     }
-
-    private companion object { const val NOTIFICATION_ID = 7001 }   // fixed: a newer alert replaces the older one
 }
 
 /**

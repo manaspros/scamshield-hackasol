@@ -14,6 +14,8 @@ data class NotificationFields(
     val group: String? = null,
     /** CATEGORY_MESSAGE (true) vs CATEGORY_STATUS. Never ALARM: an alarm category would punch through Do Not Disturb. */
     val messageCategory: Boolean = false,
+    /** Fixed per tier so a silent post can never replace a SCAM alert still in the shade. */
+    val notificationId: Int = AlertNotificationMapper.ID_ALERTS,
 )
 
 /** Pure plan -> notification mapping (no Android types). */
@@ -22,6 +24,9 @@ object AlertNotificationMapper {
     const val CHANNEL_ID_ALERTS = "scam_alerts_v2"
     /** Silent shade-only channel (IMPORTANCE_LOW): suspicious messages and the in-call SCAM record. */
     const val CHANNEL_ID_SILENT = "scam_suspicious"
+    const val ID_ALERTS = 7001
+    /** Not 7002: ApkGuard and PaymentGuardNotifier already use it. */
+    const val ID_SILENT = 7003
     const val GROUP_KEY = "scamshield_alerts"
     const val ROUTE_REPORT = "report"
     /** No screen of its own: Flutter ignores unknown routes, so this simply opens the app. */
@@ -41,6 +46,6 @@ object AlertNotificationMapper {
             actions = listOf(report, ActionSpec(L10n.detailsAction(lang), ROUTE_DETAILS)),
             timeoutMs = AlertPolicy.notificationTimeoutMs(plan), onlyAlertOnce = true, group = GROUP_KEY, messageCategory = true)
         else NotificationFields(CHANNEL_ID_SILENT, title, text, priorityHigh = false, actions = listOf(report),
-            timeoutMs = AlertPolicy.notificationTimeoutMs(plan))
+            timeoutMs = AlertPolicy.notificationTimeoutMs(plan), notificationId = ID_SILENT)
     }
 }
