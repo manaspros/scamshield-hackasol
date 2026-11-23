@@ -165,6 +165,10 @@
         {
           "title": "Check the name",
           "body": "Before paying, check the person’s name and amount shown on your phone."
+        },
+        {
+          "title": "Buyers and QR codes",
+          "body": "A buyer on a marketplace says “scan this QR to receive payment”. Scanning a QR only ever SENDS money. To receive money, share only your UPI ID. Never scan, never enter a PIN."
         }
       ],
       "questions": [
@@ -315,6 +319,10 @@
         {
           "title": "Do not pay under fear",
           "body": "Do not scan a payment QR or share an OTP because of a threat about a parcel."
+        },
+        {
+          "title": "Parcel and police call",
+          "body": "A call says drugs were found in your parcel and passes you to the “police”. This is a digital arrest scam. No agency arrests anyone on a video call. Hang up and call 1930."
         }
       ],
       "questions": [
@@ -365,6 +373,10 @@
         {
           "title": "Ask for help",
           "body": "If an app threatens you or demands money, save the message and seek help from someone you trust."
+        },
+        {
+          "title": "Fees and harassment",
+          "body": "A real lender does not ask for a fee before the loan. If callers harass you or message your contacts, do not pay. Save proof and report at cybercrime.gov.in or call 1930."
         }
       ],
       "questions": [
@@ -397,6 +409,240 @@
           ],
           "correctIndex": 0,
           "explanation": "Keep evidence and seek trusted help."
+        }
+      ]
+    },
+    {
+      "id": "electricity_bill",
+      "title": "Electricity bill scam",
+      "cards": [
+        {
+          "title": "Power cut threat",
+          "body": "A message says your power will be cut tonight unless you pay or call a number. Do not. Check your bill in the official electricity app."
+        },
+        {
+          "title": "Remember",
+          "body": "Never share your OTP or PIN. Receiving money never needs a PIN. Call 1930 for help."
+        }
+      ],
+      "questions": [
+        {
+          "question": "What do you do?",
+          "options": [
+            "Call the number in the message",
+            "Check the official app or office",
+            "Send the OTP"
+          ],
+          "correctIndex": 1,
+          "explanation": "Real power companies do not cut supply by a private message."
+        }
+      ]
+    },
+    {
+      "id": "sim_swap",
+      "title": "SIM block scam",
+      "cards": [
+        {
+          "title": "SIM will be blocked",
+          "body": "A caller says your SIM will be blocked unless you press a key, share a code, or install an app. Hang up. Visit your mobile shop yourself."
+        },
+        {
+          "title": "Remember",
+          "body": "Never share your OTP or PIN. Receiving money never needs a PIN. Call 1930 for help."
+        }
+      ],
+      "questions": [
+        {
+          "question": "What do you do?",
+          "options": [
+            "Share the code to keep the SIM",
+            "Hang up and visit the mobile shop",
+            "Install the app they send"
+          ],
+          "correctIndex": 1,
+          "explanation": "A SIM swap needs your code. Never give it."
+        }
+      ]
+    },
+    {
+      "id": "customer_care",
+      "title": "Fake customer care",
+      "cards": [
+        {
+          "title": "Search result numbers",
+          "body": "A number found in a search or on a social post may be a fake customer care line. Use the number in the official app or on your card."
+        },
+        {
+          "title": "Remember",
+          "body": "Never share your OTP or PIN. Receiving money never needs a PIN. Call 1930 for help."
+        }
+      ],
+      "questions": [
+        {
+          "question": "Where do you get a help number?",
+          "options": [
+            "A search result or post",
+            "The official app or your card",
+            "A caller who rings you"
+          ],
+          "correctIndex": 1,
+          "explanation": "Fake helpers ask you to install an app or approve a payment."
+        }
+      ]
+    },
+    {
+      "id": "upi_collect",
+      "title": "UPI collect request",
+      "cards": [
+        {
+          "title": "A request takes money",
+          "body": "A collect request asks YOU to pay. If someone says \"approve to receive money\", it is a trick. Decline it."
+        },
+        {
+          "title": "Remember",
+          "body": "Never share your OTP or PIN. Receiving money never needs a PIN. Call 1930 for help."
+        }
+      ],
+      "questions": [
+        {
+          "question": "A stranger says \"approve and enter PIN to get money\". What is true?",
+          "options": [
+            "You will receive money",
+            "Money will leave your account",
+            "Nothing will happen"
+          ],
+          "correctIndex": 1,
+          "explanation": "A PIN is only for paying. Decline the request."
+        }
+      ]
+    },
+    {
+      "id": "task_job",
+      "title": "Task jobs and fast profit",
+      "cards": [
+        {
+          "title": "Pay first, earn later",
+          "body": "Part-time task jobs, like-and-review work, trading or crypto groups that promise sure profit are traps. Real jobs do not ask you to pay first."
+        },
+        {
+          "title": "Remember",
+          "body": "Never share your OTP or PIN. Receiving money never needs a PIN. Call 1930 for help."
+        }
+      ],
+      "questions": [
+        {
+          "question": "A group promises guaranteed returns if you deposit money. What is it?",
+          "options": [
+            "A safe plan",
+            "A likely scam",
+            "A bank offer"
+          ],
+          "correctIndex": 1,
+          "explanation": "No one can guarantee profit. Stop and tell someone you trust."
+        }
+      ]
+    },
+    {
+      "id": "sextortion",
+      "title": "Video call blackmail",
+      "cards": [
+        {
+          "title": "Do not pay, do not delete",
+          "body": "If someone threatens to share private photos or a video call recording, stay calm. This is not your fault. Do not pay. Do not delete the chats. Tell someone you trust and report at cybercrime.gov.in."
+        },
+        {
+          "title": "Remember",
+          "body": "Never share your OTP or PIN. Receiving money never needs a PIN. Call 1930 for help."
+        }
+      ],
+      "questions": [
+        {
+          "question": "Someone threatens you with a private video. What do you do?",
+          "options": [
+            "Pay to end it",
+            "Do not pay, keep chats, report",
+            "Delete everything"
+          ],
+          "correctIndex": 1,
+          "explanation": "Paying brings more demands. Keep the proof and report."
+        }
+      ]
+    },
+    {
+      "id": "lottery",
+      "title": "Lottery and prize",
+      "cards": [
+        {
+          "title": "You did not enter",
+          "body": "A message says you won a lottery, a quiz prize or a gift. If you never entered, it is fake. Real prizes never ask for a fee or a PIN."
+        },
+        {
+          "title": "Remember",
+          "body": "Never share your OTP or PIN. Receiving money never needs a PIN. Call 1930 for help."
+        }
+      ],
+      "questions": [
+        {
+          "question": "You \"won\" a prize but must pay a fee first. What is it?",
+          "options": [
+            "A real prize",
+            "A scam",
+            "A bank gift"
+          ],
+          "correctIndex": 1,
+          "explanation": "A prize that asks for money first is a scam."
+        }
+      ]
+    },
+    {
+      "id": "family_emergency",
+      "title": "Relative in trouble",
+      "cards": [
+        {
+          "title": "Call them back",
+          "body": "A voice or message says a relative is in trouble and needs money now, from a new number. Hang up. Call the relative back on their OLD number."
+        },
+        {
+          "title": "Remember",
+          "body": "Never share your OTP or PIN. Receiving money never needs a PIN. Call 1930 for help."
+        }
+      ],
+      "questions": [
+        {
+          "question": "A \"relative\" on a new number asks for money. First step?",
+          "options": [
+            "Send money fast",
+            "Call them on their old number",
+            "Share the OTP"
+          ],
+          "correctIndex": 1,
+          "explanation": "Also ask for the family code from the app Family screen. A scammer will not know it."
+        }
+      ]
+    },
+    {
+      "id": "phishing_link",
+      "title": "Fake links",
+      "cards": [
+        {
+          "title": "Look before you tap",
+          "body": "Be careful with shortened links, links made of numbers, misspelt bank names and links starting with xn--. Do not tap them. Open the official app yourself."
+        },
+        {
+          "title": "Remember",
+          "body": "Never share your OTP or PIN. Receiving money never needs a PIN. Call 1930 for help."
+        }
+      ],
+      "questions": [
+        {
+          "question": "You get a link about your bank account. What do you do?",
+          "options": [
+            "Tap it quickly",
+            "Open the official bank app",
+            "Forward it to friends"
+          ],
+          "correctIndex": 1,
+          "explanation": "Typing or opening the official app is always safer than a link."
         }
       ]
     }

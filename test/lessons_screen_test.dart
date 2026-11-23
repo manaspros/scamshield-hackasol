@@ -89,8 +89,8 @@ void main() {
       await t.tap(find.byKey(const Key('quiz_next')));
       await t.pumpAndSettle();
     }
-    // 1 of 8 lessons at 100 -> score round(12.5) = 13
-    expect(t.widget<Text>(find.byKey(const Key('result_score'))).data, '13');
+    // 1 of 17 lessons at 100 -> score round(5.88) = 6
+    expect(t.widget<Text>(find.byKey(const Key('result_score'))).data, '6');
     expect((await store.loadBest())['otp'], 100);
     await t.scrollUntilVisible(find.byKey(const Key('result_back')), 200);
     await t.ensureVisible(find.byKey(const Key('result_back')));
@@ -99,7 +99,7 @@ void main() {
     await t.pumpAndSettle();
     await t.drag(find.byType(ListView), const Offset(0, 3000));
     await t.pumpAndSettle();
-    expect(t.widget<Text>(find.byKey(const Key('score_value'))).data, '13');
+    expect(t.widget<Text>(find.byKey(const Key('score_value'))).data, '6');
     expect(t.takeException(), isNull);
   });
 

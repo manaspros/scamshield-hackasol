@@ -1,5 +1,6 @@
 // Restyled screens must not overflow at text scale 2.0 on a 360x800 phone, light or dark.
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -109,8 +110,9 @@ void main() {
       final store = InMemoryQuizStore();
       await store.saveBest({'otp': 100});
       await _show(t, e.value, LessonsScreen(store: store, bundle: _DiskBundle()));
-      expect(find.text('पाठ 1/8 पूरे'), findsOneWidget);
-      expect(t.widget<Text>(find.byKey(const Key('score_value'))).data, '13');
+      final n = (jsonDecode(File('assets/lessons/hi.json').readAsStringSync())['lessons'] as List).length;
+      expect(find.text('पाठ 1/$n पूरे'), findsOneWidget);
+      expect(t.widget<Text>(find.byKey(const Key('score_value'))).data, '${(100 / n).round()}');
       expect(t.takeException(), isNull);
     });
 
@@ -135,8 +137,9 @@ void main() {
         await t.tap(find.byKey(const Key('quiz_next')));
         await t.pumpAndSettle();
       }
-      expect(find.text('+13 अंक'), findsOneWidget);
-      expect(t.widget<Text>(find.byKey(const Key('result_score'))).data, '13');
+      final pts = (100 / lessons.length).round();
+      expect(find.text('+$pts अंक'), findsOneWidget);
+      expect(t.widget<Text>(find.byKey(const Key('result_score'))).data, '$pts');
       expect(t.takeException(), isNull);
     });
 

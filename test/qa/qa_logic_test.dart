@@ -90,7 +90,7 @@ void main() {
       final store = InMemoryQuizStore();
       await store.saveBest({'otp': 100, 'kyc': 50});
       await show(t, themes['light']!(), LessonsScreen(store: store, bundle: DiskBundle(), initialLang: 'en'), scale: 1.0);
-      expect(t.widget<Text>(find.byKey(const Key('score_value'))).data, '19'); // (100+50)/8 = 18.75
+      expect(t.widget<Text>(find.byKey(const Key('score_value'))).data, '9'); // (100+50)/17 lessons = 8.82
       expect(find.text('Best: 100%'), findsOneWidget);
       await tapVisible(t, find.byKey(const Key('lang_hi')));
       await t.pumpAndSettle();

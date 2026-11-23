@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../l10n/app_language.dart';
 import '../lessons/lesson_model.dart';
@@ -11,7 +10,7 @@ import '../widgets/press_scale.dart';
 import '../widgets/state_message.dart';
 import 'quiz_screen.dart';
 
-/// Lessons list: 8 icon-first tiles, per-topic best, and the overall literacy score.
+/// Lessons list: one icon-first tile per lesson, per-topic best, and the overall literacy score.
 class LessonsScreen extends StatefulWidget {
   const LessonsScreen({
     super.key,
@@ -37,6 +36,15 @@ const _icons = <String, IconData>{
   'kyc': Icons.badge,
   'courier': Icons.local_shipping,
   'loan_app': Icons.request_quote,
+  'electricity_bill': Icons.bolt,
+  'sim_swap': Icons.sim_card,
+  'customer_care': Icons.support_agent,
+  'upi_collect': Icons.request_page,
+  'task_job': Icons.work,
+  'sextortion': Icons.videocam_off,
+  'lottery': Icons.card_giftcard,
+  'family_emergency': Icons.family_restroom,
+  'phishing_link': Icons.link_off,
 };
 
 class _LessonsScreenState extends State<LessonsScreen> {
