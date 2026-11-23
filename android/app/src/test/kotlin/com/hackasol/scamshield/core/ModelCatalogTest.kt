@@ -13,9 +13,13 @@ class ModelCatalogTest {
     }
 
     @Test fun recommendsLargestHostedThatFits() {
-        // Only the 1B is hosted today, so every phone that can run it gets it.
+        // 3n-E2B is not hosted yet, so every phone that can run the 1B gets it.
         assertEquals(ModelCatalog.DEFAULT_ID, ModelCatalog.recommend(12_000, 50_000).id)
         assertEquals(ModelCatalog.DEFAULT_ID, ModelCatalog.recommend(6_000, 20_000).id)
+    }
+
+    @Test fun lowRamPhoneGetsThe270M() {
+        assertEquals("gemma3-270m", ModelCatalog.recommend(3_500, 20_000).id)
     }
 
     @Test fun fallsBackToSmallestHostedWhenNothingFits() {

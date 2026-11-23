@@ -33,7 +33,14 @@ class ModelSpec {
 
 /// Same list as Kotlin `ModelCatalog.all`; used when the native side is missing (tests) or fails.
 const kFallbackCatalog = <ModelSpec>[
-  ModelSpec(id: 'gemma3-270m', name: 'Gemma 3 · 270M', file: 'gemma3-270m-it-q8.task', sizeMb: 300, minRamMb: 3000, tier: 'fast'),
+  ModelSpec(
+      id: 'gemma3-270m',
+      name: 'Gemma 3 · 270M',
+      file: 'gemma3-270m-it-q8.task',
+      url: 'https://github.com/AB527/open-model/releases/download/v1/gemma3-270m-it-q8.task',
+      sizeMb: 304,
+      minRamMb: 3000,
+      tier: 'fast'),
   ModelSpec(
       id: 'gemma3-1b-int4',
       name: 'Gemma 3 · 1B',

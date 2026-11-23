@@ -31,9 +31,11 @@ data class ModelSpec(
 object ModelCatalog {
     const val DEFAULT_ID = "gemma3-1b-int4"
 
-    // TODO(host): upload the 270M and 3n-E2B .task files to the GitHub release and fill in their URLs.
+    const val URL_270M = "https://github.com/AB527/open-model/releases/download/v1/gemma3-270m-it-q8.task"
+
+    // TODO(host): 3n-E2B (3.1 GB) is over GitHub's 2 GB asset limit; host it elsewhere and fill in its URL.
     val all: List<ModelSpec> = listOf(
-        ModelSpec("gemma3-270m", "Gemma 3 · 270M", "gemma3-270m-it-q8.task", null, 300, 3_000, "fast"),
+        ModelSpec("gemma3-270m", "Gemma 3 · 270M", "gemma3-270m-it-q8.task", URL_270M, 304, 3_000, "fast"),
         ModelSpec(DEFAULT_ID, "Gemma 3 · 1B", ModelConfig.FILENAME, ModelConfig.URL, 555, 4_000, "balanced"),
         ModelSpec("gemma3n-e2b", "Gemma 3n · E2B", "gemma-3n-E2B-it-int4.task", null, 3_100, 8_000, "best"),
     )
