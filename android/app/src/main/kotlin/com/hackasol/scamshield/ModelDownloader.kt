@@ -198,25 +198,30 @@ object ModelDownloader {
     fun voskDir(ctx: Context) = File(ctx.filesDir, SttModelConfig.DIR_NAME)
     /** The dir only appears after a full, successful unzip (extracted to a .tmp dir first, then renamed). */
     fun voskReady(ctx: Context) = voskDir(ctx).isDirectory
-    private fun voskZip(ctx: Context) = File(appModelsDir(ctx), "${SttModelConfig.ZIP_NAME}.download")
+    private fun voskZip(ctx: Context) = File(appModelsDir(ctx), "stt-model.zip.download")
+    /** Id of the speech model that is installed, or being downloaded ([SttModelConfig.all]). */
+    fun sttId(ctx: Context): String = prefs(ctx).getString("sttModelId", null) ?: SttModelConfig.default.id
+    private fun pendingSttId(ctx: Context): String = prefs(ctx).getString("sttPendingId", null) ?: sttId(ctx)
     private fun voskId(ctx: Context) = prefs(ctx).getLong("voskDownloadId", -1L)
     private fun setVoskId(ctx: Context, id: Long) = prefs(ctx).edit().putLong("voskDownloadId", id).apply()
 
     /** Starts the Vosk model download. Progress/result events go to EventBus "sttDownload" (same payload as "download"). */
-    suspend fun startVosk(ctx: Context, wifiOnly: Boolean): Map<String, Any?> = withContext(Dispatchers.IO) {
+    suspend fun startVosk(ctx: Context, wifiOnly: Boolean, id: String? = null): Map<String, Any?> = withContext(Dispatchers.IO) {
         val app = ctx.applicationContext
+        val spec = SttModelConfig.byId(id)
         try {
             cancelVosk(app)
-            val needed = SttModelConfig.ZIP_BYTES * 4 // zip + extracted copy + headroom
+            prefs(app).edit().putString("sttPendingId", spec.id).apply()
+            val needed = spec.zipBytes * 3 // zip + extracted copy + headroom
             val free = StatFs(appModelsDir(app).absolutePath).availableBytes
             if (free < needed) return@withContext err("Not enough storage: need ~${needed / (1024 * 1024)} MB free, have ${free / (1024 * 1024)} MB")
-            reachability(SttModelConfig.URL)?.let { return@withContext err(it) }
+            reachability(spec.url)?.let { return@withContext err(it) }
             voskZip(app).delete()
-            val req = DownloadManager.Request(Uri.parse(SttModelConfig.URL))
+            val req = DownloadManager.Request(Uri.parse(spec.url))
                 .setTitle("Speech model")
-                .setDescription("Offline Hindi speech recognition (~42 MB)")
+                .setDescription("Offline speech recognition: ${spec.name}")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationInExternalFilesDir(app, null, "models/${SttModelConfig.ZIP_NAME}.download")
+                .setDestinationInExternalFilesDir(app, null, "models/stt-model.zip.download")
                 .setAllowedOverMetered(!wifiOnly)
                 .setAllowedOverRoaming(false)
             setVoskId(app, dm(app).enqueue(req))
@@ -248,12 +253,14 @@ object ModelDownloader {
     private fun finishVosk(ctx: Context) {
         val zip = voskZip(ctx)
         val tmp = File(ctx.filesDir, "${SttModelConfig.DIR_NAME}.tmp")
+        val spec = SttModelConfig.byId(pendingSttId(ctx))
         setVoskId(ctx, -1)
         try {
-            if (!zip.exists() || zip.length() < SttModelConfig.ZIP_BYTES / 2) throw IllegalStateException("Downloaded file is too small — wrong URL?")
+            if (!zip.exists() || zip.length() < spec.zipBytes / 2) throw IllegalStateException("Downloaded file is too small — wrong URL?")
             unzip(zip, tmp)
             voskDir(ctx).deleteRecursively()
             if (!tmp.renameTo(voskDir(ctx))) throw IllegalStateException("Could not install model")
+            prefs(ctx).edit().putString("sttModelId", spec.id).remove("sttPendingId").apply()
             EventBus.emit("sttDownload", mapOf("status" to "INSTALLED", "message" to "Speech model ready"))
         } catch (t: Throwable) {
             Log.e(TAG, "finishVosk failed", t)

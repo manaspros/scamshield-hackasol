@@ -13,7 +13,7 @@ import '../l10n/strings_profile.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 import '../widgets/island.dart';
-import '../widgets/premium.dart';
+import '../widgets/device_card.dart';
 
 /// Pick which on-device model to download. The list comes from the online models.json (cached, with a built-in
 /// fallback), each download link is checked live, and the recommendation follows this phone's RAM and free space.
@@ -375,41 +375,7 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
         child: Text(t.$1, textAlign: TextAlign.center, style: th.textTheme.labelSmall?.copyWith(color: t.$2, fontWeight: FontWeight.w700)),
       );
 
-  Widget _deviceCard(ThemeData th, Pal p) {
-    Widget cell(String v, String k) => Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(Sp.m),
-            decoration: BoxDecoration(color: p.isDark ? const Color(0xFF2C2C2E) : p.page, borderRadius: BorderRadius.circular(14)),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(v, style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700))),
-              Text(k, style: th.textTheme.bodySmall?.copyWith(color: p.muted, fontSize: 14)),
-            ]),
-          ),
-        );
-    return PCard(
-      key: const Key('mp_device'),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [
-          Icon(Icons.smartphone_rounded, color: p.accent, size: 28),
-          const SizedBox(width: Sp.m),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(_t('m_phone'), style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-              Text(_dev.phoneLabel.isEmpty ? _t('m_unknown') : _dev.phoneLabel, style: th.textTheme.bodySmall?.copyWith(color: p.muted)),
-            ]),
-          ),
-        ]),
-        const SizedBox(height: Sp.m),
-        Row(children: [
-          cell(_dev.ramLabel, _t('m_ram')),
-          const SizedBox(width: Sp.s),
-          cell(_dev.soc.isEmpty ? '—' : _dev.soc, _t('m_chip')),
-          const SizedBox(width: Sp.s),
-          cell(_dev.storageLabel, _t('m_free')),
-        ]),
-      ]),
-    );
-  }
+  Widget _deviceCard(ThemeData th, Pal p) => DeviceCard(key: const Key('mp_device'), dev: _dev, t: _t);
 
   Widget _progress(ThemeData th, Pal p) {
     final done = (_dl['done'] as num?)?.toDouble() ?? 0;

@@ -1,7 +1,12 @@
 package com.hackasol.scamshield
 
+import android.Manifest
 import android.app.Activity
+import android.content.ContentUris
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.MediaStore
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
@@ -31,11 +36,14 @@ import kotlin.coroutines.coroutineContext
  * [RecordingPipeline] with [TextApi.classify] (Source.RECORDING) -> [CallReport], streamed to Dart.
  *
  * MethodChannel `scamshield/recording`:
- *   recording.status        -> {modelReady, busy}
+ *   recording.status        -> {modelReady, busy, sttId}
+ *   recording.list          -> {granted, items: [{uri, name, dateMs, durationMs}]} call recordings on the phone, newest first
+ *   recording.requestAccess -> null; asks for audio read access (the screen re-lists on resume)
+ *   recording.use {uri}     -> true; holds a listed recording as the pending Uri
  *   recording.pick          -> true if a file was chosen (held as the pending Uri), false if cancelled
  *   recording.pending       -> true if a Uri (picked or shared) is waiting
  *   recording.start         -> true; runs on the pending Uri, progress goes to the event channel
- *   recording.downloadModel -> true; Vosk model download, progress goes to the event channel
+ *   recording.downloadModel {id?} -> true; Vosk model download, progress goes to the event channel
  *   recording.cancel        -> true; stops a running job and forgets the pending Uri
  * EventChannel `scamshield/recording/events`: maps
  *   {stage: download|decode|stt|classify|done|error|shared, pct: 0..100,
@@ -50,6 +58,9 @@ class RecordingChannel(private val activity: Activity, private val scope: Corout
     private companion object {
         const val TAG = "ScamShield/Recording"
         const val REQ_PICK = 4204
+        const val REQ_AUDIO = 4205
+        /** Folder fragments OEM dialers save call recordings under (lower case, matched anywhere in the path). */
+        val CALL_DIRS = listOf("call", "phonerecord", "call_rec", "callrecord")
     }
 
     @Volatile private var pending: Uri? = null
@@ -67,12 +78,24 @@ class RecordingChannel(private val activity: Activity, private val scope: Corout
             when (call.method) {
                 "recording.status" -> {
                     ModelDownloader.watchVosk(activity) // resume progress tracking of an earlier download
-                    result.success(mapOf("modelReady" to ModelDownloader.voskReady(activity), "busy" to busy()))
+                    result.success(mapOf("modelReady" to ModelDownloader.voskReady(activity), "busy" to busy(),
+                        "sttId" to ModelDownloader.sttId(activity)))
+                }
+                "recording.list" -> scope.launch {
+                    val granted = audioGranted()
+                    val items = if (granted) withContext(Dispatchers.IO) { listCallRecordings() } else emptyList()
+                    result.success(mapOf("granted" to granted, "items" to items))
+                }
+                "recording.requestAccess" -> { activity.requestPermissions(arrayOf(audioPermission()), REQ_AUDIO); result.success(null) }
+                "recording.use" -> {
+                    val u = call.argument<String>("uri")
+                    if (u == null || !u.startsWith("content://")) result.error("BAD_URI", "content uri expected", null)
+                    else { pending = Uri.parse(u); result.success(true) }
                 }
                 "recording.pending" -> result.success(pending != null)
                 "recording.pick" -> pick(result)
                 "recording.start" -> start(result)
-                "recording.downloadModel" -> download(result)
+                "recording.downloadModel" -> download(result, call.argument<String>("id"))
                 "recording.cancel" -> {
                     job?.cancel()
                     if (downloadJob?.isActive == true) ModelDownloader.cancelVosk(activity)
@@ -126,9 +149,43 @@ class RecordingChannel(private val activity: Activity, private val scope: Corout
         return true
     }
 
+    // ---- call recordings already on the phone ----
+
+    private fun audioPermission() =
+        if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE
+
+    private fun audioGranted() = activity.checkSelfPermission(audioPermission()) == PackageManager.PERMISSION_GRANTED
+
+    /** Audio files under a call-recording folder (OEM dialers differ), newest first, at most 30. */
+    private fun listCallRecordings(): List<Map<String, Any?>> {
+        val out = mutableListOf<Map<String, Any?>>()
+        val pathCol = if (Build.VERSION.SDK_INT >= 29) MediaStore.Audio.Media.RELATIVE_PATH else @Suppress("DEPRECATION") MediaStore.Audio.Media.DATA
+        val cols = arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.DISPLAY_NAME, MediaStore.Audio.Media.DATE_ADDED,
+            MediaStore.Audio.Media.DURATION, pathCol)
+        try {
+            activity.contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, cols, null, null,
+                "${MediaStore.Audio.Media.DATE_ADDED} DESC")?.use { c ->
+                while (c.moveToNext() && out.size < 30) {
+                    val path = (c.getString(4) ?: "").lowercase()
+                    if (CALL_DIRS.none { path.contains(it) }) continue
+                    val id = c.getLong(0)
+                    out += mapOf(
+                        "uri" to ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id).toString(),
+                        "name" to (c.getString(1) ?: "").substringBeforeLast('.'),
+                        "dateMs" to c.getLong(2) * 1000,
+                        "durationMs" to c.getLong(3),
+                    )
+                }
+            }
+        } catch (t: Throwable) {
+            Log.e(TAG, "listing call recordings failed", t)
+        }
+        return out
+    }
+
     // ---- Vosk model download ----
 
-    private fun download(result: MethodChannel.Result) {
+    private fun download(result: MethodChannel.Result, id: String?) {
         if (busy()) { result.error("BUSY", "already working", null); return }
         downloadJob = scope.launch {
             // Subscribe before startVosk so no early "sttDownload" event is missed (the bus has no replay).
@@ -148,7 +205,7 @@ class RecordingChannel(private val activity: Activity, private val scope: Corout
                     }
                 }.collect()
             }
-            val started = ModelDownloader.startVosk(activity, AppSettings.wifiOnly)
+            val started = ModelDownloader.startVosk(activity, AppSettings.wifiOnly, id)
             if (started["status"] == "ERROR") { emit(error("download")); collector.cancel(); return@launch }
             collector.join()
         }
