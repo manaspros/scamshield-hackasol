@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="alert_scam">#FF6961</color>
+    <color name="alert_card">#F72C2C2E</color>
+    <color name="alert_ink">#F5F5F7</color>
+    <color name="alert_muted">#A1A1A6</color>
+    <color name="alert_chip">#3A3A3C</color>
+    <color name="alert_scam_tint">#29FF453A</color>
+    <color name="alert_accent">#2997FF</color>
+    <color name="alert_accent_tint">#2E2997FF</color>
+</resources>

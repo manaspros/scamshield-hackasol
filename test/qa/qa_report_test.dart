@@ -60,6 +60,8 @@ class _Native {
         return pick(openResult);
       case 'golden.share':
         return pick(shareResult);
+      case 'attach.pick':
+        return const [];
     }
     return null;
   }
@@ -74,7 +76,7 @@ _Native _install({Map<String, Object?>? golden, bool evidence = true}) {
 }
 
 Future<void> _open(WidgetTester t, ThemeData theme, {double scale = 2.0, String lang = 'en'}) async {
-  await show(t, theme, ReportScreen(initialLang: lang), scale: scale, settle: false);
+  await show(t, theme, ReportScreen(initialLang: lang, llm: null), scale: scale, settle: false);
   await t.pump();
   await t.pump();
 }
@@ -82,11 +84,30 @@ Future<void> _open(WidgetTester t, ThemeData theme, {double scale = 2.0, String 
 Future<void> _choose(WidgetTester t, String key) async {
   await tapVisible(t, find.byKey(Key(key)));
   await t.pump();
+  await t.pump(const Duration(milliseconds: 400));
 }
 
-// The screenshot-notes field sits behind the "more details" expander.
-Future<void> _expandMore(WidgetTester t) async {
-  await tapVisible(t, find.byKey(const Key('more_details')));
+final _chips = find.byWidgetPredicate((w) => w is OutlinedButton && '${w.key}'.contains('chip_'));
+final _summary = find.byKey(const Key('report_summary'));
+
+/// Answers every question (last quick reply, or "1000" typed) until the summary card shows.
+Future<void> _finish(WidgetTester t) async {
+  for (var i = 0; i < 16 && _summary.evaluate().isEmpty; i++) {
+    if (_chips.evaluate().isEmpty) {
+      await t.enterText(find.byKey(const Key('chat_input')), '1000');
+      await t.pump();
+      await tapVisible(t, find.byKey(const Key('btn_send')));
+    } else {
+      await tapVisible(t, _chips.last);
+    }
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 400));
+  }
+  expect(_summary, findsOneWidget, reason: 'chat never reached the summary');
+}
+
+Future<void> _openEdit(WidgetTester t) async {
+  await tapVisible(t, find.byKey(const Key('btn_edit_report')));
   await t.pumpAndSettle();
 }
 
@@ -103,21 +124,25 @@ void main() {
         await _open(t, e.value());
         expect(t.takeException(), isNull);
         expect(find.text('50:00'), findsOneWidget);
-        for (final k in ['path_lost', 'path_notyet', 'btn_dial_1930', 'btn_open_cybercrime.gov.in', 'btn_share']) {
+        for (final k in ['path_lost', 'path_notyet', 'btn_dial_1930', 'btn_attach', 'btn_mic']) {
           await reveal(t, find.byKey(Key(k)));
           expectTapTarget(t, find.byKey(Key(k)));
         }
-        await _expandMore(t);
-        for (final k in ['scammer_number', 'amount', 'utr', 'screenshots']) {
-          await reveal(t, find.byKey(Key('field_$k')));
+        await _finish(t);
+        for (final k in ['btn_open_cybercrime.gov.in', 'btn_share', 'btn_edit_report']) {
+          await reveal(t, find.byKey(Key(k)));
+          expectTapTarget(t, find.byKey(Key(k)));
+        }
+        await _openEdit(t);
+        for (final k in ['scammer_number', 'amount', 'utr']) {
           expectTapTarget(t, find.byKey(Key('field_$k')));
         }
-        await t.pumpWidget(const SizedBox());
         expect(t.takeException(), isNull);
+        await t.pumpWidget(const SizedBox());
       });
 
-      testWidgets('QA_report_goldenStartButton_reachable48dp_noOverflow_${e.key}_scale2', (t) async {
-        _install();
+      testWidgets('QA_report_goldenStartFails_retryButton_reachable48dp_noOverflow_${e.key}_scale2', (t) async {
+        _install().startResult = {'started': false};
         await _open(t, e.value());
         await _choose(t, 'path_lost');
         await reveal(t, find.byKey(const Key('golden_start')));
@@ -144,12 +169,15 @@ void main() {
         _install();
         await _open(t, e.value(), lang: 'hne');
         await _choose(t, 'path_notyet');
-        await _expandMore(t);
-        for (final k in ['btn_open_sancharsaathi.gov.in', 'btn_dial_1930', 'field_scammer_number', 'field_screenshots']) {
+        await _finish(t);
+        for (final k in ['btn_open_sancharsaathi.gov.in', 'btn_dial_1930']) {
           await reveal(t, find.byKey(Key(k)));
         }
-        expect(find.byKey(const Key('field_amount')), findsNothing);
         expect(find.byKey(const Key('golden_start')), findsNothing); // no clock without a loss
+        expect(find.byKey(const Key('golden_timer')), findsNothing);
+        await _openEdit(t);
+        expect(find.byKey(const Key('field_scammer_number')), findsOneWidget);
+        expect(find.byKey(const Key('field_amount')), findsNothing);
         expect(t.takeException(), isNull);
       });
     });
@@ -172,66 +200,70 @@ void main() {
       final n = _install();
       await _open(t, themes['light']!(), scale: 1.0);
       await _choose(t, 'path_lost');
+      await _finish(t);
       await tapVisible(t, find.byKey(const Key('btn_open_cybercrime.gov.in')));
       await _choose(t, 'path_notyet');
+      await _finish(t);
       await tapVisible(t, find.byKey(const Key('btn_open_sancharsaathi.gov.in')));
       await t.pump();
       expect(n.named('open').map((c) => c.arguments), [
         {'url': 'https://cybercrime.gov.in'},
         {'url': 'https://sancharsaathi.gov.in/sfc/'},
       ]);
+      await t.pumpWidget(const SizedBox());
     });
 
-    testWidgets('QA_report_shareButton_sendsGoldenShareWithAllFourTypedFields', (t) async {
+    testWidgets('QA_report_shareButton_sendsGoldenShareWithChatAnswersAndAttachments', (t) async {
       final n = _install(golden: _running(1_800_000));
       await _open(t, themes['light']!(), scale: 1.0);
+      await _finish(t);
+      await _openEdit(t);
       await t.enterText(find.byKey(const Key('field_scammer_number')), '+91 98765 43210');
       await t.enterText(find.byKey(const Key('field_amount')), '25000');
       await t.enterText(find.byKey(const Key('field_utr')), 'UTR9988');
-      await _expandMore(t);
-      await t.enterText(find.byKey(const Key('field_screenshots')), 'शॉट1.png, shot2.png');
+      await t.tap(find.byKey(const Key('btn_save_edit')));
+      await t.pumpAndSettle();
       await tapVisible(t, find.byKey(const Key('btn_share')));
       await t.pump();
-      expect(n.named('golden.share').single.arguments, {
-        'fields': {
-          'scammer_number': '+91 98765 43210',
-          'amount': '25000',
-          'utr': 'UTR9988',
-          'screenshots': 'शॉट1.png, shot2.png',
-        },
-      });
+      final a = n.named('golden.share').single.arguments as Map;
+      final f = a['fields'] as Map;
+      expect(f['scammer_number'], '+91 98765 43210');
+      expect(f['amount'], '25000');
+      expect(f['utr'], 'UTR9988');
+      expect(f.keys, containsAll(['scammer_number', 'amount', 'utr', 'screenshots', 'notes']));
+      expect(a['attachments'], isEmpty);
       expect(find.byType(SnackBar), findsNothing);
       await t.pumpWidget(const SizedBox());
     });
 
-    testWidgets('QA_report_shareButton_absentUntilGoldenHourStarted_andOnNoLossPath', (t) async {
+    testWidgets('QA_report_shareButton_absentOnNoLossPath', (t) async {
       _install();
       await _open(t, themes['light']!(), scale: 1.0);
-      await _choose(t, 'path_lost');
-      expect(find.byKey(const Key('btn_share')), findsNothing);
       await _choose(t, 'path_notyet');
+      await _finish(t);
       expect(find.byKey(const Key('btn_share')), findsNothing);
     });
   });
 
   group('report empty and error states', () {
-    testWidgets('QA_report_emptyEvidence_showsNoWarningsHint_andFieldsStillUsable', (t) async {
+    testWidgets('QA_report_emptyEvidence_botStartsWithQuestions_andChatStillUsable', (t) async {
       _install(evidence: false);
       await _open(t, themes['dark']!());
       await _choose(t, 'path_lost');
-      await reveal(t, find.text('No warnings found. Write the details below.'));
-      expect(find.text('The app added these for you.'), findsNothing);
-      await reveal(t, find.byKey(const Key('field_utr')));
+      await reveal(t, find.textContaining('a few short questions'));
+      await reveal(t, find.byKey(const Key('chip_OTHER')));
+      await reveal(t, find.byKey(const Key('chat_input')));
       expect(t.takeException(), isNull);
+      await t.pumpWidget(const SizedBox());
     });
 
-    testWidgets('QA_report_evidenceRows_unknownTypeAndLongTriggers_noOverflow_scale2', (t) async {
+    testWidgets('QA_report_evidence_longHindiTrigger_noOverflow_scale2', (t) async {
       _install();
       await _open(t, themes['light']!());
       await _choose(t, 'path_lost');
-      await reveal(t, find.text('SMS')); // row with no scamType prints only the source
       await reveal(t, find.textContaining('किसी को मत बताना'));
       expect(t.takeException(), isNull);
+      await t.pumpWidget(const SizedBox());
     });
 
     for (final (name, err) in [
@@ -246,13 +278,13 @@ void main() {
           throw err;
         }).install();
         await _open(t, themes['light']!(), scale: 2.0);
-        expect(find.text('Report a scam'), findsOneWidget);
+        expect(find.text('I lost money'), findsOneWidget);
         await _choose(t, 'path_lost');
         await reveal(t, find.byKey(const Key('btn_dial_1930'))); // helpline survives a dead native side
         expectTapTarget(t, find.byKey(const Key('btn_dial_1930')));
         await tapVisible(t, find.byKey(const Key('btn_dial_1930')));
         expect(calls.where((c) => c.method == 'dial').single.arguments, {'number': '1930'});
-        await reveal(t, find.text('No warnings found. Write the details below.'));
+        await reveal(t, find.textContaining('a few short questions')); // the chat still runs
         expect(t.takeException(), isNull);
       });
     }
@@ -281,14 +313,17 @@ void main() {
       _install().openResult = false;
       await _open(t, themes['light']!(), scale: 1.0);
       await _choose(t, 'path_lost');
+      await _finish(t);
       await tapVisible(t, find.byKey(const Key('btn_open_cybercrime.gov.in')));
       await t.pump();
       expect(find.text('Could not open this. Dial 1930 yourself.'), findsOneWidget);
+      await t.pumpWidget(const SizedBox());
     });
 
     testWidgets('QA_report_shareFails_showsShareErrorInSelectedLanguage', (t) async {
       final n = _install(golden: _running(1_000_000))..shareResult = false;
       await _open(t, themes['light']!(), scale: 1.0, lang: 'hi');
+      await _finish(t);
       await tapVisible(t, find.byKey(const Key('btn_share')));
       await t.pump();
       expect(n.named('golden.share'), hasLength(1));
@@ -299,6 +334,7 @@ void main() {
     testWidgets('QA_report_shareThrows_showsShareError_noCrash', (t) async {
       _install(golden: _running(1_000_000)).shareResult = PlatformException(code: 'IO');
       await _open(t, themes['light']!(), scale: 1.0);
+      await _finish(t);
       await tapVisible(t, find.byKey(const Key('btn_share')));
       await t.pump();
       expect(find.text('Could not build the evidence file. Try again.'), findsOneWidget);
@@ -310,12 +346,10 @@ void main() {
       final n = _install()..startResult = PlatformException(code: 'X');
       await _open(t, themes['light']!(), scale: 1.0);
       await _choose(t, 'path_lost');
-      await tapVisible(t, find.byKey(const Key('golden_start')));
-      await t.pump();
       expect(n.named('golden.start').single.arguments, {'restart': false});
       expect(find.text('Could not start the clock. Call 1930.'), findsOneWidget);
       expect(find.byKey(const Key('golden_timer')), findsNothing);
-      expect(find.byKey(const Key('golden_start')), findsOneWidget); // can retry
+      await reveal(t, find.byKey(const Key('golden_start'))); // can retry
       await reveal(t, find.byKey(const Key('btn_dial_1930')));
     });
 
@@ -323,8 +357,6 @@ void main() {
       _install().startResult = {'started': false};
       await _open(t, themes['light']!(), scale: 1.0);
       await _choose(t, 'path_lost');
-      await tapVisible(t, find.byKey(const Key('golden_start')));
-      await t.pump();
       expect(find.text('Could not start the clock. Call 1930.'), findsOneWidget);
       expect(find.byKey(const Key('golden_timer')), findsNothing);
     });
@@ -345,12 +377,10 @@ void main() {
       await t.pumpWidget(const SizedBox());
     });
 
-    testWidgets('QA_golden_startFresh_sendsRestartFalse_and60MinuteClock', (t) async {
+    testWidgets('QA_golden_choosingLost_startsFresh60MinuteClock_restartFalse', (t) async {
       final n = _install();
       await _open(t, themes['light']!(), scale: 1.0);
       await _choose(t, 'path_lost');
-      await tapVisible(t, find.byKey(const Key('golden_start')));
-      await t.pump();
       expect(n.named('golden.start').single.arguments, {'restart': false});
       expect(find.text('60:00'), findsOneWidget);
       expect(find.byKey(const Key('golden_start')), findsNothing);

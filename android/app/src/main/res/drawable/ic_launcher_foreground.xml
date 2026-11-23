@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ScamShield mark: a shield whose sides run straight into a V point, with a tick. Drawn on the 120x132 grid of
+     lib/widgets/shield_logo.dart and scaled into the adaptive icon's 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.42"
+        android:scaleY="0.42"
+        android:translateX="28.8"
+        android:translateY="26.3">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M60,6 C78,14 94,17 110,18 L110,64 L60,126 L10,64 L10,18 C26,17 42,14 60,6 Z" />
+        <path
+            android:pathData="M40,62 L56,80 L82,46"
+            android:strokeColor="#0066CC"
+            android:strokeWidth="14"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
+</vector>

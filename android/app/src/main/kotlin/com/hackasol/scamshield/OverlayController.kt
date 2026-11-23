@@ -17,6 +17,8 @@ import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.hackasol.scamshield.core.AlertOverlayState
@@ -29,16 +31,19 @@ import com.hackasol.scamshield.core.Verdict
 import java.util.Locale
 
 /**
- * In-call warning drawn as TYPE_ACCESSIBILITY_OVERLAY (no "draw over apps" permission). A small chip parks at the right edge
- * about 35% down the screen; a SCAM / live-signal verdict opens ONE compact card for 10 s, then it folds back to the chip, which
- * hides after 60 s without new risk or when the call ends. It never covers the top of the screen and never takes touches outside
- * its own bounds. All decisions live in [AlertOverlayState]; this class renders and runs timers. Main thread only.
+ * In-call warning drawn as TYPE_ACCESSIBILITY_OVERLAY (no "draw over apps" permission), styled as a "Live Alert":
+ * a black pill at the top centre (shield, pulsing risk dot, risk word) that opens into a rounded card under it
+ * (title, what to do, Call 1930 / Report / dismiss). A SCAM / live-signal verdict opens the card for 10 s, then it folds
+ * back to the pill, which hides after 60 s without new risk or when the call ends. It never takes touches outside its own
+ * bounds. All decisions live in [AlertOverlayState]; this class renders and runs timers. Main thread only.
  */
 class OverlayController(private val service: AccessibilityService) : BubbleSink {
     private companion object {
-        // Card height budget at default font scale: 8 + 8 padding + title 1 line (~24) + why 1 line (~24) + buttons 48 = ~112 dp (cap ~120).
-        const val WHY_MAX_LINES = 1       // title is also 1 line; both ellipsize
-        const val CARD_MAX_WIDTH_DP = 320 // WIDTH cap (also at most 80% of the screen), not a height
+        const val WHY_MAX_LINES = 2        // title is 2 lines max too; both ellipsize
+        const val CARD_MAX_WIDTH_DP = 380  // WIDTH cap (also at most 92% of the screen), not a height
+        const val PILL_BG = 0xFF000000.toInt()
+        const val PILL_EDGE = 0xFF3A3A3C.toInt()
+        const val BRAND = 0xFF0066CC.toInt()
     }
 
     private val wm = service.getSystemService(WindowManager::class.java)
@@ -54,12 +59,16 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
     private var signalKind: String? = null
     private var prefix = ""
 
-    private lateinit var chip: TextView
+    private lateinit var chip: LinearLayout       // the Live Alert pill
+    private lateinit var chipDot: View
+    private lateinit var chipText: TextView
     private lateinit var card: LinearLayout
+    private lateinit var badge: TextView
     private lateinit var title: TextView
     private lateinit var why: TextView
     private lateinit var primaryBtn: Button
-    private lateinit var dismissBtn: Button
+    private lateinit var reportBtn: Button
+    private lateinit var dismissBtn: ImageButton
 
     private var tts: TextToSpeech? = null
     private var ttsReady = false
@@ -67,52 +76,120 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
 
     private fun dp(v: Int) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), service.resources.displayMetrics).toInt()
 
-    private fun color(label: Label) = when (label) {
-        Label.SAFE -> Color.parseColor("#E61B5E20")
-        Label.SUSPICIOUS -> Color.parseColor("#F0B45309")
-        Label.SCAM -> Color.parseColor("#F5B71C1C")
+    /** Risk colour for the dot, badge and primary button (light / dark from values(-night)/colors.xml). */
+    private fun riskColor(label: Label) = when (label) {
+        Label.SCAM -> service.getColor(R.color.alert_scam)
+        Label.SUSPICIOUS -> Color.parseColor("#FFB340")
+        Label.SAFE -> Color.parseColor("#30D158")
     }
 
-    /** 35% of the CURRENT screen height: read at every render so a rotation mid-call is picked up. */
-    private fun chipY() = (service.resources.displayMetrics.heightPixels * 0.35f).toInt()
+    /** Just under the status bar, read at every render so a rotation mid-call is picked up. */
+    private fun pillY(): Int {
+        val id = service.resources.getIdentifier("status_bar_height", "dimen", "android")
+        return (if (id > 0) service.resources.getDimensionPixelSize(id) else dp(24)) + dp(6)
+    }
+
+    private fun pillBg(stroke: Boolean) = GradientDrawable().apply {
+        cornerRadius = dp(999).toFloat(); setColor(PILL_BG); if (stroke) setStroke(dp(1), PILL_EDGE)
+    }
 
     private fun ensureView(): LinearLayout {
         root?.let { return it }
         val ctx = service
         val dm = service.resources.displayMetrics
-        chip = TextView(ctx).apply {
-            setTextColor(Color.WHITE); textSize = 16f; setTypeface(typeface, Typeface.BOLD)
-            gravity = Gravity.CENTER; minHeight = dp(48); setPadding(dp(14), dp(8), dp(14), dp(8))
-            background = GradientDrawable().apply { cornerRadius = dp(24).toFloat() }
+        val ink = ctx.getColor(R.color.alert_ink)
+        val muted = ctx.getColor(R.color.alert_muted)
+        val wrap = LinearLayout.LayoutParams.WRAP_CONTENT
+
+        // --- pill: [shield on blue] [risk dot] risk word
+        val shieldBadge = ImageView(ctx).apply {
+            setImageResource(R.drawable.ic_stat_shield)
+            setColorFilter(Color.WHITE)
+            setPadding(dp(6), dp(5), dp(6), dp(6))
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(BRAND) }
+        }
+        chipDot = View(ctx).apply { background = GradientDrawable().apply { shape = GradientDrawable.OVAL } }
+        chipText = TextView(ctx).apply {
+            setTextColor(Color.WHITE); textSize = 14f; setTypeface(typeface, Typeface.BOLD); maxLines = 1
+        }
+        chip = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+            minimumHeight = dp(48); setPadding(dp(6), dp(6), dp(16), dp(6))
+            background = pillBg(stroke = true)
+            elevation = dp(6).toFloat()
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+            isClickable = true
             setOnClickListener { apply(state.tap()) }
+            addView(shieldBadge, LinearLayout.LayoutParams(dp(30), dp(30)))
+            addView(chipDot, LinearLayout.LayoutParams(dp(9), dp(9)).apply { marginStart = dp(10); marginEnd = dp(8) })
+            addView(chipText, LinearLayout.LayoutParams(wrap, wrap))
         }
-        title = TextView(ctx).apply { setTextColor(Color.WHITE); textSize = 16f; setTypeface(typeface, Typeface.BOLD); maxLines = 1; ellipsize = android.text.TextUtils.TruncateAt.END }
-        why = TextView(ctx).apply { setTextColor(Color.WHITE); textSize = 16f; maxLines = WHY_MAX_LINES; ellipsize = android.text.TextUtils.TruncateAt.END }
-        fun btn() = Button(ctx).apply {
-            isAllCaps = false; textSize = 14f; maxLines = 1; minHeight = dp(48); minimumHeight = dp(48); setPadding(dp(8), 0, dp(8), 0)
+
+        // --- card: header (logo · ScamShield · badge), title, why, buttons
+        val logo = ImageView(ctx).apply {
+            setImageResource(R.drawable.ic_stat_shield); setColorFilter(BRAND)
         }
-        primaryBtn = btn()
-        dismissBtn = btn().apply { setOnClickListener { closeOrDismiss() } }
+        val brand = TextView(ctx).apply { text = "ScamShield"; setTextColor(muted); textSize = 13f; setTypeface(typeface, Typeface.BOLD) }
+        badge = TextView(ctx).apply {
+            textSize = 12f; setTypeface(typeface, Typeface.BOLD); letterSpacing = 0.04f
+            setPadding(dp(10), dp(4), dp(10), dp(4))
+            background = GradientDrawable().apply { cornerRadius = dp(999).toFloat() }
+        }
+        val header = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+            addView(logo, LinearLayout.LayoutParams(dp(20), dp(22)))
+            addView(brand, LinearLayout.LayoutParams(0, wrap, 1f).apply { marginStart = dp(8) })
+            addView(badge, LinearLayout.LayoutParams(wrap, wrap))
+        }
+        title = TextView(ctx).apply {
+            setTextColor(ink); textSize = 20f; setTypeface(typeface, Typeface.BOLD)
+            maxLines = 2; ellipsize = android.text.TextUtils.TruncateAt.END
+        }
+        why = TextView(ctx).apply {
+            setTextColor(ink); textSize = 15f; setLineSpacing(0f, 1.15f)
+            maxLines = WHY_MAX_LINES; ellipsize = android.text.TextUtils.TruncateAt.END
+        }
+        fun pillBtn() = Button(ctx).apply {
+            isAllCaps = false; textSize = 15f; maxLines = 1; setTypeface(typeface, Typeface.BOLD)
+            minHeight = dp(48); minimumHeight = dp(48); minWidth = 0; minimumWidth = 0
+            setPadding(dp(12), 0, dp(12), 0); stateListAnimator = null
+            background = GradientDrawable().apply { cornerRadius = dp(999).toFloat() }
+        }
+        primaryBtn = pillBtn()
+        reportBtn = pillBtn().apply {
+            (background as GradientDrawable).setColor(ctx.getColor(R.color.alert_accent_tint))
+            setTextColor(ctx.getColor(R.color.alert_accent))
+            setOnClickListener { openReport(); closeOrDismiss() }
+        }
+        dismissBtn = ImageButton(ctx).apply {
+            setImageResource(android.R.drawable.ic_menu_close_clear_cancel); setColorFilter(ink)
+            background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(ctx.getColor(R.color.alert_chip)) }
+            setOnClickListener { closeOrDismiss() }
+        }
         val buttons = LinearLayout(ctx).apply {
-            orientation = LinearLayout.HORIZONTAL
-            addView(primaryBtn, LinearLayout.LayoutParams(0, dp(48), 1f))
-            addView(dismissBtn, LinearLayout.LayoutParams(0, dp(48), 1f))
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+            addView(primaryBtn, LinearLayout.LayoutParams(0, dp(48), 1.3f))
+            addView(reportBtn, LinearLayout.LayoutParams(0, dp(48), 1f).apply { marginStart = dp(8) })
+            addView(dismissBtn, LinearLayout.LayoutParams(dp(48), dp(48)).apply { marginStart = dp(8) })
         }
         card = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(12), dp(8), dp(12), dp(8))
-            background = GradientDrawable().apply { cornerRadius = dp(18).toFloat() }
-            elevation = dp(8).toFloat()
+            setPadding(dp(18), dp(16), dp(18), dp(18))
+            background = GradientDrawable().apply { cornerRadius = dp(28).toFloat(); setColor(ctx.getColor(R.color.alert_card)) }
+            elevation = dp(12).toFloat()
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
-            addView(title); addView(why); addView(buttons)
+            addView(header)
+            addView(title, LinearLayout.LayoutParams(wrap, wrap).apply { topMargin = dp(10) })
+            addView(why, LinearLayout.LayoutParams(wrap, wrap).apply { topMargin = dp(6) })
+            addView(buttons, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, wrap).apply { topMargin = dp(14) })
         }
-        // Card width: at most 80% of the screen (and 320 dp), same edge as the chip.
-        val cardW = minOf((dm.widthPixels * 0.8f).toInt(), dp(CARD_MAX_WIDTH_DP))
+        val cardW = minOf((dm.widthPixels * 0.92f).toInt(), dp(CARD_MAX_WIDTH_DP))
         val layout = LinearLayout(ctx).apply {
-            orientation = LinearLayout.VERTICAL; gravity = Gravity.END
-            addView(chip, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
-            addView(card, LinearLayout.LayoutParams(cardW, LinearLayout.LayoutParams.WRAP_CONTENT))
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(dp(8), 0, dp(8), dp(12))   // room for the shadows
+            clipToPadding = false; clipChildren = false
+            addView(chip, LinearLayout.LayoutParams(wrap, wrap))
+            addView(card, LinearLayout.LayoutParams(cardW, wrap).apply { topMargin = dp(10) })
         }
         val lp = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -122,10 +199,18 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT,
-        ).apply { gravity = Gravity.END or Gravity.TOP; y = chipY() }
+        ).apply { gravity = Gravity.CENTER_HORIZONTAL or Gravity.TOP; y = pillY() }
         wm.addView(layout, lp)
         root = layout
         return layout
+    }
+
+    /** Opens ScamShield's report screen (MainActivity reads the `route` extra). */
+    private fun openReport() {
+        val i = Intent(service, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            .putExtra("route", com.hackasol.scamshield.core.AlertNotificationMapper.ROUTE_REPORT)
+        try { service.startActivity(i) } catch (_: Throwable) {}
     }
 
     /** [signalKind] non-null = an in-call signal: the texts come from the language layer, not from the verdict. */
@@ -175,26 +260,34 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
     private fun render(mode: OverlayMode) {
         val view = ensureView()
         (view.layoutParams as? WindowManager.LayoutParams)?.let { lp ->
-            lp.y = chipY()
+            lp.y = pillY()
             try { wm.updateViewLayout(view, lp) } catch (_: Throwable) {}
         }
         val lang = AppSettings.lang
-        (chip.background as GradientDrawable).setColor(color(shown))
-        (card.background as GradientDrawable).setColor(color(shown))
-        chip.text = prefix + L10n.chipText(shown, lang)
+        val risk = riskColor(shown)
+        val onRisk = if (Color.luminance(risk) > 0.4f) Color.BLACK else Color.WHITE
+        (chipDot.background as GradientDrawable).apply { setColor(risk); setStroke(dp(3), Color.argb(70, Color.red(risk), Color.green(risk), Color.blue(risk))) }
+        chipText.text = prefix + L10n.labelWord(shown, lang)
         chip.contentDescription = L10n.chipDescription(shown, lang)
+        badge.text = L10n.labelWord(shown, lang).uppercase(Locale.ROOT)
+        badge.setTextColor(risk)
+        (badge.background as GradientDrawable).setColor(Color.argb(36, Color.red(risk), Color.green(risk), Color.blue(risk)))
+        (primaryBtn.background as GradientDrawable).setColor(risk)
+        primaryBtn.setTextColor(onRisk)
         val p = prompt
         if (p != null) {
             title.text = L10n.captionTitle(lang); why.text = L10n.captionLine(lang)
             primaryBtn.text = L10n.openVolumePanel(lang); primaryBtn.setOnClickListener { p() }
+            reportBtn.visibility = View.GONE
         } else {
             val kind = signalKind
-            val icon = L10n.labelIcon(shown)
-            title.text = prefix + icon + " " + (if (kind != null) L10n.signalTitle(kind, lang) else L10n.cardTitle(shown, lang))
+            title.text = prefix + (if (kind != null) L10n.signalTitle(kind, lang) else L10n.cardTitle(shown, lang))
             why.text = if (kind != null) L10n.signalAdvice(kind, lang) else L10n.cardWhy(shown, lang)
             primaryBtn.text = L10n.call1930(lang); primaryBtn.setOnClickListener { dial("1930") }
+            reportBtn.text = L10n.reportAction(lang).substringBefore(" (")
+            reportBtn.visibility = View.VISIBLE
         }
-        dismissBtn.text = L10n.dismiss(lang)
+        dismissBtn.contentDescription = L10n.dismiss(lang)
         card.contentDescription = title.text.toString() + ". " + why.text
         card.visibility = if (mode == OverlayMode.CARD) View.VISIBLE else View.GONE
         chip.visibility = if (mode == OverlayMode.CARD) View.GONE else View.VISIBLE

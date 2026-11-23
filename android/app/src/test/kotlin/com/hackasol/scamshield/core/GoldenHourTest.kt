@@ -24,7 +24,7 @@ class GoldenHourTest {
         val card = CaseCard.fromLog(logWithEvents(), startMs = now, nowMs = now)
         assertTrue(card.pack.moneyLost)
         assertEquals(listOf(ScamType.KYC, ScamType.DIGITAL_ARREST), card.pack.evidence.map { it.scamType })
-        assertEquals(4, card.pack.userFields.size)
+        assertEquals(5, card.pack.userFields.size)
         assertNull(card.graphJson)
         assertTrue(card.toJson().contains("\"graph\":null"))
         assertTrue(CaseCard.fromLog(logWithEvents(), now, now, "{\"nodes\":[]}").toJson().contains("\"graph\":{\"nodes\":[]}"))

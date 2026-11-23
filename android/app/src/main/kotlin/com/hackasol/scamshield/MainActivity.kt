@@ -34,6 +34,8 @@ class MainActivity : FlutterActivity() {
     private var pendingImport: MethodChannel.Result? = null
     private var player: MediaPlayer? = null
     private var recording: RecordingChannel? = null
+    private var handoff: HandoffChannel? = null
+    private var speech: SpeechChannel? = null
     private var initialRoute: String? = null   // from the launching intent's `route` extra; consumed once by app.initialRoute
 
     companion object { private const val REQ_IMPORT = 4201
@@ -66,7 +68,8 @@ class MainActivity : FlutterActivity() {
         FamilyChannel.register(messenger, this)
         ShareTextChannel.register(messenger, this)
         QrChannel.register(messenger, this)
-        HandoffChannel(this, scope).register(messenger)
+        handoff = HandoffChannel(this, scope).also { it.register(messenger) }
+        speech = SpeechChannel(this).also { it.register(messenger) }
         recording = RecordingChannel(this, scope).also { it.register(messenger) }
 
         MethodChannel(messenger, "scamshield/api").setMethodCallHandler { call, result ->
@@ -264,6 +267,8 @@ class MainActivity : FlutterActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (recording?.onActivityResult(requestCode, resultCode, data) == true) return
+        if (handoff?.onActivityResult(requestCode, resultCode, data) == true) return
+        if (speech?.onActivityResult(requestCode, resultCode, data) == true) return
         if (requestCode != REQ_IMPORT) return
         val res = pendingImport ?: return
         pendingImport = null
@@ -291,6 +296,7 @@ class MainActivity : FlutterActivity() {
 
     override fun onDestroy() {
         player?.release(); player = null
+        speech?.release(); speech = null
         scope.cancel()
         super.onDestroy()
     }

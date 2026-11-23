@@ -64,7 +64,7 @@ object ApkGuard {
                 .putExtra("route", "report"),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         nm.notify(NOTIF_ID, Notification.Builder(ctx, CHANNEL_ID)
-            .setSmallIcon(ctx.applicationInfo.icon)
+            .setSmallIcon(R.drawable.ic_stat_shield)
             .setContentTitle(title)
             .setContentText(text.substringBefore('\n'))
             .setStyle(Notification.BigTextStyle().bigText(text))

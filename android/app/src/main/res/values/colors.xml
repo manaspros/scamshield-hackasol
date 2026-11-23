@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand blue behind the white shield (lib/widgets/shield_logo.dart kBrandBlue). -->
+    <color name="ic_launcher_background">#0066CC</color>
+    <color name="brand_blue">#0066CC</color>
+    <!-- Alert surfaces (OxygenOS-style Live Alert pill and card). -->
+    <color name="alert_scam">#C4001A</color>
+    <color name="alert_card">#F7FFFFFF</color>
+    <color name="alert_ink">#1D1D1F</color>
+    <color name="alert_muted">#6E6E73</color>
+    <color name="alert_chip">#EEEEF2</color>
+    <color name="alert_scam_tint">#14D70015</color>
+    <color name="alert_accent">#0066CC</color>
+    <color name="alert_accent_tint">#1A0066CC</color>
+</resources>
