@@ -26,7 +26,7 @@ class QAAlertsPrivacyTest {
     @Test fun `QA_alertPolicy_scamAlwaysNotifiesBubbleOnlyLive`() {
         for (src in Source.values()) {
             val p = AlertPolicy.plan(Label.SCAM, src)
-            assertTrue(p.notify); assertEquals(src == Source.CAPTION, p.bubble)
+            assertTrue(p.notify); assertEquals(src == Source.CAPTION || src == Source.SIGNAL, p.bubble)
         }
     }
 

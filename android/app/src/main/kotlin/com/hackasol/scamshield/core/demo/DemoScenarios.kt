@@ -4,8 +4,12 @@ import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.Source
 import com.hackasol.scamshield.core.graph.FlagKind
 
-/** TEXT runs the full pipeline; QR runs UpiQr (arg = the name the user was told); FAMILY runs Totp (arg = "match" | "mismatch"). */
-enum class StepKind { TEXT, QR, FAMILY }
+/**
+ * TEXT runs the full pipeline; QR runs UpiQr (arg = the name the user was told); FAMILY runs Totp (arg = "match" | "mismatch");
+ * SIGNAL runs an in-call signal through InCallSignals + SignalGate + CallRiskTracker (arg = "app" with [DemoStep.text] a
+ * package id | "notification" with its text | "dialog" with the system dialog's text).
+ */
+enum class StepKind { TEXT, QR, FAMILY, SIGNAL }
 
 /**
  * One scripted event. [delayMs] is the pause BEFORE the step (UI pacing; also the simulated clock gap the graph sees).
@@ -59,6 +63,9 @@ object DemoScenarios {
 
     private fun call(caller: String, text: String, exp: Label, flags: Set<FlagKind> = emptySet(), delay: Long = GAP) =
         DemoStep(delay, Source.CAPTION, caller, text, exp, flags)
+
+    private fun signal(arg: String, text: String, delay: Long = CALL_GAP) =
+        DemoStep(delay, Source.SIGNAL, "", text, Label.SCAM, kind = StepKind.SIGNAL, arg = arg)
 
     private const val BANK_CALL_TEXT = "Main bank se bol raha hoon, aapke account ki ek detail confirm karni hai"
 
@@ -195,6 +202,27 @@ object DemoScenarios {
                     Label.SAFE, kind = StepKind.FAMILY, arg = "match"),
                 DemoStep(GAP, Source.CAPTION, "9800000091", "Papa, accident ho gaya, mera family code {code} hai, turant paise bhejo.",
                     Label.SUSPICIOUS, kind = StepKind.FAMILY, arg = "mismatch"),
+            ),
+        ),
+        DemoScenario(
+            "live_remote_access", "call",
+            "लाइव चेतावनी: बैंक कॉल, फिर AnyDesk", "Live warning: 'bank' call, then AnyDesk",
+            "'बैंक' का कॉल आता है, फिर कॉल करने वाला AnyDesk खुलवाता है और OTP आता है। कॉल के दौरान ये संकेत मिलते ही लाल चेतावनी आती है।",
+            "A 'bank' call, then the caller gets AnyDesk opened and an OTP arrives. Each signal during the call raises the red warning bubble.",
+            listOf(
+                call("9800000100", BANK_CALL_TEXT, Label.SUSPICIOUS, setOf(FlagKind.NON_1600_BANK_CALL), FIRST),
+                signal("app", "com.anydesk.anydeskandroid"),
+                signal("notification", "AX-HDFCBK 482913 is your OTP for txn of Rs 49,999. Do not share."),
+            ),
+        ),
+        DemoScenario(
+            "live_screen_share", "call",
+            "लाइव चेतावनी: स्क्रीन शेयर", "Live warning: screen share",
+            "कॉल करने वाला कहता है 'स्क्रीन शेयर करो, मैं चेक करता हूँ'। फ़ोन स्क्रीन-शेयरिंग की अनुमति माँगता है। अनुमति से पहले ही चेतावनी आनी चाहिए।",
+            "The caller says 'share your screen, I will check'. The phone then shows its screen-capture consent dialog, and ScamShield raises the red warning.",
+            listOf(
+                call("9800000101", "screen share karo, main check karta hoon", Label.SUSPICIOUS, emptySet(), FIRST),
+                signal("dialog", "Start recording or casting? While you're recording or casting, Android has access to everything visible on your screen."),
             ),
         ),
     )

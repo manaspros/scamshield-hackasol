@@ -741,6 +741,7 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
     final srcIcon = switch (source) {
       'call' => Icons.call,
       'notification' => Icons.notifications,
+      'signal' => Icons.bolt,
       _ => Icons.sms,
     };
     return Column(

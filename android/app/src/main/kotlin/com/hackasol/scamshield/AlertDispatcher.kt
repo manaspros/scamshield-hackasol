@@ -20,10 +20,11 @@ class AlertDispatcher(private val ctx: Context, private val overlay: OverlayCont
     private val nm = ctx.getSystemService(NotificationManager::class.java)
     private var channelReady = false
 
-    fun dispatch(v: Verdict, shown: Label, callLevel: Label, callRisk: Double) {
+    /** [signalKind]: set for in-call signals (InCallSignals.KIND_*); a payment-app signal only pops the bubble in a high-risk call. */
+    fun dispatch(v: Verdict, shown: Label, callLevel: Label, callRisk: Double, signalKind: String? = null) {
         val sv = v.copy(label = shown)
-        val plan = AlertPolicy.plan(sv, sv.source)
-        if (plan.bubble) overlay?.showVerdict(v, shown, callLevel, callRisk)
+        val plan = AlertPolicy.plan(sv, signalKind, callLevel)
+        if (plan.bubble) overlay?.showVerdict(v, shown, callLevel, callRisk, signalKind)
         // Preliminary (rules-only, LLM pending) verdicts never notify: a final one follows.
         if (!plan.notify || v.preliminary) return
         val f = AlertNotificationMapper.fields(plan, sv, v.scamType, AppSettings.lang) ?: return

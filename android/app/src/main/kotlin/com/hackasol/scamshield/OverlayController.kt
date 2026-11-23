@@ -96,20 +96,28 @@ class OverlayController(private val service: AccessibilityService) {
         autoCollapse = Runnable { setExpanded(false) }.also { handler.postDelayed(it, 8000) }
     }
 
-    fun showVerdict(v: Verdict, shown: Label, callLevel: Label, callRisk: Double) {
+    /** [signalKind] non-null = an in-call signal: the texts come from the language layer, not from the verdict. */
+    fun showVerdict(v: Verdict, shown: Label, callLevel: Label, callRisk: Double, signalKind: String? = null) {
         if (!AppSettings.overlayEnabled) return
         val view = ensureView()
         (view.background as GradientDrawable).setColor(color(shown))
         val icon = when (shown) { Label.SAFE -> "🟢"; Label.SUSPICIOUS -> "🟡"; Label.SCAM -> "🔴" }
         val pct = (v.confidence * 100).toInt()
         val lang = AppSettings.lang
-        title.text = "$icon ${L10n.overlayTitle(shown, pct, lang)}" + if (v.preliminary) " …" else ""
-        hindi.text = L10n.overlayLine(shown, lang)
-        quote.text = "“${v.text}”"
-        detail.text = buildString {
-            append(L10n.why(lang)).append(v.reason)
-            if (v.triggers.isNotEmpty()) append("\n").append(L10n.heard(lang)).append(v.triggers.take(4).joinToString(", ") { "\"$it\"" })
-            append("\n").append(L10n.engine(lang)).append(v.engine)
+        if (signalKind != null) {
+            title.text = "$icon ${L10n.signalTitle(signalKind, lang)}"
+            hindi.text = L10n.signalAdvice(signalKind, lang)
+            quote.text = L10n.signalLine(signalKind, v.triggers.firstOrNull().orEmpty(), lang)
+            detail.text = ""
+        } else {
+            title.text = "$icon ${L10n.overlayTitle(shown, pct, lang)}" + if (v.preliminary) " …" else ""
+            hindi.text = L10n.overlayLine(shown, lang)
+            quote.text = "“${v.text}”"
+            detail.text = buildString {
+                append(L10n.why(lang)).append(v.reason)
+                if (v.triggers.isNotEmpty()) append("\n").append(L10n.heard(lang)).append(v.triggers.take(4).joinToString(", ") { "\"$it\"" })
+                append("\n").append(L10n.engine(lang)).append(v.engine)
+            }
         }
         callLine.text = L10n.overallCall(callLevel, (callRisk * 100).toInt(), lang)
         primaryBtn.text = L10n.call1930(lang)

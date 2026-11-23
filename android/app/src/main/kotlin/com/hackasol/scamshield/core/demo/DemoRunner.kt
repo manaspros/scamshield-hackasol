@@ -2,16 +2,19 @@ package com.hackasol.scamshield.core.demo
 
 import com.hackasol.scamshield.core.AlertNotificationMapper
 import com.hackasol.scamshield.core.AlertPolicy
+import com.hackasol.scamshield.core.CallRiskTracker
 import com.hackasol.scamshield.core.ClassifyRequest
 import com.hackasol.scamshield.core.Fusion
 import com.hackasol.scamshield.core.GemmaPrompt
 import com.hackasol.scamshield.core.Label
+import com.hackasol.scamshield.core.InCallSignals
 import com.hackasol.scamshield.core.LlmResult
 import com.hackasol.scamshield.core.Pipeline
 import com.hackasol.scamshield.core.RecordingPipeline
 import com.hackasol.scamshield.core.RuleScorer
 import com.hackasol.scamshield.core.ScamType
 import com.hackasol.scamshield.core.Source
+import com.hackasol.scamshield.core.SignalGate
 import com.hackasol.scamshield.core.SttSegment
 import com.hackasol.scamshield.core.Totp
 import com.hackasol.scamshield.core.UpiQr
@@ -100,9 +103,16 @@ class DemoRunner(
     private class Decision(
         val lines: List<String>, val flags: List<FlagKind>, val ruleTriggers: List<String>,
         val llm: LlmResult?, val fused: FusedOut, val verdict: Verdict, val notes: List<String>, val text: String,
+        val signalKind: String? = null,
     )
 
+    // Per-run live-call state (same classes the accessibility service uses). DemoChannel serialises runs.
+    private var gate = SignalGate()
+    private var tracker = CallRiskTracker()
+
     suspend fun run(s: DemoScenario, coldStart: Boolean = s.coldStartDefault, note: String? = null): DemoRunResult {
+        gate = SignalGate(); tracker = CallRiskTracker()
+        val liveCall = s.steps.any { it.kind == StepKind.SIGNAL }
         val base = clock()
         if (!coldStart) DemoScenarios.WARM_SEED.forEach { (sender, text) -> graph.ingest(text, sender, base - DemoScenarios.SEED_AGE_MS) }
         var t = base
@@ -117,7 +127,10 @@ class DemoRunner(
             } else {
                 s.steps.mapIndexed { i, st ->
                     val d = decide(st, times[i])
-                    toResult(i, st, d, d.fused.label, strict)
+                    // A live call: captions and signals feed one CallRiskTracker, as in the service.
+                    val live = liveCall && (st.kind == StepKind.SIGNAL || st.source == Source.CAPTION)
+                    val shown = if (live) tracker.record(d.verdict, times[i]) else d.fused.label
+                    toResult(i, st, d, shown, strict)
                 }
             }
         val textSteps = results.filterIndexed { i, _ -> s.steps.getOrNull(i)?.kind == StepKind.TEXT }
@@ -134,6 +147,21 @@ class DemoRunner(
         StepKind.TEXT -> decideText(step, now)
         StepKind.QR -> decideQr(step, now)
         StepKind.FAMILY -> decideFamily(step, now)
+        StepKind.SIGNAL -> decideSignal(step)
+    }
+
+    /** Same detection as the service: InCallSignals (+ ScreenShareMatcher), per-call dedupe by SignalGate. Not logged, like the service. */
+    private fun decideSignal(step: DemoStep): Decision {
+        val raw = when (step.arg) {
+            "app" -> InCallSignals.fromForegroundApp(step.text)
+            "dialog" -> InCallSignals.fromWindowText("com.android.systemui", step.text)
+            else -> InCallSignals.fromNotification(step.text)
+        }
+        val sig = gate.accept(raw)
+        val v = if (sig != null) InCallSignals.toVerdict(sig)
+        else Verdict(step.text, Label.SAFE, 0.9, "No signal raised", emptyList(), "in-call signal", 0, Source.SIGNAL)
+        val fused = FusedOut(v.label, v.confidence, null, listOfNotNull(sig?.kind), v.reason)
+        return Decision(emptyList(), emptyList(), v.triggers, null, fused, v, emptyList(), step.text, sig?.kind)
     }
 
     private suspend fun decideText(step: DemoStep, now: Long): Decision {
@@ -225,7 +253,7 @@ class DemoRunner(
 
     private fun toResult(i: Int, step: DemoStep, d: Decision, shown: Label, strict: Boolean): DemoStepResult {
         val sv = d.verdict.copy(label = shown)
-        val plan = AlertPolicy.plan(sv, sv.source)
+        val plan = AlertPolicy.plan(sv, d.signalKind, tracker.level())
         val fields = AlertNotificationMapper.fields(plan, sv, sv.scamType)
         val alert = fields?.let { AlertOut(titlePrefix + it.title, it.text, plan.reportAction) }
         val actual = d.fused.label

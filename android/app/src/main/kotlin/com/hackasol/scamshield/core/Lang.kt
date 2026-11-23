@@ -156,6 +156,41 @@ object L10n {
     fun call1930(lang: String) = pick(lang, "Call 1930", "1930 पर कॉल करें")
     fun dismiss(lang: String) = pick(lang, "Dismiss", "बंद करें")
 
+    // ---- live in-call signals (overlay bubble); kinds are InCallSignals.KIND_* ----
+
+    /** Bubble headline for a signal kind. */
+    fun signalTitle(kind: String, lang: String): String = when (kind) {
+        InCallSignals.KIND_REMOTE_APP -> pick(lang, "Remote-access app opened during a call", "कॉल के दौरान रिमोट-एक्सेस ऐप खुला")
+        InCallSignals.KIND_SCREEN_SHARE -> pick(lang, "Screen sharing during a call", "कॉल के दौरान स्क्रीन शेयरिंग")
+        InCallSignals.KIND_OTP -> pick(lang, "OTP arrived during a call", "कॉल के दौरान OTP आया")
+        InCallSignals.KIND_APP_INSTALLED -> pick(lang, "App installed during a call", "कॉल के दौरान ऐप इंस्टॉल हुआ")
+        InCallSignals.KIND_PAYMENT_APP -> pick(lang, "Payment app opened during a call", "कॉल के दौरान पेमेंट ऐप खुला")
+        else -> pick(lang, "Warning sign during a call", "कॉल के दौरान चेतावनी का संकेत")
+    }
+
+    /** What happened. [trigger] is the app name (never an OTP value: that line is the same for every OTP). */
+    fun signalLine(kind: String, trigger: String, lang: String): String = when (kind) {
+        InCallSignals.KIND_REMOTE_APP -> pick(lang, "$trigger is open", "$trigger खुला है")
+        InCallSignals.KIND_SCREEN_SHARE -> pick(lang, "Your screen is being shared or recorded", "आपकी स्क्रीन शेयर या रिकॉर्ड हो रही है")
+        InCallSignals.KIND_OTP -> pick(lang, "An OTP message just arrived", "अभी एक OTP संदेश आया")
+        InCallSignals.KIND_APP_INSTALLED -> pick(lang, "$trigger was just installed", "$trigger अभी इंस्टॉल हुआ")
+        InCallSignals.KIND_PAYMENT_APP -> pick(lang, "$trigger is open", "$trigger खुला है")
+        else -> pick(lang, "Something unusual happened", "कुछ असामान्य हुआ")
+    }
+
+    /** What to do now. */
+    fun signalAdvice(kind: String, lang: String): String = when (kind) {
+        InCallSignals.KIND_REMOTE_APP, InCallSignals.KIND_SCREEN_SHARE ->
+            pick(lang, "Hang up. Never let a caller see or control your screen.", "कॉल काट दें। किसी को अपनी स्क्रीन देखने या चलाने न दें।")
+        InCallSignals.KIND_OTP ->
+            pick(lang, "Do not read it out to anyone. No bank asks for an OTP on a call.", "इसे किसी को न बताएँ। कोई बैंक कॉल पर OTP नहीं माँगता।")
+        InCallSignals.KIND_APP_INSTALLED ->
+            pick(lang, "Hang up and uninstall it. Callers trick people into installing spy apps.", "कॉल काट दें और इसे हटा दें। ठग स्पाई ऐप इंस्टॉल करवाते हैं।")
+        InCallSignals.KIND_PAYMENT_APP ->
+            pick(lang, "Do not pay or 'verify' because a caller says so.", "कॉल करने वाले के कहने पर पैसे न भेजें, 'वेरिफाई' न करें।")
+        else -> pick(lang, "Be careful and hang up if unsure.", "सावधान रहें, शक हो तो कॉल काट दें।")
+    }
+
     fun captionTitle(lang: String) = pick(lang, "🛡️ Turn on Live Caption for protection", "🛡️ Turn on Live Caption for protection")
     fun captionLine(lang: String) =
         pick(lang, "ScamShield reads call captions to warn you about scams", "कॉल सुरक्षा के लिए Live Caption चालू करें")

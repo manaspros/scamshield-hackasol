@@ -19,7 +19,7 @@ class AlertPolicyTest {
     @Test fun T1_6_scamSms() = assertPlan(Label.SCAM, Source.SMS, bubble = false, notify = true)
 
     @Test fun T1_6_scamOtherSources() {
-        for (s in Source.values().filter { it != Source.CAPTION })
+        for (s in Source.values().filter { it != Source.CAPTION && it != Source.SIGNAL })
             assertPlan(Label.SCAM, s, bubble = false, notify = true)
     }
 
@@ -28,7 +28,7 @@ class AlertPolicyTest {
     @Test fun T1_6_suspiciousRecording() = assertPlan(Label.SUSPICIOUS, Source.RECORDING, bubble = false, notify = true)
 
     @Test fun T1_6_suspiciousOtherSources() {
-        for (s in Source.values().filter { it != Source.CAPTION })
+        for (s in Source.values().filter { it != Source.CAPTION && it != Source.SIGNAL })
             assertPlan(Label.SUSPICIOUS, s, bubble = false, notify = true)
     }
 
