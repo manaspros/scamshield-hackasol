@@ -73,6 +73,9 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
         Label.SCAM -> Color.parseColor("#F5B71C1C")
     }
 
+    /** 35% of the CURRENT screen height: read at every render so a rotation mid-call is picked up. */
+    private fun chipY() = (service.resources.displayMetrics.heightPixels * 0.35f).toInt()
+
     private fun ensureView(): LinearLayout {
         root?.let { return it }
         val ctx = service
@@ -119,7 +122,7 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT,
-        ).apply { gravity = Gravity.END or Gravity.TOP; y = (dm.heightPixels * 0.35f).toInt() }
+        ).apply { gravity = Gravity.END or Gravity.TOP; y = chipY() }
         wm.addView(layout, lp)
         root = layout
         return layout
@@ -127,7 +130,7 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
 
     /** [signalKind] non-null = an in-call signal: the texts come from the language layer, not from the verdict. */
     override fun showVerdict(v: Verdict, shown: Label, callLevel: Label, callRisk: Double, signalKind: String?, titlePrefix: String) {
-        if (!AppSettings.overlayEnabled) return
+        if (!AppSettings.overlayEnabled) { closeOrDismiss(); return }   // shortcut: switched-off overlay is hidden on the next event, no settings listener; add one if instant hide is needed
         val plan = AlertPolicy.plan(v.copy(label = shown), signalKind, callLevel)
         if (!plan.bubble) return
         val step = state.show(plan.surface, shown, v.preliminary, signalKind)
@@ -136,7 +139,7 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
     }
 
     fun showCaptionPrompt(onOpen: () -> Unit) {
-        if (!AppSettings.overlayEnabled) return
+        if (!AppSettings.overlayEnabled) { closeOrDismiss(); return }
         val step = state.showPrompt()
         if (!step.render) return   // a warning is already showing: never replace it with the prompt
         prompt = { onOpen(); closeOrDismiss() }; shown = Label.SUSPICIOUS; signalKind = null; prefix = ""
@@ -155,6 +158,7 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
             if (step.render) removeView()
             return
         }
+        if (step.render && !AppSettings.overlayEnabled) { closeOrDismiss(); return }   // switched off mid-call: hide instead of re-rendering
         if (step.render) render(step.mode)
         if (step.armCardTimer) {
             cardTimer?.let(handler::removeCallbacks)
@@ -170,6 +174,10 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
 
     private fun render(mode: OverlayMode) {
         val view = ensureView()
+        (view.layoutParams as? WindowManager.LayoutParams)?.let { lp ->
+            lp.y = chipY()
+            try { wm.updateViewLayout(view, lp) } catch (_: Throwable) {}
+        }
         val lang = AppSettings.lang
         (chip.background as GradientDrawable).setColor(color(shown))
         (card.background as GradientDrawable).setColor(color(shown))
