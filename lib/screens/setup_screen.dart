@@ -5,15 +5,21 @@ import 'package:flutter/services.dart';
 
 import '../api/text_api.dart';
 import '../l10n/app_language.dart';
+import '../l10n/strings_home.dart';
 import '../l10n/strings_setup.dart';
 import '../lessons/prefs_store.dart';
 import '../models/verdict.dart';
 import '../theme/tokens.dart';
 import '../widgets/state_message.dart';
 import '../widgets/status_chip.dart';
+import 'page_route.dart';
 
 /// One-time setup checklist: accessibility service, Live Caption, Gemma model, overlay test.
 const _api = MethodChannel('scamshield/api');
+
+/// Setup is one-time onboarding; this reopens it from Settings or the Home fix banner.
+Future<void> openSetupPage(BuildContext context) =>
+    pushTitled(context, homeT(AppLanguage.of(context), 'set_setup'), const SetupScreen());
 
 class SetupScreen extends StatefulWidget {
   const SetupScreen({super.key});

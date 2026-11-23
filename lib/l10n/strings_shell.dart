@@ -4,7 +4,7 @@ import 'app_language.dart';
 /// Tab titles, nav labels, app-bar button, Help hub and the verdict card (shared by every screen).
 const shellStrings = Tri(
   hi: {
-    'tab_setup': 'सेटअप', 'tab_check': 'जाँच', 'tab_live': 'लाइव', 'tab_learn': 'सीखें', 'tab_help': 'मदद',
+    'tab_home': 'होम', 'tab_setup': 'सेटअप', 'tab_check': 'जाँच', 'tab_live': 'लाइव', 'tab_learn': 'सीखें', 'tab_help': 'मदद',
     'help_me': 'मदद चाहिए?', 'help_1930': 'ठगे गए? 1930',
     'report': 'रिपोर्ट करें', 'report_title': 'रिपोर्ट', 'report_cap': 'Report a scam (1930)',
     'family': 'परिवार कोड', 'family_cap': 'Family code',
@@ -22,7 +22,7 @@ const shellStrings = Tri(
     'label_suspicious': 'सावधान रहव', 'label_scam': 'ठगी होए सकत हे',
   },
   en: {
-    'tab_setup': 'Setup', 'tab_check': 'Check', 'tab_live': 'Live', 'tab_learn': 'Learn', 'tab_help': 'Help',
+    'tab_home': 'Home', 'tab_setup': 'Setup', 'tab_check': 'Check', 'tab_live': 'Live', 'tab_learn': 'Learn', 'tab_help': 'Help',
     'help_me': 'Need help?', 'help_1930': 'Scammed? 1930',
     'report': 'Report a scam', 'report_title': 'Report', 'report_cap': 'दर्ज करें · 1930',
     'family': 'Family code', 'family_cap': 'परिवार कोड',
@@ -59,7 +59,10 @@ const _scamTypes = Tri(
 );
 
 /// Scam-type chip text in the app language; null for an unknown or absent type.
-String? scamTypeIn(Verdict v, String lang) {
-  final k = v.scamType?.toUpperCase();
+String? scamTypeIn(Verdict v, String lang) => scamTypeNameIn(v.scamType, lang);
+
+/// Same, from the raw type name (e.g. "OTP") as logged natively.
+String? scamTypeNameIn(String? type, String lang) {
+  final k = type?.toUpperCase();
   return k == null || !_scamTypes.hi.containsKey(k) ? null : _scamTypes(lang, k);
 }

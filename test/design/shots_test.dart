@@ -838,7 +838,9 @@ void main() {
             child: MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: child!)),
         home: const HomeShell(),
       ));
-      await tester.pumpAndSettle();
+      // Home's family-code countdown ticks every second, so pumpAndSettle would never settle.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       final r = tester.getRect(find.byKey(const Key('btn_report_1930')));
       expect(r.height, greaterThanOrEqualTo(48));
       expect(r.right, lessThanOrEqualTo(360));

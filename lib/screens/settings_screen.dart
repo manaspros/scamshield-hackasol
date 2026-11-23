@@ -4,11 +4,14 @@ import 'package:flutter/services.dart';
 import '../api/text_api.dart';
 import '../demo/demo_flag.dart';
 import '../l10n/app_language.dart';
+import '../l10n/strings_home.dart';
 import '../l10n/strings_settings.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
+import '../widgets/action_tile.dart';
 import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
+import 'setup_screen.dart';
 
 /// Chhattisgarh districts, generated from data/districts.json.
 /// [VERIFY] list against the official source (same flag as the JSON).
@@ -532,6 +535,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _switch('inCallSignals', 'signals'),
         _switch('wifiOnly', 'wifi'),
         _trendSection(context),
+        Padding(
+          padding: const EdgeInsets.all(Sp.l),
+          child: ActionTile(
+            key: const Key('settings_setup_row'),
+            icon: Icons.checklist,
+            label: homeT(AppLanguage.code, 'set_setup'),
+            caption: homeT(AppLanguage.code, 'set_setup_s'),
+            onTap: () => openSetupPage(context),
+          ),
+        ),
         const Divider(),
         // Developer controls: closed by default so the first screen is for the user.
         Theme(

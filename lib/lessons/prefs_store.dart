@@ -14,6 +14,7 @@ class PrefsStrings {
 
   static const langKey = 'lang_v1';
   static const captionsKey = 'captions_ack_v1';
+  static const onboardedKey = 'onboarded_v1';
   final MethodChannel _ch;
   final _mem = <String, String>{};
 

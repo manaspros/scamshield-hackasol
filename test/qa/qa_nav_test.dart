@@ -8,7 +8,7 @@ import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/report_screen.dart';
 import 'package:scamshield/screens/settings_screen.dart';
-import 'package:scamshield/screens/setup_screen.dart';
+import 'package:scamshield/screens/home_screen.dart';
 import 'package:scamshield/screens/try_api_screen.dart';
 
 import 'package:scamshield/widgets/action_tile.dart';
@@ -16,7 +16,7 @@ import 'package:scamshield/widgets/action_tile.dart';
 import 'qa_harness.dart';
 
 const _tabs = [
-  ('सेटअप', 'Setup'),
+  ('होम', 'Home'),
   ('जाँच', 'Check'),
   ('लाइव', 'Live'),
   ('सीखें', 'Learn'),
@@ -111,7 +111,7 @@ void main() {
       testWidgets('QA_nav_fiveTabs_eachOpensItsScreen_noOverflow_${mode}_scale2', (t) async {
         await _boot(t, dark: dark);
         final screens = <String, Finder>{
-          'Setup': find.byType(SetupScreen),
+          'Home': find.byType(HomeScreen),
           'Check': find.byType(TryApiScreen),
           'Live': find.byType(LiveFeedScreen),
           'Learn': find.byType(LessonsScreen),
@@ -222,7 +222,7 @@ void main() {
       expect(t.takeException(), isNull);
       await _back(t);
       expect(find.byType(ReportScreen), findsNothing);
-      expect(_title('सेटअप'), findsOneWidget); // Home is underneath
+      expect(_title('होम'), findsOneWidget); // Home is underneath
     });
 
     testWidgets('QA_deepLink_report_atLaunch_dark_scale2', (t) async {
@@ -266,7 +266,7 @@ void main() {
       testWidgets('QA_deepLink_$name _homeStillUsable_noReport', (t) async {
         await _boot(t, routes: [route]);
         expect(find.byType(ReportScreen), findsNothing);
-        expect(_title('सेटअप'), findsOneWidget);
+        expect(_title('होम'), findsOneWidget);
         await _goTab(t, 'Check');
         expect(find.byType(TryApiScreen), findsOneWidget);
         expect(t.takeException(), isNull);

@@ -6,12 +6,13 @@ import 'l10n/app_language.dart';
 import 'l10n/strings_shell.dart';
 import 'screens/demo_lab_screen.dart';
 import 'screens/family_screen.dart';
+import 'screens/home_screen.dart';
 import 'screens/lessons_screen.dart';
 import 'screens/live_feed_screen.dart';
 import 'screens/recording_screen.dart';
 import 'screens/report_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/setup_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/try_api_screen.dart';
 import 'theme/app_theme.dart';
 import 'theme/tokens.dart';
@@ -33,7 +34,7 @@ class ScamShieldApp extends StatelessWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
-      home: const LanguageGate(child: HomeShell()),
+      home: const LanguageGate(child: OnboardingGate(child: HomeShell())),
     );
   }
 }
@@ -54,7 +55,7 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   static const _api = MethodChannel('scamshield/api');
-  static const _tabKeys = ['tab_setup', 'tab_check', 'tab_live', 'tab_learn', 'tab_help'];
+  static const _tabKeys = ['tab_home', 'tab_check', 'tab_live', 'tab_learn', 'tab_help'];
 
   int _tab = 0;
   final _visited = <int>{0}; // tabs are built on first visit, then kept alive
@@ -106,7 +107,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   void _openReport() => _push('report_title', const ReportScreen());
 
   Widget _page(int i) => switch (i) {
-        0 => const SetupScreen(),
+        0 => const HomeScreen(),
         1 => const TryApiScreen(),
         2 => const LiveFeedScreen(),
         3 => const LessonsScreen(),
@@ -151,7 +152,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           _visited.add(i);
         }),
         destinations: [
-          NavigationDestination(icon: const Icon(Icons.checklist), label: t('tab_setup'), tooltip: 'Setup'),
+          NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: t('tab_home'), tooltip: 'Home'),
           NavigationDestination(icon: const Icon(Icons.fact_check_outlined), selectedIcon: const Icon(Icons.fact_check), label: t('tab_check'), tooltip: 'Check'),
           NavigationDestination(icon: const Icon(Icons.graphic_eq), label: t('tab_live'), tooltip: 'Live'),
           NavigationDestination(icon: const Icon(Icons.school_outlined), selectedIcon: const Icon(Icons.school), label: t('tab_learn'), tooltip: 'Learn'),

@@ -67,7 +67,7 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const Key('lang_prompt')), findsNothing);
-    expect(find.text('Setup'), findsWidgets);
+    expect(find.text('Home'), findsWidgets);
   });
 
   testWidgets('L10N_chooseEnglish_tabsAndVerdictCardAreEnglish_persisted', (tester) async {
@@ -79,11 +79,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(prefs['lang_v1'], 'en');
-    for (final label in ['Setup', 'Check', 'Live', 'Learn', 'Help']) {
+    for (final label in ['Home', 'Check', 'Live', 'Learn', 'Help']) {
       expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(label)), findsOneWidget);
     }
     expect(find.text('Need help?'), findsOneWidget);
-    expect(find.text('सेटअप'), findsNothing);
+    expect(find.text('होम'), findsNothing);
 
     await tester.pumpWidget(MaterialApp(
       builder: (c, child) => LangScope(notifier: AppLanguage.current, child: child!),
@@ -128,7 +128,7 @@ void main() {
     await tester.pumpWidget(const ScamShieldApp());
     await tester.pump();
     await tester.pump();
-    for (final tip in ['Setup', 'Check', 'Live', 'Learn', 'Help']) {
+    for (final tip in ['Home', 'Check', 'Live', 'Learn', 'Help']) {
       await tester.tap(find.byTooltip(tip));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
