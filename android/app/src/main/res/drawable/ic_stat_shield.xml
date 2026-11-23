@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar / notification small icon: white outline shield with a tick (Android tints it). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="120"
+    android:viewportHeight="132">
+    <path
+        android:pathData="M60,10 C78,18 92,21 104,22 L104,63 L60,118 L16,63 L16,22 C28,21 42,18 60,10 Z"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="11"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M42,62 L56,78 L80,48"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="11"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

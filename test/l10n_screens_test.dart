@@ -40,7 +40,7 @@ void main() {
 
   group('L10N_start_in_global_language', () {
     final cases = <String, (Widget Function(), String, String)>{
-      'report': (() => const ReportScreen(), 'Report a scam', 'I lost money'),
+      'report': (() => const ReportScreen(), 'No money lost yet', 'I lost money'), // title lives in the shell bar
       'family': (() => const FamilyScreen(), 'Show my code', 'Enter family code'),
       'recording': (_recording, 'Pick a recording', 'Open a call recording saved on this phone.'),
       'demo': (() => const DemoLabScreen(), 'No demos yet', 'No demo stories were found in this build'),
@@ -53,8 +53,8 @@ void main() {
         await t.pumpAndSettle();
         expect(find.textContaining(e.value.$2), findsWidgets);
         expect(find.textContaining(e.value.$3), findsWidgets);
-        // the demo's empty state has no chips; Learn follows the top-bar language only
-        if (e.key != 'demo' && e.key != 'lessons') expect(find.byWidgetPredicate((w) => w is ChoiceChip && w.key == const Key('lang_en') && w.selected), findsOneWidget);
+        // the demo's empty state has no chips; Learn and Report follow the top-bar language only
+        if (e.key != 'demo' && e.key != 'lessons' && e.key != 'report') expect(find.byWidgetPredicate((w) => w is ChoiceChip && w.key == const Key('lang_en') && w.selected), findsOneWidget);
       });
     }
   });

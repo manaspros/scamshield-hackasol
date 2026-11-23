@@ -40,7 +40,7 @@ class QAReportsTest {
 
     @Test fun `QA_pack_emptyEventsStillYieldTargetsAndBlankUserFields`() {
         val p = ReportPack.build(emptyList(), true, now)
-        assertTrue(p.evidence.isEmpty()); assertEquals(4, p.userFields.size); assertTrue(p.userFields.all { it.value.isEmpty() })
+        assertTrue(p.evidence.isEmpty()); assertEquals(5, p.userFields.size); assertTrue(p.userFields.all { it.value.isEmpty() })
         QAJson.assertValid(p.toJson())
     }
 

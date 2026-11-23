@@ -19,6 +19,7 @@ import 'theme/theme_controller.dart';
 import 'theme/tokens.dart';
 import 'widgets/floating_nav.dart';
 import 'widgets/shell_bar.dart';
+import 'widgets/shield_logo.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -135,7 +136,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.shield_rounded, color: palOf(context).accent, size: 28),
+                  const ShieldLogo(size: 28),
                   const SizedBox(width: Sp.s),
                   const Text('ScamShield'),
                 ]),

@@ -31,7 +31,7 @@ object PaymentGuardNotifier {
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("route", PaymentGuard.ROUTE_FAMILY))
         val helpline = pi(ID + 2, Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", PaymentGuard.HELPLINE, null)))
         val b = Notification.Builder(ctx, PaymentGuard.CHANNEL_ID)
-            .setSmallIcon(ctx.applicationInfo.icon)
+            .setSmallIcon(R.drawable.ic_stat_shield)
             .setContentTitle(c.title)
             .setContentText(c.text)
             .setStyle(Notification.BigTextStyle().bigText(c.text))

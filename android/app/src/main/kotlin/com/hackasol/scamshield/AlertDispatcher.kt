@@ -8,6 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import android.view.View
+import android.widget.RemoteViews
 import com.hackasol.scamshield.core.AlertNotificationMapper
 import com.hackasol.scamshield.core.AlertPolicy
 import com.hackasol.scamshield.core.L10n
@@ -50,13 +52,29 @@ class AndroidNotificationPoster(private val ctx: Context) : NotificationPoster {
             L10n.channelName(spec.priorityHigh, AppSettings.lang),
             if (spec.priorityHigh) NotificationManager.IMPORTANCE_HIGH else NotificationManager.IMPORTANCE_LOW))
         val b = Notification.Builder(ctx, spec.channelId)
-            .setSmallIcon(ctx.applicationInfo.icon)
+            .setSmallIcon(R.drawable.ic_stat_shield)
             .setContentTitle(spec.title)
             .setContentText(spec.text)
             .setStyle(Notification.BigTextStyle().bigText(spec.text))
             .setCategory(if (spec.messageCategory) Notification.CATEGORY_MESSAGE else Notification.CATEGORY_STATUS)
             .setOnlyAlertOnce(spec.onlyAlertOnce)
             .setAutoCancel(true)
+            .setColor(ctx.getColor(if (spec.priorityHigh) R.color.alert_scam else R.color.brand_blue))
+        if (spec.priorityHigh) {
+            // Scam heads-up: our own rounded body inside the system frame (header + action pills stay native,
+            // so it matches the phone's style, e.g. OxygenOS). Plain text stays set for wearables / accessibility.
+            val body = spec.kicker?.let { k -> spec.text.removePrefix("$k · ") } ?: spec.text
+            val rv = RemoteViews(ctx.packageName, R.layout.notif_alert).apply {
+                setTextViewText(R.id.notif_title, spec.title)
+                setTextViewText(R.id.notif_text, body)
+                if (spec.kicker.isNullOrBlank()) setViewVisibility(R.id.notif_kicker, View.GONE)
+                else setTextViewText(R.id.notif_kicker, spec.kicker)
+            }
+            b.setStyle(Notification.DecoratedCustomViewStyle())
+                .setCustomContentView(rv)
+                .setCustomBigContentView(rv)
+                .setCustomHeadsUpContentView(rv)
+        }
         if (spec.timeoutMs > 0) b.setTimeoutAfter(spec.timeoutMs)
         spec.group?.let(b::setGroup)
         spec.actions.forEach { a ->

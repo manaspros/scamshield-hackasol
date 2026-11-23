@@ -298,6 +298,7 @@ void main() {
               'golden.status' => golden
                   ? {'started': true, 'startMs': 1, 'remainingMs': 3000000, 'pack': pack()}
                   : {'started': false},
+              'golden.start' => {'started': true, 'startMs': 1, 'remainingMs': 3600000, 'pack': pack()},
               'report.pack' => pack(),
               _ => true,
             });
@@ -310,8 +311,11 @@ void main() {
           await t.tap(find.byKey(const Key('path_lost')));
           await t.pumpAndSettle();
         }
-        expect(find.byKey(const Key('golden_timer')), golden ? findsOneWidget : findsNothing);
-        await t.drag(find.byType(SingleChildScrollView), const Offset(0, -6000)); // reach the lower cards
+        // Choosing "I lost money" starts the clock, so it shows either way (pinned above the chat).
+        expect(find.byKey(const Key('golden_timer')), findsOneWidget);
+        await t.drag(find.byType(ListView), const Offset(0, 6000)); // back up to the path cards
+        await t.pumpAndSettle();
+        await t.drag(find.byType(ListView), const Offset(0, -6000)); // and down to the latest question
         await t.pumpAndSettle();
         expect(t.takeException(), isNull);
         await t.pumpWidget(const SizedBox()); // cancels the golden-hour ticker
@@ -436,9 +440,9 @@ void main() {
       final before = scroll.pixels;
       await t.tap(find.byKey(const Key('path_lost')));
       await t.pumpAndSettle();
-      expect(scroll.pixels, greaterThan(before)); // the page moved: the detail is now the first thing seen
-      final top = t.getTopLeft(find.byKey(const Key('golden_start'))).dy;
-      expect(top, inInclusiveRange(0, 600)); // inside the 608dp scroll viewport
+      expect(scroll.pixels, greaterThan(before)); // the chat scrolled to the bot's first question
+      final top = t.getTopLeft(find.byKey(const Key('chip_OTHER'))).dy;
+      expect(top, inInclusiveRange(0, 800)); // its quick replies are on screen
       expect(t.takeException(), isNull);
     });
 

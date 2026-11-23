@@ -10,6 +10,8 @@ data class ReportTarget(val name: String, val phone: String?, val url: String?)
 // [VERIFY] all contact points below against official sources before the demo / release.
 object ReportTargets {
     const val HELPLINE_1930 = "1930"                                              // [VERIFY]
+    /** Women's helpline, offered (opt-in) in the report chat. */
+    const val WOMEN_HELPLINE_181 = "181"                                          // [VERIFY]
     const val CYBERCRIME_URL = "https://cybercrime.gov.in"                        // [VERIFY]
     const val CHAKSHU_URL = "https://sancharsaathi.gov.in/sfc/"                   // [VERIFY]
 
@@ -63,6 +65,7 @@ data class ReportPack(
             UserField("amount", "Amount lost (INR)"),
             UserField("utr", "UTR / transaction ID"),
             UserField("screenshots", "Screenshots (file names)"),
+            UserField("notes", "Other details from the report chat"),
         )
 
         /** Pre-fills evidence from events in [nowMs - windowMs, nowMs]; SAFE verdicts are not evidence. */
