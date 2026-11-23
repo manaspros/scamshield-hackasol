@@ -13,9 +13,15 @@ object GraphContext {
     const val MAX_ITEM_CHARS = 150
     const val SENDER_FIRST_TEXT = "Sender history: first message from this sender"
 
-    fun forMessage(claims: Claims, graph: KnowledgeGraph, nowMs: Long, sender: String = ""): List<String> {
+    const val REPORTED_LINE = "User reported this sender/number/UPI as scam"
+    const val TRUSTED_LINE = "Sender is marked trusted by the user"
+
+    /** [trustKey] is the key for trust/report lookups when it differs from [sender] (WhatsApp: "wa:" + contact name). */
+    fun forMessage(claims: Claims, graph: KnowledgeGraph, nowMs: Long, sender: String = "", trustKey: String = sender): List<String> {
         graph.coldStartNote?.let { return listOf(it) }
         val out = mutableListOf<String>()
+        if (graph.reportedIn(trustKey, claims)) out += REPORTED_LINE
+        else if (trustKey.isNotBlank() && graph.isTrusted(trustKey)) out += TRUSTED_LINE
         val brand = claims.brand
         val wanted = when {
             claims.claimsOrder -> EventType.ORDER
@@ -36,18 +42,35 @@ object GraphContext {
      * would be false certainty: an empty graph (Gemma sees the cold-start line instead), or the message is itself
      * an event report from a DLT header (it is the event, it cannot have a predecessor).
      */
-    fun flagsFor(message: String, sender: String, graph: KnowledgeGraph, nowMs: Long): List<ContextFlag> {
+    fun flagsFor(message: String, sender: String, graph: KnowledgeGraph, nowMs: Long, trustKey: String = sender): List<ContextFlag> {
         val s = sender.trim()
+        val tk = trustKey.trim()
         var flags = ClaimVsContext.check(message, s, graph)
         if (graph.isEmpty || (ClaimVsContext.isDltHeader(s) && ClaimParsers.eventTypes(message).isNotEmpty())) {
             flags = flags.filter { it.kind != FlagKind.NO_MATCHING_EVENT }
         }
+        // One weak "unknown link" flag at most: N unknown links must not stack past the SAFE -> SUSPICIOUS threshold.
+        val firstLink = flags.firstOrNull { it.kind == FlagKind.LINK_NOT_ALLOWLISTED }
+        flags = flags.filter { it.kind != FlagKind.LINK_NOT_ALLOWLISTED || it === firstLink }
         // Cold graph: weak signals (normal number, unknown link) are what every new user's first messages look like;
         // stacked, they would raise SAFE to SUSPICIOUS on no real evidence.
         if (graph.isEmpty) flags = flags.filter { it.kind != FlagKind.NON_DLT_SENDER && it.kind != FlagKind.LINK_NOT_ALLOWLISTED }
+        // A sender the user marked safe: drop the weak "unknown" signals (raise-only layer, so not raising is allowed).
+        // REPORTED_ENTITY, FAKE_CREDIT, LOOKALIKE_LINK and DEBIT_SCARE are never dropped.
+        if (tk.isNotEmpty() && graph.isTrusted(tk)) {
+            flags = flags.filter { it.kind !in TRUSTED_DROPS }
+        }
+        val claims = ClaimParsers.parse(message, s)
+        val extra = buildList {
+            if (graph.reportedIn(tk, claims)) add(ContextFlag(FlagKind.REPORTED_ENTITY, ContextRules.REPORTED_TEXT))
+            addAll(ContextRules.newUpiPay(message, tk, graph))   // newUpiPay only uses its sender for the trust lookup
+            addAll(ContextRules.debitScare(message, s, graph, nowMs))
+        }
         // Mistaken-transfer first: when it raises, its reason leads the alert (the weak claim flags follow).
-        return ContextRules.mistakenTransfer(message, graph, nowMs) + flags
+        return ContextRules.mistakenTransfer(message, graph, nowMs) + extra + flags
     }
+
+    private val TRUSTED_DROPS = setOf(FlagKind.NO_MATCHING_EVENT, FlagKind.NON_DLT_SENDER, FlagKind.NEW_UPI_PAY, FlagKind.LINK_NOT_ALLOWLISTED)
 
     private fun ago(ms: Long): String = when {
         ms < 60_000L -> "just now"

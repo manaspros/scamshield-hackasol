@@ -56,7 +56,7 @@ class ContextRulesTest {
 
         val cold = ContextRules.delivery(call, KnowledgeGraph(), now)
         assertFalse(cold.suppress)
-        assertTrue(cold.flags.single().reason.contains(KnowledgeGraph.COLD_START_TEXT))
+        assertTrue(cold.flags.isEmpty())
         assertTrue(ContextRules.delivery("Hello, is this Ravi?", g, now).flags.isEmpty())
     }
 }

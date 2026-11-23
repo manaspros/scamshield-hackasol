@@ -34,7 +34,9 @@ import java.io.File
  *  golden.share {fields}       -> builds the evidence ZIP in cacheDir/evidence and opens the share sheet
  *  evidence.make {id?}         -> builds the ZIP from flagged events (one event by id, else last 24 h); {count, items}
  *  evidence.share              -> share sheet for the ZIP evidence.make built
- *  graph.summary               -> readable summary of graph.db (brands, recent events, senders, contact counts)
+ *  graph.summary               -> readable summary of the live graph (brands, recent events, senders, contact counts)
+ *  graph.delete {alerts}       -> {ok:true}; wipes the graph (memory + graph.db), and the verdict log when alerts=true
+ *  feedback.mark {tsMs,verdict}-> bool; verdict "safe"|"scam" marks that past alert's sender/numbers/UPI ids; false if nothing recorded
  */
 class HandoffChannel(private val activity: Activity, private val scope: CoroutineScope) {
     companion object {
@@ -88,7 +90,22 @@ class HandoffChannel(private val activity: Activity, private val scope: Coroutin
                         result.success(true)
                     } catch (t: Throwable) { result.error("SHARE", t.message, null) }
                 }
-                "graph.summary" -> io(result, "GRAPH") { GraphSummary.build(SqliteKnowledgeGraph(activity).load()) }
+                "graph.summary" -> io(result, "GRAPH") { GraphSummary.build(TextApi.graph(activity).snapshot()) }   // the live copy, not a second DB handle
+                "graph.delete" -> io(result, "GRAPH") {
+                    val alerts = call.argument<Boolean>("alerts") == true
+                    val ok = TextApi.deleteMyData(activity, alerts)
+                    if (alerts) {   // evidence ZIPs and the golden-hour clock are derived from the alerts being deleted
+                        File(activity.cacheDir, "evidence").listFiles()?.forEach { it.delete() }
+                        prefs().edit().remove(KEY_GOLDEN_START).apply()
+                    }
+                    mapOf("ok" to ok)
+                }
+                "feedback.mark" -> io(result, "FEEDBACK") {
+                    val ts = call.argument<Number>("tsMs")?.toLong()
+                    val verdict = call.argument<String>("verdict")
+                    if (ts == null || (verdict != "safe" && verdict != "scam")) false
+                    else TextApi.feedback(activity, ts, verdict == "scam")
+                }
                 else -> result.notImplemented()
             }
         }

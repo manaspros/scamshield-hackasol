@@ -2,7 +2,9 @@ package com.hackasol.scamshield
 
 import android.content.Context
 import android.os.SystemClock
+import com.hackasol.scamshield.core.CallContext
 import com.hackasol.scamshield.core.ClassifyRequest
+import com.hackasol.scamshield.core.DataReset
 import com.hackasol.scamshield.core.Fusion
 import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.Pipeline
@@ -42,12 +44,14 @@ object TextApi {
 
     @Volatile private var appContext: Context? = null
     @Volatile private var sharedGraph: KnowledgeGraph? = null
+    // Own lock: the DB load in graph() must never block init() (which takes the TextApi monitor) on the main thread.
+    private val graphLock = Any()
 
     /**
      * The one knowledge graph (graph.db), shared by the notification listener and the call-caption path.
      * Opened lazily, so call it off the main thread (PersistentKnowledgeGraph loads the DB in its constructor).
      */
-    fun graph(ctx: Context): KnowledgeGraph = sharedGraph ?: synchronized(this) {
+    fun graph(ctx: Context): KnowledgeGraph = sharedGraph ?: synchronized(graphLock) {
         sharedGraph ?: PersistentKnowledgeGraph(SqliteKnowledgeGraph(ctx.applicationContext)).also { sharedGraph = it }
     }
 
@@ -82,11 +86,26 @@ object TextApi {
         captionQueue.trySend(req to onResult)
     }
 
-    suspend fun classify(req: ClassifyRequest): Verdict = classifyUnlogged(req).also { record(it) }
+    suspend fun classify(req: ClassifyRequest): Verdict = classifyLogged(req).first
 
-    /** Final results only; the preliminary rules-only caption warning is followed by a final result that is logged. */
-    private suspend fun record(v: Verdict) =
-        append(VerdictEvent(0, System.currentTimeMillis(), v.source, v.label, v.confidence, v.scamType, v.triggers, v.engine))
+    /** Like [classify], plus the timestamp the verdict was logged under (the key "This was a scam / safe" feedback uses). */
+    suspend fun classifyLogged(req: ClassifyRequest): Pair<Verdict, Long> {
+        val v = classifyUnlogged(req)
+        return v to record(v)
+    }
+
+    /** "Delete my data": the shared graph (memory and graph.db); with [alsoAlerts] also the real verdict log. False if any delete failed. Off the main thread. */
+    fun deleteMyData(ctx: Context, alsoAlerts: Boolean) = DataReset.run(graph(ctx), verdictLog, alsoAlerts)
+
+    /** "This was a scam" / "this is safe" on a past alert, by its log timestamp. False when nothing was recorded for that alert (calls and pasted text have no sender). */
+    fun feedback(ctx: Context, tsMs: Long, scam: Boolean): Boolean = graph(ctx).feedback(tsMs, scam, System.currentTimeMillis())
+
+    /** Final results only; the preliminary rules-only caption warning is followed by a final result that is logged. Returns the logged ts. */
+    private suspend fun record(v: Verdict): Long {
+        val ts = System.currentTimeMillis()
+        append(VerdictEvent(0, ts, v.source, v.label, v.confidence, v.scamType, v.triggers, v.engine))
+        return ts
+    }
 
     private suspend fun append(e: VerdictEvent) {
         val log = verdictLog ?: return
@@ -123,10 +142,12 @@ object TextApi {
 
     private suspend fun classifyUnlogged(req0: ClassifyRequest): Verdict {
         val t0 = SystemClock.elapsedRealtime()
-        // Calls (captions, recordings) get the call-side context rules from the shared graph; caller number unknown here.
+        // Calls (captions, recordings) get the call-side context rules from the shared graph; the caller number comes
+        // from the dialer notification (null for a saved contact or when none is showing).
         val req = if (Pipeline.isCall(req0.source)) {
             val g = withContext(Dispatchers.IO) { appContext?.let(::graph) }
-            if (g == null) req0 else Pipeline.withCallContext(req0, g, System.currentTimeMillis())
+            val now = System.currentTimeMillis()
+            if (g == null) req0 else Pipeline.withCallContext(req0, g, now, CallContext.caller(now))
         } else req0
         val rules = RuleScorer.score(req.text, AppSettings.lang)
         val llm = if (AppSettings.useLlm) GemmaClassifier.classify(req.text, req.context, req.contextLabel) else null

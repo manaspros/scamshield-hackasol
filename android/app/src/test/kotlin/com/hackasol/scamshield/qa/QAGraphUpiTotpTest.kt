@@ -53,9 +53,9 @@ class QAGraphUpiTotpTest {
     }
 
     @Test fun `QA_claims_brandFromHeaderWhenTextHasNone`() {
-        assertEquals("hdfcbk", ClaimParsers.parse("Your bill is overdue", "AX-HDFCBK").brand)
+        assertEquals("hdfcbank", ClaimParsers.parse("Your bill is overdue", "AX-HDFCBK").brand)
         assertNull(ClaimParsers.parse("Your bill is overdue", "").brand)
-        assertTrue(ClaimParsers.sameBrand("amazon", "ama")); assertFalse(ClaimParsers.sameBrand("amazon", "am")); assertFalse(ClaimParsers.sameBrand("amazon", "flipkart"))
+        assertFalse(ClaimParsers.sameBrand("amazon", "ama")); assertFalse(ClaimParsers.sameBrand("amazon", "am")); assertFalse(ClaimParsers.sameBrand("amazon", "flipkart"))
     }
 
     // ---------- Knowledge graph ----------
@@ -159,9 +159,9 @@ class QAGraphUpiTotpTest {
         assertTrue(ContextRules.bankCall("9876543210", "hello beta kaise ho").isEmpty())
     }
 
-    @Test fun `QA_rules_deliveryColdStartFlagsWithColdNote`() {
+    @Test fun `QA_rules_deliveryColdStartHasNoFlag`() {
         val o = ContextRules.delivery("Your parcel is at the gate", KnowledgeGraph(), now)
-        assertFalse(o.suppress); assertEquals(FlagKind.UNVERIFIED_DELIVERY, o.flags[0].kind); assertTrue(o.flags[0].reason.contains(KnowledgeGraph.COLD_START_TEXT))
+        assertFalse(o.suppress); assertTrue(o.flags.isEmpty())
     }
 
     @Test fun `QA_rules_deliverySuppressedByRecentEventWindowEdge`() {

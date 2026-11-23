@@ -241,13 +241,14 @@ class QAContextLayerTest {
         assertTrue(got[0].contextFlags.none { it.kind == FlagKind.NO_MATCHING_EVENT })
     }
 
-    @Test fun `QA_wiring_classifyFailureStillIngestsSoNextMessageSeesWarmGraph`() = runBlocking {
+    // R3 (B2): an unclassified message must not become "known", so a failed classify ingests nothing.
+    @Test fun `QA_wiring_classifyFailureIngestsNothingSoNextMessageStillSeesColdGraph`() = runBlocking {
         val g = KnowledgeGraph(); val got = mutableListOf<ClassifyRequest>(); var first = true
         val w = ListenerWiring(NotificationMapper(), { t, s -> qaVerdict(Label.SAFE, 0.9, t, s) }, { _, _ -> }, g, { r -> got += r; if (first) { first = false; error("boom") }; qaVerdict(Label.SAFE, 0.9, r.text) })
         try { w.onPosted(info("Your Amazon order is held, pay the fee now", "AX-AMAZON", now)); fail() } catch (_: IllegalStateException) {}
-        assertFalse(g.isEmpty)
+        assertTrue(g.isEmpty)
         w.onPosted(info("Your Amazon order is held, pay the fee again", "AX-AMAZON", now + 1000))
-        assertNotEquals(listOf(KnowledgeGraph.COLD_START_TEXT), got[1].context)
+        assertEquals(listOf(KnowledgeGraph.COLD_START_TEXT), got[1].context)
     }
 
     @Test fun `QA_wiring_smsTitleTrimmedIsTheSenderButWhatsappTitleIsNot`() = runBlocking {

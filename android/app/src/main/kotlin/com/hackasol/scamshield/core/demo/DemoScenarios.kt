@@ -100,7 +100,7 @@ object DemoScenarios {
             "A normal-number SMS says Rs 9,999 was debited, 'call to cancel'. The caller then asks for the OTP.",
             listOf(
                 sms("9800000020", "Your a/c debited Rs 9,999. If not you, call 98XXXXXX10 to cancel", Label.SUSPICIOUS,
-                    setOf(FlagKind.NO_MATCHING_EVENT, FlagKind.NON_DLT_SENDER), FIRST),
+                    setOf(FlagKind.DEBIT_SCARE, FlagKind.NON_DLT_SENDER), FIRST),
                 call("9800000030", "Main bank se bol raha hoon, OTP batao cancel karne ke liye", Label.SCAM, setOf(FlagKind.NON_1600_BANK_CALL)),
             ),
         ),
@@ -128,11 +128,11 @@ object DemoScenarios {
         DemoScenario(
             "delivery_customs", "local_shipping",
             "कस्टम्स फीस का नकली SMS", "Fake customs-fee SMS",
-            "'पार्सल कस्टम्स में रुका है, ₹49 फीस दें' और एक लिंक। आपने कोई ऑर्डर नहीं किया, नंबर आम है, लिंक अनजान है।",
-            "'Parcel held at customs, pay Rs 49 fee' with a link. No order on record, a normal number and an unknown link.",
+            "'पार्सल कस्टम्स में रुका है, ₹49 फीस दें' और एक लिंक। किसी कूरियर का नाम नहीं, नंबर आम है, लिंक अनजान है।",
+            "'Parcel held at customs, pay Rs 49 fee' with a link. No courier is named, it comes from a normal number, and the link is unknown.",
             listOf(
                 sms("9800000060", "Parcel held at customs, pay ₹49 fee: http://dlv-fee.example/pay", Label.SUSPICIOUS,
-                    setOf(FlagKind.NO_MATCHING_EVENT, FlagKind.NON_DLT_SENDER, FlagKind.LINK_NOT_ALLOWLISTED), FIRST),
+                    setOf(FlagKind.NON_DLT_SENDER, FlagKind.LINK_NOT_ALLOWLISTED), FIRST),
             ),
         ),
         DemoScenario(

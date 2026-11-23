@@ -25,14 +25,51 @@ object ContextRules {
     private val MISTAKE = UnicodeRegex.of("by mistake|mistakenly|wrong(?:ly)?\\s+(?:number|account|upi|person)|galti se|गलती से")
     private val RETURN_ASK = UnicodeRegex.of("\\b(?:return|refund|send back|give back|transfer back|wapas)\\b|वापस|लौटा")
 
-    /** "I sent money by mistake, return it": A = no recent CREDIT event (fake credit), B = real CREDIT event (warn). */
+    const val MISTAKEN_A_AMOUNT_TEXT = "A credit arrived, but not of ₹"
+    /** A recorded credit counts as the claimed one when the amounts are within this many rupees. */
+    const val AMOUNT_TOLERANCE = 1.0
+    const val NEW_UPI_PAY_TEXT = "Asks you to pay a UPI id never seen on this phone before."
+    const val DEBIT_SCARE_WARM_TEXT = "No debit alert from your bank on record. Do not call numbers in this message; check your bank app."
+    const val DEBIT_SCARE_COLD_TEXT = "No record since ScamShield was installed: cannot confirm this debit."
+    const val REPORTED_TEXT = "You reported this sender, number or UPI id as a scam before."
+
+    private fun rupees(a: Double): String = if (a == Math.floor(a)) a.toLong().toString() else a.toString()
+
+    /**
+     * "I sent money by mistake, return it": A = no recent CREDIT event, or only credits of a different amount (fake credit),
+     * B = a real CREDIT event of the claimed amount (warn). A null amount on either side counts as a match.
+     */
     fun mistakenTransfer(text: String, graph: KnowledgeGraph, nowMs: Long): List<ContextFlag> {
         if (!MISTAKE.containsMatchIn(text) || !RETURN_ASK.containsMatchIn(text)) return emptyList()
-        return if (graph.hasAnyEvent(EventType.CREDIT, nowMs - CREDIT_WINDOW_MS)) {
-            listOf(ContextFlag(FlagKind.RETURN_VIA_BANK_ONLY, MISTAKEN_B_TEXT))
-        } else {
-            listOf(ContextFlag(FlagKind.FAKE_CREDIT, if (graph.isEmpty) MISTAKEN_A_COLD_TEXT else MISTAKEN_A_TEXT))
+        val credits = graph.recentEvents(EventType.CREDIT, nowMs - CREDIT_WINDOW_MS)
+        val claimed = ClaimParsers.amountRupees(text)
+        return when {
+            credits.isEmpty() ->
+                listOf(ContextFlag(FlagKind.FAKE_CREDIT, if (graph.isEmpty) MISTAKEN_A_COLD_TEXT else MISTAKEN_A_TEXT))
+            credits.any { claimed == null || it.amountRupees == null || Math.abs(it.amountRupees - claimed) <= AMOUNT_TOLERANCE } ->
+                listOf(ContextFlag(FlagKind.RETURN_VIA_BANK_ONLY, MISTAKEN_B_TEXT))
+            else ->
+                listOf(ContextFlag(FlagKind.FAKE_CREDIT, "$MISTAKEN_A_AMOUNT_TEXT${rupees(claimed!!)}. This SMS is not from your bank."))
         }
+    }
+
+    /** Unknown UPI id + a pay/return ask, on a warm graph, from a sender the user has not trusted. */
+    fun newUpiPay(text: String, sender: String, graph: KnowledgeGraph): List<ContextFlag> {
+        if (graph.isEmpty || graph.isTrusted(sender) || !ClaimParsers.asksPay(text)) return emptyList()
+        return if (ClaimParsers.upiIds(text).any { !graph.knownUpi(it) }) listOf(ContextFlag(FlagKind.NEW_UPI_PAY, NEW_UPI_PAY_TEXT)) else emptyList()
+    }
+
+    /**
+     * "Rs X debited, call to cancel" with no debit alert on record in the last 24 h (for the brand, or any when no brand).
+     * A DLT-header message that is itself the debit report is the alert, not a scare.
+     */
+    fun debitScare(text: String, sender: String, graph: KnowledgeGraph, nowMs: Long): List<ContextFlag> {
+        if (!ClaimParsers.mentionsDebit(text) || !ClaimParsers.asksAction(text)) return emptyList()
+        val s = sender.trim()
+        if (ClaimVsContext.isDltHeader(s) && EventType.DEBIT in ClaimParsers.eventTypes(text)) return emptyList()
+        val brand = ClaimParsers.parse(text, s).brand
+        if (graph.recentEvents(EventType.DEBIT, nowMs - CREDIT_WINDOW_MS, brand).isNotEmpty()) return emptyList()
+        return listOf(ContextFlag(FlagKind.DEBIT_SCARE, if (graph.isEmpty) DEBIT_SCARE_COLD_TEXT else DEBIT_SCARE_WARM_TEXT))
     }
 
     /** Bank/financial caller not on the 1600 series. Blank or hidden caller number: no verdict from this rule. */
@@ -51,13 +88,13 @@ object ContextRules {
 
     /** Delivery call: out-for-delivery event for that courier within the window -> suppress; none -> flag. */
     fun delivery(callText: String, graph: KnowledgeGraph, nowMs: Long): ContextOutcome {
-        if (!DELIVERY_CALL.containsMatchIn(callText)) return ContextOutcome(emptyList())
+        // Cold graph: nothing on record is the normal state of a new install, not evidence against the caller.
+        if (graph.isEmpty || !DELIVERY_CALL.containsMatchIn(callText)) return ContextOutcome(emptyList())
         val since = nowMs - DELIVERY_WINDOW_MS
         val courier = ClaimParsers.brandFromText(callText)
         val seen = if (courier != null) graph.hasEvent(courier, EventType.OUT_FOR_DELIVERY, since)
         else graph.hasAnyEvent(EventType.OUT_FOR_DELIVERY, since)
         if (seen) return ContextOutcome(emptyList(), suppress = true)
-        val reason = graph.coldStartNote?.let { "$it: cannot confirm this delivery." } ?: DELIVERY_UNVERIFIED_TEXT
-        return ContextOutcome(listOf(ContextFlag(FlagKind.UNVERIFIED_DELIVERY, reason)))
+        return ContextOutcome(listOf(ContextFlag(FlagKind.UNVERIFIED_DELIVERY, DELIVERY_UNVERIFIED_TEXT)))
     }
 }

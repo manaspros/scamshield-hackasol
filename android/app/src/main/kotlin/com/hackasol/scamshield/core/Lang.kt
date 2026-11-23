@@ -161,6 +161,7 @@ object L10n {
     // ---- context flag texts ----
 
     private val LINK_HOST = Regex("^Link goes to (.*), not a \\.bank\\.in or \\.gov\\.in site\\.$")
+    private val LOOKALIKE = Regex("^Link goes to (.*), which imitates (.*) but is not its official site\\.$")
     private val NO_BILL_BRAND = Regex("^No bill or order from (.*) on record, but this message claims one\\.$")
 
     /**
@@ -181,11 +182,21 @@ object L10n {
             FlagKind.FAKE_CREDIT ->
                 if (r == ContextRules.MISTAKEN_A_COLD_TEXT)
                     "ScamShield इंस्टॉल होने के बाद कोई क्रेडिट अलर्ट दर्ज नहीं है। कुछ भी लौटाने से पहले अपना बैंक ऐप देखें।"
+                else if (r.startsWith(ContextRules.MISTAKEN_A_AMOUNT_TEXT))
+                    "क्रेडिट आया, लेकिन ₹${r.removePrefix(ContextRules.MISTAKEN_A_AMOUNT_TEXT).substringBefore('.')} का नहीं। यह SMS आपके बैंक से नहीं है।"
                 else "कोई पैसा नहीं आया। यह SMS आपके बैंक से नहीं है।"
             FlagKind.RETURN_VIA_BANK_ONLY ->
                 "यह पैसा चोरी का हो सकता है। खुद लौटाने पर आपका खाता फ्रीज़ हो सकता है। उनसे अपने बैंक के ज़रिए रिवर्सल माँगने को कहें; अपने बैंक / 1930 से संपर्क करें।"
             FlagKind.NON_1600_BANK_CALL -> "बैंक 1600 वाले नंबरों से कॉल करते हैं। यह कॉल सामान्य मोबाइल नंबर से है।"
             FlagKind.UNVERIFIED_DELIVERY -> "इस कूरियर का कोई 'डिलीवरी के लिए निकला' संदेश रिकॉर्ड में नहीं है, लेकिन कॉल डिलीवरी के बारे में है।"
+            FlagKind.LOOKALIKE_LINK -> LOOKALIKE.find(r)?.let {
+                "लिंक ${it.groupValues[1]} पर जाता है, जो ${it.groupValues[2]} जैसा दिखता है पर उसकी असली साइट नहीं है।"
+            } ?: "लिंक किसी जानी-मानी कंपनी जैसा दिखता है पर उसकी असली साइट नहीं है।"
+            FlagKind.NEW_UPI_PAY -> "यह ऐसे UPI आईडी पर पैसे भेजने को कहता है जो इस फ़ोन पर पहले कभी नहीं दिखी।"
+            FlagKind.DEBIT_SCARE ->
+                if (r == ContextRules.DEBIT_SCARE_COLD_TEXT) "ScamShield इंस्टॉल होने के बाद का कोई रिकॉर्ड नहीं है, इसलिए इस डेबिट की पुष्टि नहीं हो सकती।"
+                else "आपके बैंक का कोई डेबिट अलर्ट दर्ज नहीं है। इस संदेश के नंबरों पर कॉल न करें; अपना बैंक ऐप देखें।"
+            FlagKind.REPORTED_ENTITY -> "आपने इस सेंडर, नंबर या UPI आईडी को पहले ठगी बताया था।"
         }
     }
 

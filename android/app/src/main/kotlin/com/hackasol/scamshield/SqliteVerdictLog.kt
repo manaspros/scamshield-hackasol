@@ -117,6 +117,8 @@ class SqliteVerdictLog(ctx: Context) : VerdictLog {
 
     override fun latest(): VerdictEvent? = query(null, null, "ts_ms DESC, id DESC", "1").firstOrNull()
 
+    override fun clear() { helper.writableDatabase.delete("verdicts", null, null) }
+
     override fun countsByType(): Map<ScamType, Int> {
         val out = LinkedHashMap<ScamType, Int>()
         helper.readableDatabase.query("verdicts", arrayOf("scam_type", "COUNT(*)"), "scam_type IS NOT NULL",

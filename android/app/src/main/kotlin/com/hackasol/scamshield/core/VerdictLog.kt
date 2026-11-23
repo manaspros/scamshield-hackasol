@@ -17,6 +17,8 @@ interface VerdictLog {
     fun since(tsMs: Long): List<VerdictEvent>
     fun latest(): VerdictEvent?
     fun countsByType(): Map<ScamType, Int>
+    /** Delete every event of THIS log only (the real log; the Demo Lab keeps its own separate in-memory log). */
+    fun clear()
 }
 
 class InMemoryVerdictLog : VerdictLog {
@@ -29,6 +31,8 @@ class InMemoryVerdictLog : VerdictLog {
         events.filter { it.tsMs >= tsMs }.sortedBy { it.tsMs }
 
     @Synchronized override fun latest(): VerdictEvent? = events.asReversed().maxByOrNull { it.tsMs }  // reversed: on a ts tie the last appended wins, like Sqlite (ts DESC, id DESC)
+
+    @Synchronized override fun clear() { events.clear() }
 
     /** Events with a null scamType are not counted. */
     @Synchronized override fun countsByType(): Map<ScamType, Int> =

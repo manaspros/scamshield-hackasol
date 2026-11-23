@@ -36,6 +36,10 @@ object FusionWeights {
         FlagKind.UNVERIFIED_DELIVERY -> 0.4
         FlagKind.NON_DLT_SENDER -> 0.15
         FlagKind.LINK_NOT_ALLOWLISTED -> 0.2
+        FlagKind.LOOKALIKE_LINK -> 0.6
+        FlagKind.NEW_UPI_PAY -> 0.4
+        FlagKind.DEBIT_SCARE -> 0.5
+        FlagKind.REPORTED_ENTITY -> 0.8
     }
 }
 
