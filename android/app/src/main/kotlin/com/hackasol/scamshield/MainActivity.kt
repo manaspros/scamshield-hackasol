@@ -23,7 +23,7 @@ import java.io.File
 
 /**
  * Flutter bridge.
- *  MethodChannel "scamshield/api": classify, modelStatus, loadModel, importModel, getSettings,
+ *  MethodChannel "scamshield/api": classify, upi.check {link, expectedName}, modelStatus, loadModel, importModel, getSettings,
  *    setSettings, serviceStatus, app.initialRoute, perm.notificationsGranted, perm.requestNotifications, perm.notificationAccessGranted, perm.openNotificationAccess, openAccessibilitySettings, openCaptionSettings, testOverlay
  *  EventChannel  "scamshield/events": caption / statement / verdict / discovery / call / model events
  */
@@ -71,6 +71,11 @@ class MainActivity : FlutterActivity() {
                     val req = TextApi.requestFromMap(call.arguments as Map<*, *>)
                     try { result.success(TextApi.classify(req).toMap()) }
                     catch (t: Throwable) { result.error("CLASSIFY", "${t.javaClass.simpleName}: ${t.message} / cause: ${t.cause}", null) }
+                }
+                "upi.check" -> scope.launch {
+                    try {
+                        result.success(TextApi.upiCheck(call.argument<String>("link").orEmpty(), call.argument<String>("expectedName")))
+                    } catch (t: Throwable) { result.error("UPI", t.message, null) }
                 }
                 "verdicts.recent" -> scope.launch {
                     try {

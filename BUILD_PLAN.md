@@ -167,7 +167,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T4.1 [codex] `UpiQr` (pure): parse `upi://pay?pa=&pn=&am=`, payee-name vs expected-name mismatch, "You will PAY Rs X to <name>" framing, collect-request wording
   - **Files**: `K/core/UpiQr.kt`, `KT/core/UpiQrTest.kt`  **Depends on**: T0.5
   - **Done when**: `KT(UpiQrTest)` passes `T4_1_parsesPaTn`, `T4_1_nameMismatch`, `T4_1_payFraming`, `T4_1_rejectsMalformed`
-- [ ] T4.2 [sonnet] [UI] Fake-QR checker in Try API: `upi://` in pasted/shared text (or manual link) + optional "name I was told" -> card with PAY framing and mismatch warning; also logs a FAKE_QR verdict event
+- [x] T4.2 [sonnet] [UI] Fake-QR checker in Try API: `upi://` in pasted/shared text (or manual link) + optional "name I was told" -> card with PAY framing and mismatch warning; also logs a FAKE_QR verdict event
   - **Files**: `lib/screens/try_api_screen.dart`, `K/MainActivity.kt`  **Depends on**: T4.1, T2.1, T3.11
   - **Done when**: `APP` succeeds; `FT(upi_card_test.dart)` passes `T4_2_mismatchWarning`
 - [ ] T4.3 [sonnet] [NEEDS-OK:DEP7] [OPTIONAL: if time remains after P3] ML Kit code scanner button feeding T4.2

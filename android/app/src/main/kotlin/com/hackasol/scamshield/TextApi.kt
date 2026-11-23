@@ -6,6 +6,8 @@ import com.hackasol.scamshield.core.ClassifyRequest
 import com.hackasol.scamshield.core.Fusion
 import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.RuleScorer
+import com.hackasol.scamshield.core.ScamType
+import com.hackasol.scamshield.core.UpiQr
 import com.hackasol.scamshield.core.Source
 import com.hackasol.scamshield.core.Verdict
 import com.hackasol.scamshield.core.VerdictEvent
@@ -68,14 +70,50 @@ object TextApi {
     suspend fun classify(req: ClassifyRequest): Verdict = classifyUnlogged(req).also { record(it) }
 
     /** Final results only; the preliminary rules-only caption warning is followed by a final result that is logged. */
-    private suspend fun record(v: Verdict) {
+    private suspend fun record(v: Verdict) =
+        append(VerdictEvent(0, System.currentTimeMillis(), v.source, v.label, v.confidence, v.scamType, v.triggers, v.engine))
+
+    private suspend fun append(e: VerdictEvent) {
         val log = verdictLog ?: return
         try {
-            val e = VerdictEvent(0, System.currentTimeMillis(), v.source, v.label, v.confidence, v.scamType, v.triggers, v.engine)
             withContext(Dispatchers.IO) { log.append(e) }
         } catch (t: Throwable) {
             Log.e("ScamShield/TextApi", "verdict log append failed", t)
         }
+    }
+
+    /**
+     * Fake-QR check (T4.2). Parsing, name mismatch and the English framing come from core UpiQr.
+     * A mismatch (SCAM) or collect request (SUSPICIOUS) logs one FAKE_QR event; it holds no link, VPA or name.
+     */
+    suspend fun upiCheck(link: String, expectedName: String?): Map<String, Any?> {
+        val qr = UpiQr.parse(link) ?: return mapOf("valid" to false)
+        val mismatch = qr.nameMismatch(expectedName)
+        val triggers = buildList {
+            if (mismatch) add("upi name mismatch")
+            if (qr.isCollectRequest) add("upi collect request")
+        }
+        if (triggers.isNotEmpty()) {
+            append(VerdictEvent(0, System.currentTimeMillis(), Source.PASTE, if (mismatch) Label.SCAM else Label.SUSPICIOUS,
+                if (mismatch) 0.9 else 0.7, ScamType.FAKE_QR, triggers, "upi-check"))
+        }
+        val who = qr.payeeName?.takeIf { it.isNotBlank() } ?: qr.payeeAddress
+        return mapOf(
+            "valid" to true,
+            "payeeName" to qr.payeeName,
+            "payeeVpa" to maskVpa(qr.payeeAddress),
+            "amount" to qr.amount,
+            "isCollect" to qr.isCollectRequest,
+            "mismatch" to mismatch,
+            "framing" to qr.payFraming(),
+            "framingHi" to if (qr.amount.isNullOrBlank()) "आप $who को पैसे भेजेंगे" else "आप $who को ₹${qr.amount} भेजेंगे",
+        )
+    }
+
+    // UpiQr guarantees exactly one '@'. "ravi.k@oksbi" -> "ra•••@oksbi"
+    private fun maskVpa(vpa: String): String {
+        val user = vpa.substringBefore('@')
+        return user.take(if (user.length > 3) 2 else 1) + "•••@" + vpa.substringAfter('@')
     }
 
     private suspend fun classifyUnlogged(req: ClassifyRequest): Verdict {

@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T4.2 [sonnet] Fake-QR checker in Try API (upi:// in pasted text or the UPI field + 'name I was told' -> PAY framing hi/en, masked VPA, mismatch/collect warnings, FAKE_QR verdict event without link/VPA); UX audit #3: paste results use VerdictCard(showDebug:false) with advice + 1930 tap-to-dial — 2026-11-23 — flutter test test/upi_card_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T2.7 [sonnet] Recording screen: pick (SAF) or share audio/* -> Vosk model download if needed -> decode -> STT -> RecordingPipeline -> per-statement timeline, overall risk, triggers, Report button; Recording tile + 'recording' deep link in Help hub — 2026-11-23 — flutter test test/recording_screen_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T3.10 [sonnet] Settings: district picker (persisted via scamshield/prefs), 'Export anonymised counts' share-sheet file via TrendChannel ({district, scam_type, date} only), loading/error state (UX audit #10); prefs allowlist now lesson_best_v1, district, lang_v1, captions_ack_v1 (fixes first-run language not persisting) — 2026-11-23 — flutter test test/settings_screen_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T3.11 [sonnet] Navigation: tabs Setup/Check/Live/Learn/Help (Help: Report, Family, Settings), persistent 'ठगे गए? 1930' entry -> Report, nav/app bar text clamped to 1.2, route=report deep link (UX audit #1, #9) — 2026-11-23 — flutter test test/nav_test.dart test/qa/qa_nav_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
@@ -57,6 +58,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
 ## Decisions
+- 2026-11-23: Paste results use VerdictCard(showDebug:false) per UX audit #3; % removed from the paste UI. QA assertions updated (authorised by the coordinator): the % strings became the Hindi headline, and newestFirst now orders SCAM then SAFE so both cards stay in the lazily built list. 1930 only via ACTION_DIAL.
 - 2026-11-23: T2.7 classifies statements via TextApi (source=RECORDING) inside runBlocking on a Default thread (shortcut). No audio or transcript is stored; verdict events (label, triggers, no text) are logged as for every source. Device run is T2.8 (blocked: phone).
 - 2026-11-23: scamshield/prefs allowlist extended with lang_v1 and captions_ack_v1 (design lead's first-run keys) so the language choice persists; district read times out after 1 s so settings never block on it. settings_screen.dart was reformatted by dart format in T3.10 (large diff, no other session had edits there).
 - Quiz wrong-answer feedback is amber 'ध्यान दें' with a warning icon, not red 'गलत' (gentler for first-time learners; coordinator-approved UX change; lessons_screen_test updated).

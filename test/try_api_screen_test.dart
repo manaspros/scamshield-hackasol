@@ -47,6 +47,11 @@ void main() {
     // ListView is lazy and 2.0x type pushes the result down: scroll each piece into view.
     await tester.dragUntilVisible(find.byType(StatusChip), find.byType(ListView), const Offset(0, -100));
     expect(find.text('ओटीपी माँगना · OTP theft'), findsOneWidget);
+    await tester.scrollUntilVisible(find.byKey(const Key('verdict_why')), 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('verdict_why')));
+    await tester.pumpAndSettle();
     await tester.dragUntilVisible(find.text('turant'), find.byType(ListView), const Offset(0, -200));
     expect(find.text('OTP bata'), findsOneWidget);
     expect(find.text('turant'), findsOneWidget);

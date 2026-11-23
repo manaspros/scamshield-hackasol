@@ -127,7 +127,7 @@ void main() {
         final args = api.named('classify').single.arguments as Map;
         expect(args['text'], text); // trimmed, no mojibake
         expect(args['source'], 'manual');
-        expect(find.text('This statement is $label · 77%'), findsOneWidget);
+        expect(find.text(const {'SCAM': 'धोखाधड़ी!', 'SUSPICIOUS': 'सावधान', 'SAFE': 'सुरक्षित'}[label]!), findsOneWidget);
       });
     }
 
@@ -169,7 +169,7 @@ void main() {
 
     testWidgets('QA_tryApi_history_newestFirst', (t) async {
       var n = 0;
-      await pump(t, (c) async => _v('SAFE', conf: 0.1 * ++n));
+      await pump(t, (c) async => _v(++n == 1 ? 'SCAM' : 'SAFE'));
       for (var i = 0; i < 2; i++) {
         await t.enterText(find.byType(TextField), 'msg $i');
         FocusManager.instance.primaryFocus?.unfocus();
@@ -179,7 +179,7 @@ void main() {
       }
       final cards = find.byType(VerdictCard);
       expect(cards, findsNWidgets(2));
-      expect(find.descendant(of: cards.at(0), matching: find.textContaining('20%')), findsOneWidget);
+      expect(find.descendant(of: cards.at(0), matching: find.text('सुरक्षित')), findsOneWidget); // newest (2nd call) first
     });
 
     testWidgets('QA_tryApi_sampleChip_fillsField', (t) async {
