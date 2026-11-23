@@ -29,7 +29,7 @@ import java.io.File
  *  report.pack {moneyLost}     -> pack map (targets, evidence from the SQLite log, userFields)
  *  dial {number}               -> opens the dialer for an allowlisted number (1930, 181; never places the call)
  *  dial.contact {number}       -> opens the dialer for a family contact the user saved (digits only)
- *  attach.pick                 -> system picker (images, PDF, audio); copies into cacheDir/attachments -> [{path,name,mime,size}]
+ *  attach.pick                 -> system picker (images, PDF, audio); copies into filesDir/report_attachments -> [{path,name,mime,size}]
  *  open {url}                  -> ACTION_VIEW for an allowlisted https URL
  *  golden.status               -> {started:false} | {started:true,startMs,remainingMs,pack}
  *  golden.start {restart}      -> same as status; starts the 60-minute clock unless one is stored (restart=true overrides)
@@ -172,7 +172,8 @@ class HandoffChannel(private val activity: Activity, private val scope: Coroutin
 
     // ---- report-chat attachments -------------------------------------------------------------------------------
 
-    private fun attachDir() = File(activity.cacheDir, "attachments")
+    // App files (not cache): attachments belong to saved reports in the history, so the OS must not clear them.
+    private fun attachDir() = File(activity.filesDir, "report_attachments")
 
     /** System picker for screenshots, PDFs and recordings; the result arrives in [onActivityResult]. */
     private fun pickAttachments(result: MethodChannel.Result) {
@@ -207,7 +208,7 @@ class HandoffChannel(private val activity: Activity, private val scope: Coroutin
         return true
     }
 
-    /** Copies a picked document into cacheDir/attachments (so no long-lived URI grant is needed); null if too big. */
+    /** Copies a picked document into filesDir/report_attachments (so no long-lived URI grant is needed); null if too big. */
     private fun copyIn(uri: Uri): Map<String, Any?>? {
         val cr = activity.contentResolver
         var name = "file"
@@ -237,7 +238,7 @@ class HandoffChannel(private val activity: Activity, private val scope: Coroutin
         return mapOf("path" to out.absolutePath, "name" to safe, "mime" to (cr.getType(uri) ?: ""), "size" to copied)
     }
 
-    /** Files Dart asked to include: only ones inside cacheDir/attachments, within the size budget. */
+    /** Files Dart asked to include: only ones inside filesDir/report_attachments, within the size budget. */
     private fun readAttachments(paths: List<String>): Map<String, ByteArray> {
         val root = attachDir().canonicalFile
         var total = 0L

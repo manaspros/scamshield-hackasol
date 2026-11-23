@@ -11,6 +11,7 @@ import '../models/verdict.dart';
 import '../profile/user_profile.dart';
 import '../report/report_chat_engine.dart';
 import '../report/report_chat_view.dart';
+import '../report/report_history.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 import '../widgets/island.dart';
@@ -308,9 +309,11 @@ class _ReportScreenState extends State<ReportScreen> {
   ReportInterview? _iv;
   final _msgs = <_Msg>[];
   Slot? _asking; // the question whose quick replies are showing
-  final _rephrased = <(Slot, String), String>{}; // Gemma's wording per (slot, language)
+  BotTurn? _llmTurn; // set when Gemma wrote the current question (its own wording and options)
   bool _thinking = false;
   int _seq = 0; // bumps on every path change so late async work is dropped
+  String? _recordId; // this report in the history
+  int _createdMs = 0;
 
   final _input = TextEditingController();
   final _focus = FocusNode();
@@ -328,6 +331,7 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   void initState() {
     super.initState();
+    ReportHistory.load();
     _restore();
   }
 
@@ -347,7 +351,16 @@ class _ReportScreenState extends State<ReportScreen> {
     final g = await widget.api.goldenStatus();
     if (!mounted || g == null || g['started'] != true || _lost != null) return;
     _applyGolden(g);
-    _startInterview(true);
+    // Carry on with this case's unfinished report (from the history) instead of starting over.
+    await ReportHistory.load();
+    if (!mounted || _iv != null) return;
+    final start = (g['startMs'] as num?)?.toInt() ?? 0;
+    final open = ReportHistory.items.value.where((r) => r.lost && !r.finished && r.updatedMs >= start).firstOrNull;
+    if (open != null) {
+      _openRecord(open);
+    } else {
+      _startInterview(true);
+    }
   }
 
   void _applyGolden(Map<Object?, Object?> g) {
@@ -402,23 +415,28 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
+  (String?, String?) get _family {
+    final c = ProfileStore.contacts.value.where((c) => (c.phone ?? '').trim().isNotEmpty).firstOrNull;
+    if (c == null) return (null, null);
+    return (c.relation.trim().isEmpty ? c.name : '${c.relation.trim()} ${c.name}', c.phone);
+  }
+
   void _startInterview(bool lost) {
-    final contact = ProfileStore.contacts.value.where((c) => (c.phone ?? '').trim().isNotEmpty).firstOrNull;
     final evidence = _pack?.evidence ?? const [];
+    final (familyName, familyPhone) = _family;
     final iv = ReportInterview(
       lost: lost,
       persona: Persona.of(_profile),
       evidence: evidence,
-      familyName: contact == null
-          ? null
-          : (contact.relation.trim().isEmpty ? contact.name : '${contact.relation.trim()} ${contact.name}'),
-      familyPhone: contact?.phone,
+      familyName: familyName,
+      familyPhone: familyPhone,
     );
     setState(() {
       _iv = iv;
+      _recordId = null;
       _msgs.clear();
-      _rephrased.clear();
       _asking = null;
+      _llmTurn = null;
       final e = iv.latestEvidence;
       _msgs.add(e == null
           ? _Msg.bot((l) => rcFor(l, 'intro_none', iv.persona.variant))
@@ -427,40 +445,165 @@ class _ReportScreenState extends State<ReportScreen> {
     _ask();
   }
 
+  /// The chat so far as plain lines, for the model.
+  List<(bool, String)> _transcript(String lang) => [
+        for (final m in _msgs)
+          if (m.files.isEmpty) (m.user, m.text ?? m.render!(lang)) else (true, '[sent ${m.files.length} file(s)]'),
+      ];
+
+  /// Next question. For the complaint's facts, on-device Gemma reads what is missing and the chat and writes the
+  /// question itself (and pulls facts out of the last answer); without a model, or if its reply is unusable,
+  /// the scripted question for the next missing fact is used. Helplines, screenshots and "anything else" stay scripted.
   Future<void> _ask() async {
     final iv = _iv;
     if (iv == null) return;
     final seq = _seq;
-    final slot = iv.nextSlot();
-    if (slot == null) {
-      setState(() => _asking = null);
-      _scrollToEnd();
-      return;
-    }
+    var slot = iv.nextSlot();
     final llm = widget.llm;
-    if (llm != null && LlmStatus.ready.value) {
+    if (slot != null && dataSlots.contains(slot) && llm != null && LlmStatus.ready.value) {
       final lang = _lang;
       setState(() => _thinking = true);
       _scrollToEnd();
-      final t = iv.turn(slot, lang);
-      final q = await llm.rephrase(t, lang, _profile.promptContext(), iv.answers);
-      if (!mounted || seq != _seq) return;
-      if (q != null) _rephrased[(slot, lang)] = q;
+      final t = await llm.next(iv, lang, _profile.promptContext(), _transcript(lang));
+      if (!mounted || seq != _seq || _iv != iv) return;
       _thinking = false;
+      if (t != null) {
+        iv.applyExtracted(t.extracted);
+        slot = iv.nextSlot();
+        final ask = t.ask;
+        if (t.hasQuestion && ask != null && iv.missingData.contains(ask)) {
+          final turn = BotTurn(
+            slot: ask,
+            text: t.question!,
+            byLlm: true,
+            numeric: ask == Slot.amount,
+            choices: [for (final o in t.options) ChatChoice(o, o)],
+          );
+          setState(() {
+            _msgs.add(_Msg.botText(turn.text));
+            _asking = ask;
+            _llmTurn = turn;
+          });
+          _save();
+          _scrollToEnd();
+          return;
+        }
+      }
     }
+    final next = slot;
     setState(() {
-      final r = _rephrased[(slot, _lang)];
-      _msgs.add(r != null ? _Msg.botText(r) : _Msg.bot((l) => iv.turn(slot, l).text));
-      _asking = slot;
+      _thinking = false;
+      _llmTurn = null;
+      _asking = next;
+      if (next != null) _msgs.add(_Msg.bot((l) => iv.turn(next, l).text));
     });
+    _save();
     _scrollToEnd();
+  }
+
+  // ---- history ----------------------------------------------------------------------------------------------
+
+  /// Saves this report (once it holds an answer or a file) so the user can come back to it.
+  void _save() {
+    final iv = _iv;
+    if (iv == null || (iv.answers.isEmpty && iv.attachments.isEmpty)) return;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (_recordId == null) {
+      _recordId = '$now';
+      _createdMs = now;
+    }
+    final lang = _lang;
+    int idx(ChatAttachment f) => iv.attachments.indexWhere((a) => a.path == f.path);
+    ReportHistory.save(ReportRecord(
+      id: _recordId!,
+      createdMs: _createdMs,
+      updatedMs: now,
+      interview: iv.toJson(),
+      lines: [
+        for (final m in _msgs)
+          if (m.files.isNotEmpty)
+            SavedLine(user: true, text: '', files: [for (final f in m.files) if (idx(f) >= 0) idx(f)])
+          else
+            SavedLine(user: m.user, text: m.text ?? m.render!(lang), voice: m.voice),
+      ],
+    ));
+  }
+
+  /// Reopens a saved report: its chat, its answers, and the next question if it was left unfinished.
+  Future<void> _openRecord(ReportRecord r) async {
+    final seq = ++_seq;
+    final (familyName, familyPhone) = _family;
+    final iv = ReportInterview.fromJson(r.interview,
+        persona: Persona.of(_profile), familyName: familyName, familyPhone: familyPhone);
+    setState(() {
+      _lost = iv.lost;
+      _iv = iv;
+      _recordId = r.id;
+      _createdMs = r.createdMs;
+      _asking = null;
+      _llmTurn = null;
+      _thinking = false;
+      _msgs
+        ..clear()
+        ..addAll([
+          for (final l in r.lines)
+            if (l.files.isNotEmpty)
+              _Msg.files([for (final i in l.files) if (i < iv.attachments.length) iv.attachments[i]])
+            else if (l.user)
+              _Msg.user(l.text, voice: l.voice)
+            else
+              _Msg.botText(l.text),
+        ]);
+      if (!iv.done) {
+        // The pending question is asked again below: drop the unanswered bot lines at the end so it is not shown twice.
+        while (_msgs.isNotEmpty && !_msgs.last.user && _msgs.last.evidence == null && _msgs.length > 1) {
+          _msgs.removeLast();
+        }
+        _msgs.add(_Msg.bot((l) => rc(l, 'history_restored')));
+      }
+    });
+    // Portal / Chakshu buttons come from the pack for this outcome.
+    final m = await widget.api.pack(moneyLost: iv.lost);
+    if (!mounted || seq != _seq) return;
+    if (_pack == null || (_pack!.m['moneyLost'] != iv.lost && m != null)) {
+      setState(() => _pack = m == null ? _Pack.fallback() : _Pack(m));
+    }
+    if (!iv.done) {
+      _ask();
+    } else {
+      _scrollToEnd();
+    }
+  }
+
+  void _newReport() {
+    _seq++;
+    setState(() {
+      _lost = null;
+      _iv = null;
+      _recordId = null;
+      _asking = null;
+      _llmTurn = null;
+      _thinking = false;
+      _msgs.clear();
+    });
+  }
+
+  Future<void> _showHistory() async {
+    final lang = _lang;
+    await ReportHistory.load();
+    if (!mounted) return;
+    final picked = await showIslandSheet<ReportRecord>(
+      context,
+      builder: (ctx) => _HistorySheet(lang: lang, currentId: _recordId),
+    );
+    if (picked != null && mounted) _openRecord(picked);
   }
 
   /// Bot lines that follow certain answers (reassurance after an OTP was shared, a hint for job scams).
   void _afterAnswer(Slot s, String value) {
     final iv = _iv!;
     if (s == Slot.sharedOtp && value == 'yes') _msgs.add(_Msg.bot((l) => rc(l, 'otp_yes')));
-    if (s == Slot.scamType && iv.persona.young && value == 'JOB') _msgs.add(_Msg.bot((l) => rc(l, 'type_young_hint')));
+    if (s == Slot.scamType && iv.persona.young && iv.scamType == 'JOB') _msgs.add(_Msg.bot((l) => rc(l, 'type_young_hint')));
   }
 
   Future<void> _pick(ChatChoice c) async {
@@ -482,8 +625,9 @@ class _ReportScreenState extends State<ReportScreen> {
     setState(() {
       _msgs.add(_Msg.user(c.label));
       iv.answer(slot, c.value, label: c.label);
-      _afterAnswer(slot, c.value);
+      _afterAnswer(slot, iv.answers[slot] ?? c.value);
       _asking = null;
+      _llmTurn = null;
     });
     _ask();
   }
@@ -503,9 +647,10 @@ class _ReportScreenState extends State<ReportScreen> {
         _msgs.add(_Msg.bot((l) => rc(l, 'ack')));
       } else {
         iv.answer(slot, words);
-        _afterAnswer(slot, words);
+        _afterAnswer(slot, iv.answers[slot] ?? words);
       }
       _asking = null;
+      _llmTurn = null;
     });
     _ask();
   }
@@ -531,6 +676,7 @@ class _ReportScreenState extends State<ReportScreen> {
     if (wasProof) {
       _ask();
     } else {
+      _save();
       _scrollToEnd();
     }
   }
@@ -625,9 +771,43 @@ class _ReportScreenState extends State<ReportScreen> {
     final s = ReportStrings.of(lang);
     final p = palOf(context);
     final iv = _iv;
-    final turn = (iv != null && _asking != null) ? iv.turn(_asking!, lang) : null;
+    final turn = (iv == null || _asking == null)
+        ? null
+        : (_llmTurn != null && _llmTurn!.slot == _asking ? _llmTurn : iv.turn(_asking!, lang));
     final done = iv != null && iv.done && !_thinking;
     return Column(children: [
+      // Past reports / new report: pinned so they are reachable however long the chat gets.
+      ValueListenableBuilder<List<ReportRecord>>(
+        valueListenable: ReportHistory.items,
+        builder: (_, saved, _) => saved.isEmpty && iv == null
+            ? const SizedBox.shrink()
+            : _chrome(Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Sp.s),
+                child: Row(children: [
+                  if (saved.isNotEmpty)
+                    Flexible(
+                      child: TextButton.icon(
+                        key: const Key('btn_history'),
+                        style: TextButton.styleFrom(minimumSize: const Size(48, 48), foregroundColor: p.accent),
+                        onPressed: _showHistory,
+                        icon: const Icon(Icons.history_rounded, size: 20),
+                        label: Text('${rc(lang, 'history')} (${saved.length})', overflow: TextOverflow.ellipsis),
+                      ),
+                    ),
+                  const Spacer(),
+                  if (iv != null)
+                    Flexible(
+                      child: TextButton.icon(
+                        key: const Key('btn_new_report'),
+                        style: TextButton.styleFrom(minimumSize: const Size(48, 48), foregroundColor: p.accent),
+                        onPressed: _newReport,
+                        icon: const Icon(Icons.add_rounded, size: 20),
+                        label: Text(rc(lang, 'history_new'), overflow: TextOverflow.ellipsis),
+                      ),
+                    ),
+                ]),
+              )),
+      ),
       // A running clock is pinned above the chat so it never scrolls away; expired / failed states sit in the chat.
       if (_lost == true && _remainingMs != null)
         _chrome(Padding(padding: const EdgeInsets.symmetric(horizontal: Sp.l), child: _golden(s))),
@@ -675,8 +855,12 @@ class _ReportScreenState extends State<ReportScreen> {
           onMic: _mic,
           onSend: _send,
         )),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(Sp.l, Sp.xs, Sp.l, Sp.l),
+      // SafeArea: Android draws edge to edge, so without it the 1930 button sits under the system navigation bar.
+      SafeArea(
+        top: false,
+        minimum: const EdgeInsets.only(bottom: Sp.s),
+        child: Padding(
+        padding: const EdgeInsets.fromLTRB(Sp.l, Sp.xs, Sp.l, Sp.m),
         child: FilledButton.icon(
           key: Key('btn_dial_$_phone'),
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
@@ -684,7 +868,7 @@ class _ReportScreenState extends State<ReportScreen> {
           icon: const Icon(Icons.phone, size: 26),
           label: Text(s['dialCta'], textAlign: TextAlign.center),
         ),
-      ),
+      )),
     ]);
   }
 
@@ -950,4 +1134,108 @@ class _EditSheetState extends State<_EditSheet> {
           child: Text(widget.save),
         ),
       ]);
+}
+
+/// Saved reports, newest first. Tap one to reopen it; the bin deletes it (and its screenshots).
+class _HistorySheet extends StatelessWidget {
+  const _HistorySheet({required this.lang, this.currentId});
+  final String lang;
+  final String? currentId;
+
+  static const _months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  static String _when(int ms) {
+    final d = DateTime.fromMillisecondsSinceEpoch(ms);
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${d.day} ${_months[d.month - 1]} ${d.year}, ${two(d.hour)}:${two(d.minute)}';
+  }
+
+  String _title(ReportRecord r) {
+    final t = r.scamType;
+    if (t == null) return rc(lang, 'k_type');
+    final own = '${r.labels['scamType'] ?? ''}';
+    if (t == 'OTHER' && own.isNotEmpty && !kScamTypes.contains(own)) return own;
+    final k = 'st_$t';
+    final v = rc(lang, k);
+    return v == k ? rc(lang, 'st_OTHER') : v;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = palOf(context);
+    final th = Theme.of(context);
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.7),
+      child: ValueListenableBuilder<List<ReportRecord>>(
+        valueListenable: ReportHistory.items,
+        builder: (context, items, _) => Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text(rc(lang, 'history'), style: th.textTheme.titleLarge),
+          const SizedBox(height: Sp.s),
+          if (items.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: Sp.l),
+              child: Text(rc(lang, 'history_empty'), style: TextStyle(color: p.muted)),
+            )
+          else
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: items.length,
+                separatorBuilder: (_, _) => Divider(height: 1, color: p.hairline),
+                itemBuilder: (context, i) {
+                  final r = items[i];
+                  final amount = int.tryParse('${r.answers['amount'] ?? ''}');
+                  final sub = [
+                    _when(r.createdMs),
+                    rc(lang, r.lost ? 'history_lost' : 'history_notlost'),
+                    if (amount != null) '₹${formatInr(amount)}',
+                  ].join(' · ');
+                  final st = th.extension<StatusColors>() ?? StatusColors.light;
+                  return InkWell(
+                    key: Key('hist_${r.id}'),
+                    onTap: () => Navigator.of(context).pop(r),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 64),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: Sp.s),
+                        child: Row(children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: r.finished ? p.accentTint : st.tintOver(RiskLabel.suspicious, p.surface),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(r.finished ? Icons.task_alt_rounded : Icons.edit_note_rounded,
+                                color: r.finished ? p.accent : st.suspicious, size: 22),
+                          ),
+                          const SizedBox(width: Sp.m),
+                          Expanded(
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(_title(r), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: p.ink)),
+                              Text(sub, style: TextStyle(fontSize: 13, color: p.muted)),
+                              Text(rc(lang, r.finished ? 'history_done' : 'history_draft'),
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: r.finished ? p.accent : st.suspicious)),
+                            ]),
+                          ),
+                          IconButton(
+                            key: Key('hist_del_${r.id}'),
+                            tooltip: rc(lang, 'history_delete'),
+                            onPressed: r.id == currentId ? null : () => ReportHistory.delete(r.id),
+                            icon: const Icon(Icons.delete_outline_rounded),
+                          ),
+                        ]),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ]),
+      ),
+    );
+  }
 }

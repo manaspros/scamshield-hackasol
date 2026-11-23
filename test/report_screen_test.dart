@@ -3,8 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/api/llm_api.dart';
 import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/profile/user_profile.dart';
+import 'package:scamshield/report/report_chat_engine.dart';
+import 'package:scamshield/report/report_history.dart';
 import 'package:scamshield/screens/report_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 
@@ -114,7 +117,11 @@ Future<void> _say(WidgetTester t, String words) async {
 }
 
 void main() {
-  setUp(() => AppLanguage.debugSet('hi')); // the chat speaks the app-wide language
+  setUp(() {
+    AppLanguage.debugSet('hi'); // the chat speaks the app-wide language
+    ReportHistory.debugReset();
+    LlmStatus.ready.value = false;
+  });
 
   testWidgets('no language chips: the report follows the app language from the top bar', (t) async {
     await _setup(t);
@@ -139,7 +146,7 @@ void main() {
 
     await _tap(t, find.byKey(const Key('chip_yes')));
     expect(find.text('हाँ, यही'), findsWidgets); // the user's answer bubble
-    expect(find.text('ठग का फ़ोन नंबर या UPI ID क्या था?'), findsOneWidget);
+    expect(find.text('यह कब हुआ?'), findsOneWidget); // next: when it happened
     expect(t.takeException(), isNull);
   });
 
@@ -149,6 +156,7 @@ void main() {
     await _show(t);
     await _tap(t, find.byKey(const Key('path_lost')));
     await _tap(t, find.byKey(const Key('chip_yes'))); // confirm the caught warning
+    await _tap(t, find.byKey(const Key('chip_today')));
     await _say(t, 'earnfast@ybl');
     await _tap(t, find.byKey(const Key('chip_gpay')));
     await _say(t, '₹15,000');
@@ -206,9 +214,10 @@ void main() {
     fake.evidence = false;
     await _show(t, profile: UserProfile(dob: DateTime(1958, 1, 1), gender: Gender.female));
     await _tap(t, find.byKey(const Key('path_lost')));
-    expect(find.textContaining('one easy question at a time'), findsOneWidget);
     expect(find.text('Who did the caller say they were?'), findsOneWidget);
     expect(find.byKey(const Key('chip_PENSION')), findsOneWidget);
+    await t.dragUntilVisible(find.textContaining('one easy question at a time'), find.byType(ListView), const Offset(0, 200));
+    expect(find.textContaining('one easy question at a time'), findsOneWidget);
     expect(t.takeException(), isNull);
   });
 
@@ -300,4 +309,114 @@ void main() {
     await _say(t, '9876543210');
     expect(t.takeException(), isNull);
   });
+
+  testWidgets('history: answers are saved, a new report starts clean, and the old one reopens with its chat', (t) async {
+    final fake = await _setup(t, scale: 1.0);
+    AppLanguage.debugSet('en');
+    fake.evidence = false;
+    await _show(t);
+    await _tap(t, find.byKey(const Key('path_notyet')));
+    await _tap(t, find.byKey(const Key('chip_KYC')));
+    expect(ReportHistory.items.value, hasLength(1));
+    expect(ReportHistory.items.value.single.scamType, 'KYC');
+
+    await _tap(t, find.byKey(const Key('btn_new_report')));
+    expect(find.byKey(const Key('chat_input')), findsNothing); // back to the two paths
+
+    await _tap(t, find.byKey(const Key('btn_history')));
+    await t.pumpAndSettle();
+    expect(find.text('Past reports'), findsOneWidget);
+    expect(find.text('Bank / KYC'), findsWidgets);
+    expect(find.text('Unfinished'), findsOneWidget);
+    await t.tap(find.byKey(Key('hist_${ReportHistory.items.value.single.id}')));
+    await t.pumpAndSettle();
+    expect(find.textContaining('Your earlier report is open'), findsOneWidget);
+    expect(find.text('How did the scammer contact you?'), findsOneWidget); // carries on where it stopped
+    expect(t.takeException(), isNull);
+  });
+
+  testWidgets('history: delete removes a report', (t) async {
+    final fake = await _setup(t, scale: 1.0);
+    AppLanguage.debugSet('en');
+    fake.evidence = false;
+    await _show(t);
+    await _tap(t, find.byKey(const Key('path_notyet')));
+    await _tap(t, find.byKey(const Key('chip_OTP')));
+    await _tap(t, find.byKey(const Key('btn_new_report')));
+    await _tap(t, find.byKey(const Key('btn_history')));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(Key('hist_del_${ReportHistory.items.value.single.id}')));
+    await t.pumpAndSettle();
+    expect(ReportHistory.items.value, isEmpty);
+    expect(find.text('No past reports yet.'), findsOneWidget);
+  });
+
+  testWidgets('with a model loaded, Gemma writes the question and its options; tapping one fills that fact', (t) async {
+    final fake = await _setup(t, scale: 1.0);
+    AppLanguage.debugSet('en');
+    fake.evidence = false;
+    LlmStatus.ready.value = true;
+    final llm = _ScriptedLlm([
+      '{"ask": "scam_type", "question": "Who did the caller pretend to be?", "options": ["Police officer", "Bank staff"]}',
+      '{"extracted": {"channel": "video call"}, "ask": "when", "question": "When did they call you?", "options": ["Today", "Yesterday"]}',
+    ]);
+    await t.pumpWidget(MaterialApp(
+      theme: AppTheme.light(),
+      home: Scaffold(body: ReportScreen(profile: UserProfile.empty, llm: ReportChatLlm(client: llm))),
+    ));
+    await t.pump();
+    await t.pump();
+    await _tap(t, find.byKey(const Key('path_notyet')));
+    await t.pump(const Duration(milliseconds: 100));
+    expect(find.text('Who did the caller pretend to be?'), findsOneWidget);
+    expect(find.text('Police officer'), findsOneWidget);
+    await _tap(t, find.text('Police officer'));
+    await t.pump(const Duration(milliseconds: 100));
+    expect(find.text('When did they call you?'), findsOneWidget); // channel came from the model's extraction
+    expect(llm.prompts.last, contains('scam_type: Police officer'));
+    expect(llm.prompts.last, contains('Person: Police officer'));
+    LlmStatus.ready.value = false;
+    expect(t.takeException(), isNull);
+  });
+
+  testWidgets('a bad model reply falls back to the scripted question', (t) async {
+    final fake = await _setup(t, scale: 1.0);
+    AppLanguage.debugSet('en');
+    fake.evidence = false;
+    LlmStatus.ready.value = true;
+    await t.pumpWidget(MaterialApp(
+      theme: AppTheme.light(),
+      home: Scaffold(body: ReportScreen(profile: UserProfile.empty, llm: ReportChatLlm(client: _ScriptedLlm(['nonsense'])))),
+    ));
+    await t.pump();
+    await t.pump();
+    await _tap(t, find.byKey(const Key('path_notyet')));
+    await t.pump(const Duration(milliseconds: 100));
+    expect(find.text('What kind of scam was it?'), findsOneWidget);
+    expect(find.byKey(const Key('chip_KYC')), findsOneWidget);
+    LlmStatus.ready.value = false;
+  });
+
+  testWidgets('the 1930 button stays above the system navigation bar', (t) async {
+    await _setup(t, scale: 1.0);
+    t.view.padding = const FakeViewPadding(bottom: 48);
+    t.view.viewPadding = const FakeViewPadding(bottom: 48);
+    await _show(t);
+    final bottom = t.getBottomLeft(find.byKey(const Key('btn_dial_1930'))).dy;
+    expect(bottom, lessThanOrEqualTo(800 - 48));
+  });
+}
+
+/// Answers model prompts from a list, in order; records the prompts.
+class _ScriptedLlm implements LlmClient {
+  _ScriptedLlm(this.replies);
+  final List<String> replies;
+  final prompts = <String>[];
+  @override
+  Future<bool> ready() async => true;
+  @override
+  Future<String?> generate(String prompt, {double temperature = 0.8}) async {
+    prompts.add(prompt);
+    return prompts.length <= replies.length ? replies[prompts.length - 1] : null;
+  }
 }
