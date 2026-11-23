@@ -77,6 +77,8 @@ void main() {
       })..install();
       await show(t, theme(), const SettingsScreen());
       expect(t.takeException(), isNull);
+      await tapVisible(t, find.byKey(const Key('settings_advanced')));
+      await t.pumpAndSettle();
       expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Use on-device Gemma')).value, isTrue);
       await reveal(t, find.widgetWithText(SwitchListTile, 'Show warning bubble'));
       expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Show warning bubble')).value, isFalse);

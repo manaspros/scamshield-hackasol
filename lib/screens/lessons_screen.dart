@@ -127,6 +127,9 @@ class _LessonsScreenState extends State<LessonsScreen> {
                 ],
               ),
               const SizedBox(height: Sp.m),
+              if ((e?.score ?? 0) == 0)
+                _emptyScore(context)
+              else
               StatTile(
                 value: '${e?.score ?? 0}',
                 valueKey: const Key('score_value'),
@@ -152,6 +155,32 @@ class _LessonsScreenState extends State<LessonsScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  /// Score 0: one compact line instead of a big empty score card. The number stays
+  /// in the tree under `score_value` for tests and screen readers.
+  Widget _emptyScore(BuildContext context) {
+    final t = Theme.of(context);
+    final msg = switch (_lang) {
+      'en' => 'Finish your first lesson — your score will show here',
+      'hne' => 'पहिली पाठ पूरा करव — तुंहर स्कोर इहाँ दिखही',
+      _ => 'पहला पाठ पूरा करें — आपका स्कोर यहाँ दिखेगा',
+    };
+    return Container(
+      padding: const EdgeInsets.all(Sp.l),
+      decoration: BoxDecoration(
+        color: t.colorScheme.surface,
+        borderRadius: BorderRadius.circular(Rad.lg),
+        border: Border.all(color: t.colorScheme.outline),
+      ),
+      child: Row(children: [
+        Icon(Icons.shield, size: 28, color: t.colorScheme.primary),
+        const SizedBox(width: Sp.m),
+        Expanded(child: Text(msg, style: t.textTheme.bodyLarge)),
+        const SizedBox(width: Sp.s),
+        Text('0', key: const Key('score_value'), style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
+      ]),
     );
   }
 

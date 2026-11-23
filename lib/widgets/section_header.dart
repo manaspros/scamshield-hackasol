@@ -4,10 +4,13 @@ import '../theme/tokens.dart';
 
 /// Screen section title with an optional leading icon and one-line helper.
 class SectionHeader extends StatelessWidget {
-  const SectionHeader({super.key, required this.title, this.icon, this.subtitle});
+  const SectionHeader({super.key, required this.title, this.icon, this.subtitle, this.muted = false});
   final String title;
   final IconData? icon;
   final String? subtitle;
+
+  /// Informational headers use the neutral grey icon; action headers use the accent.
+  final bool muted;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +19,7 @@ class SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(top: Sp.xl, bottom: Sp.m),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if (icon != null) ...[
-          Icon(icon, size: 32, color: t.colorScheme.onSurface),
+          Icon(icon, size: 32, color: muted ? t.colorScheme.onSurfaceVariant : t.colorScheme.primary),
           const SizedBox(width: Sp.m),
         ],
         Expanded(

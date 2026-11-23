@@ -7,7 +7,6 @@ import '../api/text_api.dart';
 import '../lessons/prefs_store.dart';
 import '../models/verdict.dart';
 import '../theme/tokens.dart';
-import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
 import '../widgets/status_chip.dart';
 
@@ -283,11 +282,18 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
       Expanded(
         child: RefreshIndicator(
           onRefresh: _refresh,
-          child: ListView(padding: const EdgeInsets.all(Sp.l), children: [
-            SectionHeader(
-                title: 'सेटअप',
-                icon: Icons.checklist,
-                subtitle: _loaded ? '$doneCount / 4 ज़रूरी कदम पूरे' : null),
+          child: ListView(padding: const EdgeInsets.fromLTRB(Sp.l, Sp.l, Sp.l, Sp.xxl), children: [
+            // The AppBar already says "सेटअप"; the progress counter leads the list.
+            if (_loaded)
+              Padding(
+                padding: const EdgeInsets.only(bottom: Sp.m),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  Text('$doneCount / 4 ज़रूरी कदम पूरे',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                  const SizedBox(height: Sp.s),
+                  LinearProgressIndicator(value: doneCount / 4, minHeight: 6, borderRadius: BorderRadius.circular(Rad.pill)),
+                ]),
+              ),
             // First run: the language choice comes first so it is not pushed off-screen
             // at large text sizes; the privacy line follows directly.
             if (_langLoaded && _lang == null) _languageCard(),
@@ -396,12 +402,13 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
     return Padding(
       padding: const EdgeInsets.only(bottom: Sp.l),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(Icons.lock_outline, size: 28, color: cs.primary),
+        Icon(Icons.lock_outline, size: 28, color: cs.onSurfaceVariant),
         const SizedBox(width: Sp.m),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('आपकी कॉल रिकॉर्ड नहीं होती। कुछ भी फ़ोन से बाहर नहीं जाता।', style: t.textTheme.titleMedium),
-            Text('Calls are not recorded. Nothing leaves your phone.',
+            Text('ScamShield सिर्फ़ स्क्रीन के कैप्शन पढ़ता है। आवाज़ रिकॉर्ड नहीं होती।',
+                style: t.textTheme.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
+            Text('Reads on-screen captions only. No audio recorded.',
                 style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
           ]),
         ),
@@ -428,18 +435,28 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
             ),
           ]),
           const SizedBox(height: Sp.m),
-          Wrap(spacing: Sp.s, runSpacing: Sp.s, children: [
-            for (final (code, label) in const [('hi', 'हिन्दी'), ('hne', 'छत्तीसगढ़ी'), ('en', 'English')])
-              ChoiceChip(
-                key: Key('lang_$code'),
-                label: Text(label),
-                labelStyle: t.textTheme.bodyLarge,
-                selected: _lang == code,
-                checkmarkColor: t.colorScheme.primary,
-                padding: const EdgeInsets.symmetric(horizontal: Sp.l, vertical: Sp.l),
-                onSelected: (_) => _pickLang(code),
+          for (final (code, label) in const [('hi', 'हिन्दी'), ('hne', 'छत्तीसगढ़ी'), ('en', 'English')])
+            Padding(
+              padding: const EdgeInsets.only(bottom: Sp.s),
+              child: Semantics(
+                selected: (_lang ?? 'hi') == code,
+                child: OutlinedButton.icon(
+                  key: Key('lang_$code'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(kTouch),
+                    alignment: Alignment.centerLeft,
+                    backgroundColor: (_lang ?? 'hi') == code ? t.colorScheme.primary.withValues(alpha: 0.12) : null,
+                    side: BorderSide(
+                        color: (_lang ?? 'hi') == code ? t.colorScheme.primary : t.colorScheme.outlineVariant,
+                        width: (_lang ?? 'hi') == code ? 2 : 1),
+                  ),
+                  onPressed: () => _pickLang(code),
+                  // Hindi is pre-selected on first run (not saved until the user taps).
+                  icon: Icon((_lang ?? 'hi') == code ? Icons.check_circle : Icons.circle_outlined, size: 28),
+                  label: Text(label),
+                ),
               ),
-          ]),
+            ),
         ]),
       ),
     );
@@ -447,8 +464,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
 
   /// Why the next system hand-off is needed; null when no hand-off is coming.
   String? _whyNext(bool serviceOn) => !serviceOn
-      ? 'ScamShield को स्क्रीन पर आने वाले कॉल कैप्शन पढ़ने होते हैं, ताकि ठगी की बात पर तुरंत चेतावनी मिल सके। '
-          'Android एक चेतावनी दिखाएगा। आवाज़ रिकॉर्ड नहीं होती।'
+      ? 'ठगी की बात पर तुरंत चेतावनी देने के लिए ScamShield को कॉल कैप्शन पढ़ने होंगे।'
       : !_captionsOn
           ? null
           : !_notif

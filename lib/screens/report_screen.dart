@@ -497,7 +497,12 @@ class _ReportScreenState extends State<ReportScreen> {
                     color: st.scam, fontSize: 64, fontFeatures: const [FontFeature.tabularFigures()])),
           ),
           const SizedBox(height: Sp.m),
-          LinearProgressIndicator(value: ms / _goldenMs, color: st.scam, backgroundColor: t.colorScheme.surface),
+          LinearProgressIndicator(
+              value: ms / _goldenMs,
+              // semanticsValue must be numeric in Flutter, so the unit lives in the label.
+              semanticsLabel: '${(ms / 60000).ceil()} मिनट बाकी',
+              color: st.scam,
+              backgroundColor: t.colorScheme.surface),
           const SizedBox(height: Sp.m),
           Text(expired ? s['expired'] : s['goldenHint'], key: const Key('golden_hint'), style: t.textTheme.titleMedium),
           if (expired) ...[

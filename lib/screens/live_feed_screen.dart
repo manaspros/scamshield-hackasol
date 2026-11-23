@@ -207,7 +207,7 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
       primary = _primary(Icons.closed_caption, 'लाइव कैप्शन चालू करें', TextApi.openCaptionSettings);
     } else {
       body = [
-        if (latest != null && rest.isNotEmpty) const SectionHeader(title: 'पिछली जाँच', icon: Icons.history),
+        if (latest != null && rest.isNotEmpty) const SectionHeader(title: 'पिछली जाँच', icon: Icons.history, muted: true),
         for (final it in rest) _history(it, st, cs),
       ];
     }

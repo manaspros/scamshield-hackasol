@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/lessons/lesson_model.dart';
 import 'package:scamshield/lessons/quiz_engine.dart';
 import 'package:scamshield/models/verdict.dart';
+import 'package:scamshield/screens/demo_lab_screen.dart';
 import 'package:scamshield/screens/family_screen.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
@@ -19,6 +20,7 @@ import 'package:scamshield/screens/recording_screen.dart';
 import 'package:scamshield/screens/report_screen.dart';
 import 'package:scamshield/screens/settings_screen.dart';
 import 'package:scamshield/screens/setup_screen.dart';
+import 'package:scamshield/screens/try_api_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 import 'package:scamshield/theme/text_styles.dart';
 import 'package:scamshield/widgets/action_tile.dart';
@@ -223,6 +225,7 @@ void main() {
 
       final screens = <String, Widget>{
         'lessons': LessonsScreen(store: store, bundle: _DiskBundle()),
+        'learn_zero': LessonsScreen(store: InMemoryQuizStore(), bundle: _DiskBundle()),
         'quiz': QuizScreen(lesson: lessons.first, engine: engine, lang: 'hi'),
         'setup': const SetupScreen(),
         'setup_firstrun': const SetupScreen(),
@@ -292,6 +295,9 @@ void main() {
           final name = e.key.replaceAll('_2x', '');
           final suffix = scale == 2.0 ? '_2x' : '';
           File('$_out/ux_${name}_${dark ? 'dark' : 'light'}$suffix.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+          if (!dark && scale == 1.0 && const {'setup_firstrun', 'learn_zero', 'live_feed_idle', 'family'}.contains(name)) {
+            File('$_out/polish_${name}_light.png').writeAsBytesSync(bytes.buffer.asUint8List());
+          }
         });
       }
       await tester.pumpWidget(const SizedBox()); // dispose the family countdown timer
@@ -334,6 +340,34 @@ void main() {
         home: Scaffold(appBar: AppBar(title: const Text('सेटिंग')), body: const SettingsScreen()),
       ));
       await tester.pumpAndSettle();
+      if (name == 'light') {
+        await tester.runAsync(() async {
+          final b = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+          final img = await b.toImage(pixelRatio: 1);
+          final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+          File('$_out/polish_settings_light.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+        });
+        final adv = find.byKey(const Key('settings_advanced'));
+        for (final expanded in [false, true]) {
+          await tester.scrollUntilVisible(adv, 300, scrollable: find.byType(Scrollable).first, maxScrolls: 100);
+          if (expanded) {
+            await tester.tap(adv);
+            await tester.pumpAndSettle();
+            await tester.drag(find.byType(ListView), const Offset(0, -300));
+          }
+          await tester.pumpAndSettle();
+          await tester.runAsync(() async {
+            final b = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+            final img = await b.toImage(pixelRatio: 1);
+            final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+            File('$_out/polish_settings_advanced_${expanded ? 'expanded' : 'collapsed'}_light.png')
+                .writeAsBytesSync(bytes!.buffer.asUint8List());
+          });
+        }
+        // Collapse again so the export-card shot below is unchanged.
+        await tester.tap(adv);
+        await tester.pumpAndSettle();
+      }
       // Bottom of the list: district, trust card, export.
       await tester.scrollUntilVisible(find.byKey(const Key('exportButton')), 300,
           scrollable: find.byType(Scrollable).first, maxScrolls: 100);
@@ -479,6 +513,214 @@ void main() {
       });
       await tester.pumpWidget(const SizedBox()); // unmount before closing the stream
       await events.close();
+    }
+  });
+
+  testWidgets('shots: try_api empty, scam result, UPI mismatch light + result dark 2x', (tester) async {
+    if (!await _loadFonts(tester)) return;
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), (c) async => switch (c.method) {
+          'classify' => {
+              'text': 'SBI se bol raha hoon, aapka KYC update pending hai',
+              'label': 'SCAM',
+              'confidence': 0.9,
+              'reason': 'KYC के नाम पर लिंक खुलवाया जा रहा है',
+              'triggers': ['KYC update', 'pending'],
+              'engine': 'rules-only',
+              'latencyMs': 5,
+              'source': 'manual',
+              'scamType': 'KYC',
+            },
+          'upi.check' => {
+              'valid': true,
+              'payeeName': 'Ravi Kumar',
+              'payeeVpa': 'ra•••@oksbi',
+              'amount': '500',
+              'isCollect': false,
+              'mismatch': true,
+              'framing': 'You will PAY Rs 500 to Ravi Kumar',
+              'framingHi': 'आप Ravi Kumar को ₹500 भेजेंगे',
+            },
+          _ => null,
+        });
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), (_) async => true);
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), null);
+    });
+    addTearDown(() => tester.pumpWidget(const SizedBox())); // registered after the mocks
+    for (final (name, dark, scale) in [
+      ('empty_light', false, 1.0),
+      ('result_light', false, 1.0),
+      ('upi_mismatch_light', false, 1.0),
+      ('result_dark_2x', true, 2.0),
+    ]) {
+      final base = dark ? AppTheme.dark() : AppTheme.light();
+      TextStyle? f(TextStyle? s) => s?.copyWith(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']);
+      final theme = base.copyWith(
+          textTheme: base.textTheme.apply(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']),
+          appBarTheme: base.appBarTheme.copyWith(titleTextStyle: f(base.appBarTheme.titleTextStyle)),
+          inputDecorationTheme: base.inputDecorationTheme.copyWith(
+              hintStyle: f(base.inputDecorationTheme.hintStyle), labelStyle: f(base.inputDecorationTheme.labelStyle)),
+          filledButtonTheme: FilledButtonThemeData(
+              style: base.filledButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+              style: base.outlinedButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))),
+          textButtonTheme: TextButtonThemeData(
+              style: base.textButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))));
+      tester.view.physicalSize = Size(720, name == 'result_dark_2x' ? 2400 : 1600);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.reset);
+      final key = GlobalKey();
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        builder: (c, child) => RepaintBoundary(
+            key: key,
+            child: MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: child!)),
+        home: Scaffold(appBar: AppBar(title: const Text('मैसेज जाँचें')), body: const TryApiScreen()),
+      ));
+      await tester.pumpAndSettle();
+      if (name.startsWith('result')) {
+        await tester.enterText(find.byType(TextField), 'SBI se bol raha hoon, aapka KYC update pending hai');
+        await tester.tap(find.byType(FilledButton));
+        await tester.pumpAndSettle();
+      } else if (name.startsWith('upi')) {
+        await tester.tap(find.byKey(const Key('upi_section')));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byKey(const Key('upi_link_field')), 'upi://pay?pa=ravi.k@oksbi&pn=Ravi%20Kumar&am=500');
+        await tester.enterText(find.byKey(const Key('upi_name_field')), 'Sunita Devi');
+        await tester.ensureVisible(find.byKey(const Key('btn_upi_check')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('btn_upi_check')));
+        await tester.pumpAndSettle();
+        await tester.drag(find.byType(ListView), const Offset(0, -330));
+        await tester.pumpAndSettle();
+      }
+      await tester.runAsync(() async {
+        final b = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        final img = await b.toImage(pixelRatio: 1);
+        final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+        File('$_out/ux_tryapi_$name.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+      });
+    }
+  });
+
+  testWidgets('shots: demo lab idle, results with one FAIL, timeline light + results dark', (tester) async {
+    if (!await _loadFonts(tester)) return;
+    // s3 is a benign bank message that must stay SAFE; s2 fails (a scam read as SAFE).
+    Map<String, Object?> step(int i, bool pass, {bool safe = false}) => safe
+        ? {
+            'index': i,
+            'delayMs': i == 0 ? 0 : 1500,
+            'source': 'sms',
+            'sender': 'VM-SBIINB',
+            'text': i == 0 ? 'Welcome. Alerts are now active.' : 'Rs 250 credited to your account by salary',
+            'contextLines': <String>[],
+            'ruleTriggers': <String>[],
+            'gemma': {'label': 'SAFE', 'scamType': '', 'reason': 'A routine message from a verified bank sender'},
+            'fused': {'label': 'SAFE', 'confidence': 0.97, 'scamType': null, 'raisedBy': <String>[]},
+            'alert': null,
+            'expectedLabel': 'SAFE',
+            'expectedFlags': <String>[],
+            'actualFlags': <String>[],
+            'pass': true,
+          }
+        : {
+          'index': i,
+          'delayMs': i == 0 ? 0 : 2500,
+          'source': i == 0 ? 'sms' : 'call',
+          'sender': i == 0 ? 'AX-FAKEBK' : 'caller_1',
+          'text': i == 0 ? 'Rs 5000 debited from your account. Not you? Call back' : 'Galti se paise bhej diye, please wapas bhej do',
+          'contextLines': i == 0
+              ? <String>[]
+              : ['Known context: user-typed SMS about a debit, 2 min ago, not from a bank', 'First message from this sender'],
+          'ruleTriggers': i == 0 ? ['debited'] : ['wapas bhej', 'galti se'],
+          'gemma': i == 0 ? null : {'label': 'SCAM', 'scamType': 'MISTAKEN_TRANSFER', 'reason': 'The caller refers to a message the user typed, not a bank alert'},
+          'fused': {'label': pass || i == 0 ? (i == 0 ? 'SUSPICIOUS' : 'SCAM') : 'SAFE', 'confidence': 0.91, 'scamType': i == 0 ? null : 'MISTAKEN_TRANSFER', 'raisedBy': i == 0 ? ['rules'] : ['graph', 'gemma']},
+          'alert': pass && i == 1 ? {'title': '[DEMO] Possible scam call', 'text': 'This caller refers to a message you wrote yourself.', 'reportAction': 'report'} : null,
+          'expectedLabel': i == 0 ? 'SUSPICIOUS' : 'SCAM',
+          'expectedFlags': i == 0 ? <String>[] : ['MISTAKEN_TRANSFER'],
+          'actualFlags': pass || i == 0 ? (i == 0 ? <String>[] : ['MISTAKEN_TRANSFER']) : <String>[],
+          'pass': pass || i == 0,
+        };
+    await tester.runAsync(() => _font('monospace', '/System/Library/Fonts/Menlo.ttc')); // else code blocks render as boxes
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    const ch = MethodChannel('scamshield/demo');
+    messenger.setMockMethodCallHandler(ch, (c) async => switch (c.method) {
+          'demo.scenarios' => [
+              {'id': 's1', 'icon': 'sms', 'titleHi': 'खाते से पैसे कटे, फिर कॉल', 'titleEn': 'Debit SMS, then a call', 'storyHi': 'एक SMS आया, फिर कॉल: पैसे लौटा दो', 'storyEn': 'An SMS, then a call: send the money back', 'steps': 2},
+              {'id': 's2', 'icon': 'local_shipping', 'titleHi': 'झूठा कूरियर नोटिस', 'titleEn': 'Fake courier notice', 'storyHi': 'पार्सल रुका है, लिंक खोलें', 'storyEn': 'Parcel held, tap the link', 'steps': 2},
+              {'id': 's3', 'icon': 'account_balance', 'titleHi': 'बैंक का असली मैसेज', 'titleEn': 'A real bank message', 'storyHi': 'बैंक का सामान्य अलर्ट, इसे सुरक्षित रहना चाहिए', 'storyEn': 'An ordinary bank alert that must stay safe', 'steps': 2},
+            ],
+          'demo.modelReady' => true,
+          'demo.run' => () {
+              final id = (c.arguments as Map)['id'];
+              return {'scenarioId': id, 'engineUsed': 'gemma', 'steps': [step(0, id != 's2', safe: id == 's3'), step(1, id != 's2', safe: id == 's3')], 'pass': id != 's2'};
+            }(),
+          _ => true,
+        });
+    addTearDown(() => messenger.setMockMethodCallHandler(ch, null));
+    addTearDown(() => tester.pumpWidget(const SizedBox())); // registered after the mocks
+    for (final (name, dark, scale) in [
+      ('idle_light', false, 1.0),
+      ('results_light', false, 1.0),
+      ('timeline_light', false, 1.0),
+      ('results_dark', true, 1.0),
+    ]) {
+      final base = dark ? AppTheme.dark() : AppTheme.light();
+      TextStyle? f(TextStyle? s) => s?.copyWith(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']);
+      final theme = base.copyWith(
+          textTheme: base.textTheme.apply(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']),
+          appBarTheme: base.appBarTheme.copyWith(titleTextStyle: f(base.appBarTheme.titleTextStyle)),
+          chipTheme: base.chipTheme.copyWith(labelStyle: f(base.chipTheme.labelStyle)),
+          listTileTheme: base.listTileTheme.copyWith(
+              titleTextStyle: f(base.listTileTheme.titleTextStyle), subtitleTextStyle: f(base.listTileTheme.subtitleTextStyle)),
+          filledButtonTheme: FilledButtonThemeData(
+              style: base.filledButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+              style: base.outlinedButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))),
+          textButtonTheme: TextButtonThemeData(
+              style: base.textButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))));
+      tester.view.physicalSize = Size(720, name == 'idle_light' ? 3000 : 4400); // tall: the whole list fits one image
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.reset);
+      final key = GlobalKey();
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        builder: (c, child) => RepaintBoundary(
+            key: key,
+            child: MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: child!)),
+        home: Scaffold(appBar: AppBar(title: const Text('डेमो लैब')), body: const DemoLabScreen()),
+      ));
+      await tester.pumpAndSettle();
+      if (name == 'timeline_light') {
+        await tester.tap(find.byKey(const Key('demo_run_s1')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+        await tester.tap(find.byKey(const Key('demo_skip')));
+        await tester.pumpAndSettle();
+      } else if (name.startsWith('results')) {
+        await tester.tap(find.byKey(const Key('demo_run_all')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+        await tester.tap(find.byKey(const Key('demo_skip')));
+        await tester.pumpAndSettle();
+      }
+      final pos = tester.state<ScrollableState>(find.byType(Scrollable).first).position;
+      // The timeline shot starts at the opened card; the others at the top.
+      pos.jumpTo(name == 'timeline_light' ? pos.pixels + tester.getTopLeft(find.byKey(const Key('demo_card_s1'))).dy - 90 : 0);
+      await tester.pumpAndSettle();
+      await tester.runAsync(() async {
+        final b = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        final img = await b.toImage(pixelRatio: 1);
+        final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+        File('$_out/ux_demolab_$name.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+      });
+      await tester.pumpWidget(const SizedBox());
     }
   });
 }

@@ -119,23 +119,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final d = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
       builder: (ctx) => SafeArea(
-        child: ListView.builder(
-          key: const Key('districtList'),
-          itemCount: kDistricts.length,
-          itemBuilder: (_, i) => ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: kTouch),
-            child: ListTile(
-              title: Text(
-                kDistricts[i],
-                style: Theme.of(ctx).textTheme.titleLarge,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Sp.l, 0, Sp.l, Sp.s),
+              child: Semantics(
+                header: true,
+                child: Text('अपना ज़िला चुनें', style: Theme.of(ctx).textTheme.titleLarge),
               ),
-              trailing: kDistricts[i] == _district
-                  ? const Icon(Icons.check, size: 32)
-                  : null,
-              onTap: () => Navigator.pop(ctx, kDistricts[i]),
             ),
-          ),
+            Expanded(
+              child: ListView.builder(
+                key: const Key('districtList'),
+                itemCount: kDistricts.length,
+                itemBuilder: (_, i) => ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: kTouch),
+                  child: ListTile(
+                    // shortcut: English names only, no Hindi district list in the repo; add one when it exists.
+                    title: Text(
+                      kDistricts[i],
+                      style: Theme.of(ctx).textTheme.titleMedium,
+                    ),
+                    trailing: kDistricts[i] == _district
+                        ? const Icon(Icons.check, size: 32)
+                        : null,
+                    onTap: () => Navigator.pop(ctx, kDistricts[i]),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -156,8 +172,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _msg(bool ok, String hi, String en) => setState(() {
+  bool _advancedOpen = false;
+
+  /// Result of the last export; [info] is a neutral outcome (not a failure).
+  bool _info = false;
+
+  void _msg(bool ok, String hi, String en, {bool info = false}) => setState(() {
     _ok = ok;
+    _info = info;
     _hi = hi;
     _en = en;
   });
@@ -175,7 +197,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       });
       final n = (r?['count'] as num?)?.toInt() ?? 0;
       n == 0
-          ? _msg(false, 'अभी भेजने के लिए कुछ नहीं है', 'Nothing to share yet')
+          ? _msg(false, 'अभी भेजने के लिए कुछ नहीं है', 'Nothing to share yet', info: true)
           : _msg(
               true,
               'शेयर खुल गया: $n गिनती',
@@ -363,9 +385,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    _ok ? Icons.check_circle : Icons.error,
+                    _ok ? Icons.check_circle : (_info ? Icons.info_outline : Icons.error),
                     size: 32,
-                    color: _ok ? st.safe : cs.error,
+                    color: _ok ? st.safe : (_info ? cs.onSurfaceVariant : cs.error),
                   ),
                   const SizedBox(width: Sp.m),
                   Expanded(
@@ -377,7 +399,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Text(
                             _hi!,
                             style: t.textTheme.bodyLarge?.copyWith(
-                              color: _ok ? st.safe : cs.error,
+                              color: _ok ? st.safe : (_info ? cs.onSurfaceVariant : cs.error),
                             ),
                           ),
                           Text(
@@ -413,9 +435,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) setState(() => _s = s);
   }
 
-  Widget _switch(String key, String title, String subtitle) => SwitchListTile(
-    title: Text(title),
-    subtitle: Text(subtitle),
+  /// Hindi title first; the English title stays as a secondary line, then the detail.
+  Widget _switch(String key, String hi, String en, String detail) => SwitchListTile(
+    title: Text(hi),
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [Text(en), Text(detail)],
+    ),
     value: _s[key] == true,
     onChanged: (v) => _set(key, v),
   );
@@ -443,6 +469,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
     }
     return ListView(
+      // Keep the last row clear of the gesture bar.
+      padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom + Sp.l),
       children: [
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: Sp.l),
@@ -450,71 +478,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.shield,
             title: 'चेतावनी की सेटिंग',
             subtitle: 'Warning settings',
+            muted: true,
           ),
         ),
-        _switch(
-          'useLlm',
-          'Use on-device Gemma',
-          'Off = rules only (fastest, for low-end phones)',
-        ),
-        _switch(
-          'overlayEnabled',
-          'Show warning bubble',
-          'Floating "This statement is…" widget during calls',
-        ),
-        _switch(
-          'autoEnableCaptions',
-          'Auto-turn-on Live Caption',
-          'If no captions appear 6 s into a call',
-        ),
-        _switch(
-          'ocrFallback',
-          'Screen-reading fallback (OCR)',
-          'If the caption window hides its text, read it from a screenshot (Android 11+)',
-        ),
-        _switch(
-          'inCallSignals',
-          'In-call scam signals',
-          'Warn if an OTP arrives, or a UPI/bank/AnyDesk app is opened, during a call',
-        ),
-        _switch(
-          'micProbe',
-          'Call audio test on next call (experimental)',
-          'Tests 3 s from every mic source at the start of the next call, then switches itself off',
-        ),
-        _switch(
-          'wifiOnly',
-          'Download model on Wi-Fi only',
-          'The model is ~555 MB',
-        ),
-        _switch(
-          'discoveryMode',
-          'Discovery mode (debug)',
-          'Log text of every window to the Live tab to find your phone\'s caption package',
-        ),
-        Padding(
-          padding: const EdgeInsets.all(Sp.l),
-          child: TextField(
-            controller: _pkgCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Caption source packages (comma separated)',
-              helperText:
-                  'Found with discovery mode. Packages containing "caption" are always included.',
-              border: OutlineInputBorder(),
-            ),
-            onSubmitted: (v) => _set('captionPackages', v),
-          ),
-        ),
+        _switch('overlayEnabled', 'चेतावनी बबल दिखाएँ', 'Show warning bubble',
+            'कॉल के दौरान स्क्रीन पर तैरती चेतावनी'),
+        _switch('autoEnableCaptions', 'लाइव कैप्शन अपने आप चालू करें', 'Auto-turn-on Live Caption',
+            'कॉल के 6 सेकंड बाद तक कैप्शन न दिखें तो'),
+        _switch('inCallSignals', 'कॉल के दौरान ठगी के संकेत', 'In-call scam signals',
+            'कॉल में OTP आए या UPI/बैंक/AnyDesk ऐप खुले तो चेतावनी'),
+        _switch('wifiOnly', 'मॉडल सिर्फ़ Wi-Fi पर डाउनलोड करें', 'Download model on Wi-Fi only',
+            'मॉडल लगभग 555 MB का है'),
         _trendSection(context),
         const Divider(),
-        ValueListenableBuilder<bool>(
-          valueListenable: DemoFlag.enabled,
-          builder: (_, on, _) => SwitchListTile(
-            key: const Key('demoModeSwitch'),
-            title: const Text('Demo mode'),
-            subtitle: const Text('डेमो मोड: मदद टैब में "डेमो लैब" दिखाएँ'),
-            value: on,
-            onChanged: DemoFlag.set,
+        // Developer controls: closed by default so the first screen is for the user.
+        Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            key: const Key('settings_advanced'),
+            // Kept in state: the lazy list drops the tile when scrolled away and would collapse it.
+            initiallyExpanded: _advancedOpen,
+            onExpansionChanged: (v) => _advancedOpen = v,
+            leading: Icon(Icons.tune, size: 28, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            title: const Text('उन्नत सेटिंग'),
+            subtitle: const Text('Advanced settings'),
+            children: [
+              _switch('useLlm', 'फ़ोन पर चलने वाला Gemma इस्तेमाल करें', 'Use on-device Gemma',
+                  'बंद हो तो सिर्फ़ नियम चलते हैं (कम क्षमता वाले फ़ोन पर तेज़)'),
+              _switch('ocrFallback', 'स्क्रीन पढ़कर देखें (OCR)', 'Screen-reading fallback (OCR)',
+                  'कैप्शन का टेक्स्ट छिपा हो तो स्क्रीनशॉट से पढ़ता है (Android 11+)'),
+              _switch('micProbe', 'अगली कॉल पर ऑडियो जाँच (प्रयोगात्मक)', 'Call audio test on next call (experimental)',
+                  'अगली कॉल की शुरुआत में हर माइक से 3 सेकंड जाँचता है, फिर खुद बंद हो जाता है'),
+              _switch('discoveryMode', 'खोज मोड (डिबग)', 'Discovery mode (debug)',
+                  'आपके फ़ोन का कैप्शन पैकेज ढूँढने के लिए हर विंडो का टेक्स्ट लाइव टैब में दिखाता है'),
+              Padding(
+                padding: const EdgeInsets.all(Sp.l),
+                child: TextField(
+                  controller: _pkgCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'कैप्शन स्रोत पैकेज (कॉमा से अलग) · Caption source packages',
+                    helperText: 'खोज मोड से मिलते हैं। जिनमें "caption" है वे हमेशा शामिल हैं।',
+                    border: OutlineInputBorder(),
+                  ),
+                  onSubmitted: (v) => _set('captionPackages', v),
+                ),
+              ),
+              ValueListenableBuilder<bool>(
+                valueListenable: DemoFlag.enabled,
+                builder: (_, on, _) => SwitchListTile(
+                  key: const Key('demoModeSwitch'),
+                  title: const Text('डेमो मोड'),
+                  subtitle: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [Text('Demo mode'), Text('मदद टैब में "डेमो लैब" दिखाएँ')],
+                  ),
+                  value: on,
+                  onChanged: DemoFlag.set,
+                ),
+              ),
+            ],
           ),
         ),
         ListTile(

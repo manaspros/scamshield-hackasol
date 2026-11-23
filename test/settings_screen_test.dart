@@ -52,6 +52,8 @@ void main() {
     expect(find.byType(SwitchListTile), findsNothing); // first frame: loading, no defaults
     expect(find.text('लोड हो रहा है…'), findsOneWidget);
     await t.pumpAndSettle();
+    await tapVisible(t, find.byKey(const Key('settings_advanced')));
+    await t.pumpAndSettle();
     expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Use on-device Gemma')).value, isTrue);
     await reveal(t, find.byKey(const Key('districtPicker')));
     expect(find.text('Durg'), findsOneWidget);

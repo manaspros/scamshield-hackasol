@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import '../theme/app_theme.dart' show StatusColors;
 import '../theme/text_styles.dart';
 import '../theme/tokens.dart';
-import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
 
 /// Family code: pair two phones with a shared secret, then compare a rotating
@@ -249,7 +248,11 @@ class _FamilyScreenState extends State<FamilyScreen> {
         const SizedBox(height: Sp.m),
         // Intro only on the first screens; later stages need the room for the code.
         if (_stage == _Stage.loading || _stage == _Stage.choose)
-          SectionHeader(title: t('title'), icon: Icons.family_restroom, subtitle: t('intro')),
+          // The AppBar already carries the title; only the one-line intro stays.
+          Padding(
+            padding: const EdgeInsets.only(bottom: Sp.m),
+            child: Text(t('intro'), style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          ),
         ...switch (_stage) {
           _Stage.loading => [StateMessage(loading: true, title: t('loading'))],
           _Stage.choose => _choose(theme),

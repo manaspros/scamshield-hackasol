@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/lessons/lesson_model.dart';
 import 'package:scamshield/lessons/quiz_engine.dart';
+import 'package:scamshield/screens/demo_lab_screen.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/quiz_screen.dart';
@@ -14,6 +15,7 @@ import 'package:scamshield/screens/recording_screen.dart';
 import 'package:scamshield/screens/report_screen.dart';
 import 'package:scamshield/screens/settings_screen.dart';
 import 'package:scamshield/screens/setup_screen.dart';
+import 'package:scamshield/screens/try_api_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 import 'package:scamshield/widgets/verdict_card.dart';
 
@@ -39,8 +41,54 @@ Future<void> _show(WidgetTester t, ThemeData theme, Widget home) async {
   await t.pumpAndSettle();
 }
 
+// Jump the screen's own ListView to its end. A drag would start at the list centre, which a multi-line input can cover.
+Future<void> _toBottom(WidgetTester t) async {
+  for (var i = 0; i < 3; i++) {
+    final p = t.state<ScrollableState>(find.byType(Scrollable).first).position;
+    p.jumpTo(p.maxScrollExtent);
+    await t.pumpAndSettle();
+  }
+}
+
 void _emit(Map<String, Object?> m) => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
     .handlePlatformMessage(_events, const StandardMethodCodec().encodeSuccessEnvelope(m), (_) {});
+
+// Demo Lab fixtures: s2 fails, the others pass. [slow] puts a gap before each later event.
+Map<String, Object?> _demoStep(int i, {required bool pass, required int delayMs}) => {
+      'index': i,
+      'delayMs': delayMs,
+      'source': i == 0 ? 'sms' : 'call',
+      'sender': i == 0 ? 'AX-FAKEBK' : 'caller_1',
+      'text': 'Rs 5000 debited from your account, please send the money back',
+      'contextLines': i == 0 ? <String>[] : ['Known context: user-typed SMS about a debit, 2 min ago, not from a bank'],
+      'ruleTriggers': ['debited', 'send back'],
+      'gemma': i == 0 ? null : {'label': 'SUSPICIOUS', 'scamType': 'FAKE_DEBIT', 'reason': 'Looks typed by a person, not sent by a bank'},
+      'fused': {'label': pass ? 'SCAM' : 'SAFE', 'confidence': 0.93, 'scamType': 'MISTAKEN_TRANSFER', 'raisedBy': ['graph', 'rules']},
+      'alert': pass ? {'title': '[DEMO] Possible scam call', 'text': 'This caller refers to a message you wrote yourself.', 'reportAction': 'report'} : null,
+      'expectedLabel': 'SCAM',
+      'expectedFlags': ['MISTAKEN_TRANSFER'],
+      'actualFlags': pass ? ['MISTAKEN_TRANSFER'] : <String>[],
+      'pass': pass,
+    };
+
+Future<Object?> _demoCall(MethodCall c, {required bool slow}) async => switch (c.method) {
+      'demo.scenarios' => [
+          for (final (id, hi, en) in const [('s1', 'खाते से पैसे कटे, फिर कॉल', 'Debit SMS, then a call'), ('s2', 'झूठा कूरियर नोटिस', 'Fake courier notice'), ('s3', 'बैंक का असली मैसेज', 'A real bank message')])
+            {'id': id, 'icon': 'sms', 'titleHi': hi, 'titleEn': en, 'storyHi': 'एक SMS आया, फिर कॉल: पैसे लौटा दो', 'storyEn': 'An SMS, then a call: send the money back', 'steps': 2}
+        ],
+      'demo.modelReady' => true,
+      'demo.run' => () {
+          final id = (c.arguments as Map)['id'];
+          final pass = id != 's2';
+          return {
+            'scenarioId': id,
+            'engineUsed': 'gemma',
+            'steps': [_demoStep(0, pass: pass, delayMs: 0), _demoStep(1, pass: pass, delayMs: slow ? 800 : 0)],
+            'pass': pass,
+          };
+        }(),
+      _ => true,
+    };
 
 void main() {
   final themes = {'light': AppTheme.light(), 'dark': AppTheme.dark()};
@@ -49,6 +97,8 @@ void main() {
     testWidgets('lessons_screen_noOverflow_${e.key}_scale2', (t) async {
       await _show(t, e.value, LessonsScreen(store: InMemoryQuizStore(), bundle: _DiskBundle()));
       expect(find.byKey(const Key('score_value')), findsOneWidget);
+      // Score 0: the compact one-line card, not the big StatTile.
+      expect(find.text('पहला पाठ पूरा करें — आपका स्कोर यहाँ दिखेगा'), findsOneWidget);
       expect(t.takeException(), isNull);
     });
 
@@ -142,10 +192,14 @@ void main() {
         expect(t.takeException(), isNull);
         await t.scrollUntilVisible(find.byKey(const Key('setup_prepermission_card')), 200);
         expect(find.byKey(const Key('setup_prepermission_card')), findsOneWidget);
-        await t.scrollUntilVisible(find.text('सेटअप'), -500, maxScrolls: 100); // back to the top
+        // back to the top (the AppBar owns the "सेटअप" title; the counter is the first line)
+        await t.scrollUntilVisible(find.text('0 / 4 ज़रूरी कदम पूरे'), -500, maxScrolls: 100);
         if (firstRun) {
           await t.ensureVisible(find.byKey(const Key('lang_hne')));
           await t.pumpAndSettle();
+          // Language rows are full-width 56dp buttons, not chips.
+          expect(t.getSize(find.byKey(const Key('lang_hne'))).height, greaterThanOrEqualTo(56));
+          expect(find.byType(ChoiceChip), findsNothing);
           await t.tap(find.byKey(const Key('lang_hne')));
           await t.pumpAndSettle();
           expect(find.byKey(const Key('setup_firstrun_card')), findsNothing);
@@ -223,6 +277,33 @@ void main() {
       });
     }
 
+    testWidgets('settings_screen_advanced_collapsedThenExpanded_noOverflow_${e.key}_scale2', (t) async {
+      final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'),
+          (c) async => c.method == 'getSettings' ? <String, Object?>{'useLlm': true} : null);
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'), (_) async => null);
+      addTearDown(() {
+        messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
+        messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'), null);
+      });
+      addTearDown(() => t.pumpWidget(const SizedBox())); // registered after the mocks: runs before they go away
+      await _show(t, e.value, const SettingsScreen());
+      final adv = find.byKey(const Key('settings_advanced'));
+      await t.scrollUntilVisible(adv, 300, scrollable: find.byType(Scrollable).first, maxScrolls: 100);
+      // Collapsed by default: developer controls are not in the tree.
+      expect(find.text('Use on-device Gemma'), findsNothing);
+      expect(find.byKey(const Key('demoModeSwitch')), findsNothing);
+      expect(t.takeException(), isNull);
+      await t.ensureVisible(adv);
+      await t.pumpAndSettle();
+      await t.tap(adv);
+      await t.pumpAndSettle();
+      await t.scrollUntilVisible(find.text('Use on-device Gemma'), 300,
+          scrollable: find.byType(Scrollable).first, maxScrolls: 100);
+      expect(find.text('Use on-device Gemma'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    });
+
     testWidgets('live_feed_screen_noOverflow_${e.key}_scale2', (t) async {
       final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
       messenger.setMockMethodCallHandler(const MethodChannel(_events), (_) async => null);
@@ -252,6 +333,92 @@ void main() {
       expect(find.byType(VerdictCard), findsOneWidget); // events reached the screen
       expect(t.takeException(), isNull);
     });
+
+    for (final state in ['empty', 'result', 'upi_mismatch', 'failed']) {
+      testWidgets('try_api_screen_${state}_noOverflow_${e.key}_scale2', (t) async {
+        final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+        final calls = <String>[];
+        messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), (c) async {
+          calls.add(c.method);
+          if (state == 'failed' && c.method == 'classify') throw PlatformException(code: 'X', message: 'model not loaded');
+          return switch (c.method) {
+              'classify' => {
+                  'text': 'SBI se bol raha hoon, aapka KYC update pending hai',
+                  'label': 'SCAM',
+                  'confidence': 0.9,
+                  'reason': 'KYC के नाम पर लिंक खुलवाया जा रहा है',
+                  'triggers': ['KYC update', 'pending'],
+                  'engine': 'rules-only',
+                  'latencyMs': 5,
+                  'source': 'manual',
+                  'scamType': 'KYC',
+                },
+              'upi.check' => {
+                  'valid': true,
+                  'payeeName': 'Ravi Kumar',
+                  'payeeVpa': 'ra•••@oksbi',
+                  'amount': '500',
+                  'isCollect': false,
+                  'mismatch': true,
+                  'framing': 'You will PAY Rs 500 to Ravi Kumar',
+                  'framingHi': 'आप Ravi Kumar को ₹500 भेजेंगे',
+                },
+              _ => null,
+          };
+        });
+        messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), (_) async => true);
+        addTearDown(() {
+          messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
+          messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), null);
+        });
+        addTearDown(() => t.pumpWidget(const SizedBox())); // registered after the mocks: runs before they go away
+        await _show(t, e.value, const TryApiScreen());
+        expect(find.byKey(const Key('try_empty')), findsOneWidget);
+        expect(t.takeException(), isNull);
+        if (state == 'empty') {
+          // Empty input: a visible Hindi inline error, and no channel call.
+          await t.tap(find.byType(FilledButton));
+          await t.pumpAndSettle();
+          expect(find.text('पहले मैसेज डालें'), findsOneWidget);
+          expect(calls, isEmpty);
+        }
+        if (state == 'failed') {
+          // Native failure: friendly bilingual retry state, never the raw exception text.
+          await t.enterText(find.byType(TextField), 'hello');
+          await t.tap(find.byType(FilledButton));
+          await t.pumpAndSettle();
+          expect(find.byKey(const Key('try_failed')), findsOneWidget);
+          expect(find.text('जाँच नहीं हो पाई, फिर कोशिश करें'), findsOneWidget);
+          expect(find.textContaining('PlatformException'), findsNothing);
+          expect(find.textContaining('model not loaded'), findsNothing);
+        }
+        if (state == 'result') {
+          await t.enterText(find.byType(TextField), 'SBI se bol raha hoon, aapka KYC update pending hai');
+          await t.tap(find.byType(FilledButton));
+          await t.pumpAndSettle();
+          expect(find.byKey(const Key('try_empty')), findsNothing);
+          await _toBottom(t);
+          expect(find.byType(VerdictCard), findsOneWidget);
+          expect(find.byKey(const Key('helpline_1930')), findsOneWidget);
+        } else if (state == 'upi_mismatch') {
+          await t.ensureVisible(find.byKey(const Key('upi_section')));
+          await t.pumpAndSettle();
+          await t.tap(find.byKey(const Key('upi_section')));
+          await t.pumpAndSettle();
+          await t.enterText(find.byKey(const Key('upi_link_field')), 'upi://pay?pa=ravi.k@oksbi&pn=Ravi%20Kumar&am=500');
+          await t.enterText(find.byKey(const Key('upi_name_field')), 'Sunita Devi');
+          await t.ensureVisible(find.byKey(const Key('btn_upi_check')));
+          await t.pumpAndSettle();
+          await t.tap(find.byKey(const Key('btn_upi_check')));
+          await t.pumpAndSettle();
+          await _toBottom(t);
+          expect(find.byKey(const Key('upi_mismatch')), findsOneWidget);
+          expect(find.textContaining('Sunita Devi'), findsWidgets);
+        }
+        expect(t.getSize(find.byType(FilledButton)).height, greaterThanOrEqualTo(56));
+        expect(t.takeException(), isNull);
+      });
+    }
 
     for (final state in ['empty', 'downloading', 'transcribing', 'results']) {
       testWidgets('recording_screen_${state}_noOverflow_${e.key}_scale2', (t) async {
@@ -309,6 +476,40 @@ void main() {
           expect(find.byKey(const Key('row_2')), findsOneWidget);
         }
         expect(t.takeException(), isNull);
+      });
+    }
+
+    for (final state in ['idle', 'midrun', 'results_one_fail']) {
+      testWidgets('demo_lab_${state}_noOverflow_${e.key}_scale2', (t) async {
+        final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+        const ch = MethodChannel('scamshield/demo');
+        messenger.setMockMethodCallHandler(ch, (c) => _demoCall(c, slow: state == 'midrun'));
+        addTearDown(() => messenger.setMockMethodCallHandler(ch, null));
+        addTearDown(() => t.pumpWidget(const SizedBox())); // registered after the mocks: runs before they go away
+        await _show(t, e.value, const DemoLabScreen());
+        await t.pump(const Duration(milliseconds: 100));
+        expect(find.byKey(const Key('demo_card_s3')), findsOneWidget);
+        expect(t.getSize(find.byKey(const Key('demo_run_all'))).height, greaterThanOrEqualTo(56));
+        expect(t.takeException(), isNull);
+        if (state == 'midrun') {
+          await t.tap(find.byKey(const Key('demo_run_all')));
+          await t.pump(const Duration(milliseconds: 100)); // s1 event 1 shown, event 2 waits on its gap
+          expect(find.byKey(const Key('demo_progress')), findsOneWidget);
+          expect(find.byKey(const Key('demo_step_1')), findsOneWidget);
+          expect(t.takeException(), isNull);
+          await t.pumpWidget(const SizedBox()); // unmount while the timer is pending
+        } else if (state == 'results_one_fail') {
+          await t.tap(find.byKey(const Key('demo_run_all')));
+          await t.pump(const Duration(milliseconds: 100));
+          await t.pumpAndSettle();
+          expect(find.descendant(of: find.byKey(const Key('demo_badge_s2')), matching: find.text('FAIL')), findsOneWidget);
+          expect(find.descendant(of: find.byKey(const Key('demo_sum_fail')), matching: find.text('1')), findsOneWidget);
+          expect(find.byKey(const Key('demo_step_1')), findsWidgets); // the failed card opens itself
+          await t.drag(find.byType(SingleChildScrollView).first, const Offset(0, -6000));
+          await t.pumpAndSettle();
+          expect(find.byKey(const Key('demo_reset')), findsOneWidget);
+          expect(t.takeException(), isNull);
+        }
       });
     }
   }
