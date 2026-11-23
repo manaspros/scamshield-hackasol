@@ -14,6 +14,7 @@ import 'package:scamshield/screens/family_screen.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/quiz_screen.dart';
+import 'package:scamshield/screens/report_screen.dart';
 import 'package:scamshield/screens/setup_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 import 'package:scamshield/theme/text_styles.dart';
@@ -154,8 +155,11 @@ void main() {
     if (!await _loadFonts(tester)) return;
     final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMethodCallHandler(const MethodChannel('scamshield/events'), (_) async => null);
+    var setupFirstRun = false; // true while the first-run Setup shot renders: no language yet, service off
+    messenger.setMockMethodCallHandler(
+        const MethodChannel('scamshield/prefs'), (c) async => !setupFirstRun && c.method == 'getString' ? 'hi' : null);
     messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), (c) async => switch (c.method) {
-          'serviceStatus' => {'enabled': true, 'connected': true},
+          'serviceStatus' => {'enabled': !setupFirstRun, 'connected': !setupFirstRun},
           'modelStatus' => {'status': 'READY', 'message': '', 'path': '/data/model.task', 'sizeMb': 555},
           'downloadStatus' => {'status': 'IDLE'},
           'micPermission' => true,
@@ -168,10 +172,25 @@ void main() {
           'family.code' => {'code': '123456', 'remainingSec': 20},
           _ => null,
         });
+    final reportPack = {
+      'targets': [
+        {'phone': '1930', 'url': null},
+        {'phone': null, 'url': 'https://cybercrime.gov.in'},
+      ],
+      'evidence': [
+        {'time': '2026-11-23 10:15 IST', 'scamType': 'DIGITAL_ARREST', 'source': 'caption', 'triggers': ['CBI', 'arrest warrant']},
+      ],
+    };
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), (c) async => switch (c.method) {
+          'golden.status' => {'started': true, 'startMs': 1, 'remainingMs': 2535000, 'pack': reportPack},
+          _ => true,
+        });
     addTearDown(() {
       messenger.setMockMethodCallHandler(const MethodChannel('scamshield/events'), null);
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'), null);
       messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
       messenger.setMockMethodCallHandler(const MethodChannel('scamshield/family'), null);
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), null);
     });
     final lessons = loadLessonsFromJson(File('assets/lessons/hi.json').readAsStringSync());
     final store = InMemoryQuizStore();
@@ -186,6 +205,8 @@ void main() {
           textTheme: base.textTheme.apply(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']),
           appBarTheme: base.appBarTheme.copyWith(titleTextStyle: f(base.appBarTheme.titleTextStyle)),
           chipTheme: base.chipTheme.copyWith(labelStyle: f(base.chipTheme.labelStyle)),
+          dialogTheme: base.dialogTheme.copyWith(
+              titleTextStyle: f(base.dialogTheme.titleTextStyle), contentTextStyle: f(base.dialogTheme.contentTextStyle)),
           // Buttons set their own text style, so give them the Devanagari fallback too.
           filledButtonTheme: FilledButtonThemeData(
               style: base.filledButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))),
@@ -201,25 +222,37 @@ void main() {
         'lessons': LessonsScreen(store: store, bundle: _DiskBundle()),
         'quiz': QuizScreen(lesson: lessons.first, engine: engine, lang: 'hi'),
         'setup': const SetupScreen(),
+        'setup_firstrun': const SetupScreen(),
         'live_feed': const LiveFeedScreen(),
+        'live_feed_idle': const LiveFeedScreen(),
         'family': const FamilyScreen(initialLang: 'hi'),
+        'family_unpair': const FamilyScreen(initialLang: 'hi'),
         'setup_2x': const SetupScreen(),
         'live_feed_2x': const LiveFeedScreen(),
+        'report': const ReportScreen(),
+        'report_2x': const ReportScreen(),
       };
       for (final e in screens.entries) {
         final key = GlobalKey();
         final scale = e.key.endsWith('_2x') ? 2.0 : 1.0;
+        setupFirstRun = e.key == 'setup_firstrun';
         // Unmount the previous screen first: its event-channel cancel would otherwise
         // clear the handler the next screen just registered.
         await tester.pumpWidget(const SizedBox());
         await tester.pumpWidget(MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: theme,
-          builder: (c, child) =>
-              MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: child!),
-          home:RepaintBoundary(key: key, child: Scaffold(appBar: AppBar(title: Text(e.key)), body: e.value)),
+          // Boundary above the Navigator so dialogs are captured too.
+          builder: (c, child) => RepaintBoundary(
+              key: key,
+              child: MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: child!)),
+          home: Scaffold(appBar: AppBar(title: Text(e.key)), body: e.value),
         ));
         await tester.pumpAndSettle();
+        if (e.key == 'family_unpair') {
+          await tester.tap(find.byKey(const Key('family_unpair')));
+          await tester.pumpAndSettle();
+        }
         if (e.key == 'quiz') {
           await tester.tap(find.byKey(const Key('cards_next')));
           await tester.pumpAndSettle();
@@ -230,7 +263,7 @@ void main() {
           await tester.tap(find.byKey(const Key('option_1')));
           await tester.pumpAndSettle();
         }
-        if (e.key.startsWith('live_feed')) {
+        if (e.key.startsWith('live_feed') && e.key != 'live_feed_idle') {
           messenger.handlePlatformMessage(
               'scamshield/events',
               const StandardMethodCodec().encodeSuccessEnvelope({
@@ -285,6 +318,8 @@ void main() {
           body: SingleChildScrollView(
             padding: EdgeInsets.all(16),
             child: VerdictCard(
+              showDebug: false,
+              initiallyExpanded: true,
               verdict: Verdict(
                 text: 'आपके खाते से पैसे कट जाएंगे',
                 label: RiskLabel.scam,

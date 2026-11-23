@@ -369,7 +369,7 @@ class _QuizScreenState extends State<QuizScreen> {
         ? st.safe
         : isPicked
         ? st.scam
-        : theme.colorScheme.outline;
+        : theme.colorScheme.onSurfaceVariant; // hairline (outline) is ~1.3:1 as text
     final icon = !answered
         ? Icons.radio_button_unchecked
         : isRight
@@ -385,6 +385,8 @@ class _QuizScreenState extends State<QuizScreen> {
           minimumSize: const Size.fromHeight(kTouch),
           alignment: Alignment.centerLeft,
           foregroundColor: color,
+          // onPressed is null once answered; keep the answer colours readable (AA), not 38% grey.
+          disabledForegroundColor: color,
           side: BorderSide(
             color: color,
             width: answered && (isRight || isPicked) ? 3 : 1.5,

@@ -4,7 +4,17 @@ import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 
-/// Mirrors the on-call overlay bubble: "This statement is SCAM · 87%".
+/// One-word Hindi headline per risk label (the long phrase is `label.hindi`, shown under it).
+String _hindiHeadline(RiskLabel l) => switch (l) {
+      RiskLabel.safe => 'सुरक्षित',
+      RiskLabel.suspicious => 'सावधान',
+      RiskLabel.scam => 'धोखाधड़ी!',
+    };
+
+/// Verdict for a first-time reader. With `showDebug: false` (the live feed) it reads: Hindi
+/// headline, what to do now, the 1930 row, then reasons behind a collapsed "क्यों?". The default
+/// `showDebug: true` keeps the original developer layout: "This statement is SCAM · 87%",
+/// reasons inline and the engine/ms footer (the paste screen and its tests still rely on it).
 /// Tinted surface + solid icon/label, so meaning never rests on colour alone.
 class VerdictCard extends StatelessWidget {
   const VerdictCard({
@@ -15,6 +25,8 @@ class VerdictCard extends StatelessWidget {
     this.advice = const [],
     this.footer,
     this.whyLabel = 'क्यों:',
+    this.showDebug = true,
+    this.initiallyExpanded = false,
   });
   final Verdict verdict;
   final bool compact;
@@ -29,6 +41,12 @@ class VerdictCard extends StatelessWidget {
   /// Label before the reason; pass another language here if the caller has one.
   final String whyLabel;
 
+  /// true: English headline with %, inline reasons, engine/ms footer. false: the calm layout.
+  final bool showDebug;
+
+  /// Calm layout only: start with the "क्यों?" disclosure open.
+  final bool initiallyExpanded;
+
   @override
   Widget build(BuildContext context) {
     final v = verdict;
@@ -38,6 +56,44 @@ class VerdictCard extends StatelessWidget {
     final st = t.extension<StatusColors>() ?? StatusColors.light;
     final solid = st.solid(v.label);
     final muted = tt.bodySmall?.copyWith(color: cs.onSurfaceVariant);
+
+    final headline = showDebug ? v.headline : _hindiHeadline(v.label);
+    final quote = compact
+        ? null
+        : Text('“${v.text}”',
+            style: tt.bodyLarge?.copyWith(fontStyle: FontStyle.italic), maxLines: 3, overflow: TextOverflow.ellipsis);
+    final reason = Text(showDebug ? '$whyLabel ${v.reason}' : v.reason, style: tt.bodyLarge);
+    final chips = v.triggers.isEmpty
+        ? null
+        : Wrap(spacing: Sp.s, runSpacing: Sp.s, children: [
+            for (final trig in v.triggers.take(5))
+              Chip(
+                // Long masked triggers wrap inside the chip instead of fading out.
+                label: Text(trig, softWrap: true, maxLines: 3, overflow: TextOverflow.ellipsis),
+                // A rounded rectangle, not a pill: a pill looks bubbly once the text wraps to 2-3 lines.
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(Rad.md), side: BorderSide(color: cs.outline)),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+          ]);
+    final adviceBlock = <Widget>[
+      if (advice.isNotEmpty) ...[
+        const SizedBox(height: Sp.m),
+        if (adviceTitle != null) Text(adviceTitle!, style: tt.titleMedium),
+        for (final line in advice)
+          Padding(
+            padding: const EdgeInsets.only(top: Sp.s),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Icon(Icons.task_alt, size: 28, color: solid),
+              const SizedBox(width: Sp.s),
+              Expanded(child: Text(line, style: tt.titleMedium)),
+            ]),
+          ),
+      ],
+      if (footer != null) ...[const SizedBox(height: Sp.m), footer!],
+    ];
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.all(Sp.xl),
@@ -51,51 +107,44 @@ class VerdictCard extends StatelessWidget {
           Icon(v.label.icon, size: 40, color: solid),
           const SizedBox(width: Sp.m),
           Expanded(
-            child: Text(v.headline + (v.preliminary ? ' …' : ''),
-                style: tt.titleLarge?.copyWith(color: solid)),
+            child: Text(headline + (v.preliminary ? ' …' : ''), style: tt.titleLarge?.copyWith(color: solid)),
           ),
         ]),
         const SizedBox(height: Sp.xs),
         Text(v.label.hindi, style: tt.titleMedium),
-        if (!compact) ...[
-          const SizedBox(height: Sp.m),
-          Text('“${v.text}”',
-              style: tt.bodyLarge?.copyWith(fontStyle: FontStyle.italic), maxLines: 3, overflow: TextOverflow.ellipsis),
-        ],
-        const SizedBox(height: Sp.s),
-        Text('$whyLabel ${v.reason}', style: tt.bodyLarge),
-        if (v.triggers.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: Sp.s),
-            child: Wrap(spacing: Sp.s, runSpacing: Sp.s, children: [
-              for (final trig in v.triggers.take(5))
-                Chip(
-                  // Long masked triggers wrap inside the chip instead of fading out.
-                  label: Text(trig, softWrap: true, maxLines: 3, overflow: TextOverflow.ellipsis),
-                  // A rounded rectangle, not a pill: a pill looks bubbly once the text wraps to 2-3 lines.
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(Rad.md), side: BorderSide(color: cs.outline)),
-                  visualDensity: VisualDensity.compact,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-            ]),
-          ),
-        if (advice.isNotEmpty) ...[
-          const SizedBox(height: Sp.m),
-          if (adviceTitle != null) Text(adviceTitle!, style: tt.titleMedium),
-          for (final line in advice)
-            Padding(
-              padding: const EdgeInsets.only(top: Sp.s),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Icon(Icons.task_alt, size: 28, color: solid),
-                const SizedBox(width: Sp.s),
-                Expanded(child: Text(line, style: tt.titleMedium)),
-              ]),
+        if (showDebug) ...[
+          if (quote != null) ...[const SizedBox(height: Sp.m), quote],
+          const SizedBox(height: Sp.s),
+          reason,
+          if (chips != null) Padding(padding: const EdgeInsets.only(top: Sp.s), child: chips),
+          ...adviceBlock,
+          const SizedBox(height: Sp.s),
+          Text('${v.engine} · ${v.latencyMs} ms · ${v.source}', style: muted),
+        ] else ...[
+          ...adviceBlock,
+          const SizedBox(height: Sp.s),
+          // No divider lines: the card border already frames it. minTileHeight keeps a 56dp target.
+          Theme(
+            data: t.copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              key: const Key('verdict_why'),
+              initiallyExpanded: initiallyExpanded,
+              minTileHeight: kTouch,
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: const EdgeInsets.only(bottom: Sp.s),
+              expandedAlignment: Alignment.topLeft,
+              expandedCrossAxisAlignment: CrossAxisAlignment.start,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              title: Text('क्यों?', style: tt.titleMedium),
+              children: [
+                if (quote != null) ...[quote, const SizedBox(height: Sp.s)],
+                reason,
+                if (chips != null) Padding(padding: const EdgeInsets.only(top: Sp.s), child: chips),
+              ],
             ),
+          ),
         ],
-        if (footer != null) ...[const SizedBox(height: Sp.m), footer!],
-        const SizedBox(height: Sp.s),
-        Text('${v.engine} · ${v.latencyMs} ms · ${v.source}', style: muted),
       ]),
     );
   }

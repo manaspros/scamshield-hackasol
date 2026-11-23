@@ -49,6 +49,10 @@ const _s = <String, Map<String, String>>{
     'yesMsg': 'कोड मिल गया। फिर भी पैसे भेजने से पहले सोचें।',
     'noMsg': 'फ़ोन काट दें। अपने परिवार के सदस्य को उनके जाने-पहचाने नंबर पर फ़ोन करें।',
     'unpair': 'जोड़ी हटाएँ',
+    'unpairTitle': 'जोड़ी हटाएँ?',
+    'unpairBody': 'दोनों फ़ोन को फिर से जोड़ना होगा।',
+    'cancel': 'रद्द करें',
+    'remove': 'हटाएँ',
     'err': 'कोड नहीं मिल सका। फिर कोशिश करें।',
     'retry': 'फिर कोशिश करें',
     'loading': 'कोड जाँचा जा रहा है…',
@@ -71,6 +75,10 @@ const _s = <String, Map<String, String>>{
     'yesMsg': 'कोड मिल गे। तभो पइसा भेजे के पहिली सोचव।',
     'noMsg': 'फ़ोन काट देव। अपन परिवार वाले ल ओकर जाने-पहिचाने नंबर म फ़ोन करव।',
     'unpair': 'जोड़ी हटावव',
+    'unpairTitle': 'जोड़ी हटावव?',
+    'unpairBody': 'दूनो फ़ोन ल फेर जोड़ना परही।',
+    'cancel': 'रद्द करव',
+    'remove': 'हटावव',
     'err': 'कोड नइ मिलिस। फेर कोशिश करव।',
     'retry': 'फेर कोशिश करव',
     'loading': 'कोड जाँचत हे…',
@@ -93,6 +101,10 @@ const _s = <String, Map<String, String>>{
     'yesMsg': 'Code matches. Still think before sending any money.',
     'noMsg': 'Hang up. Call your family member on their known number.',
     'unpair': 'Remove pairing',
+    'unpairTitle': 'Remove pairing?',
+    'unpairBody': 'Both phones must pair again.',
+    'cancel': 'Cancel',
+    'remove': 'Remove',
     'err': 'Could not get the code. Try again.',
     'retry': 'Try again',
     'loading': 'Checking the code…',
@@ -152,6 +164,35 @@ class _FamilyScreenState extends State<FamilyScreen> {
     } catch (_) {
       if (mounted) setState(() => _fieldError = t('bad'));
     }
+  }
+
+  /// Cancel is the focused default; the destructive action is outlined in the scam colour.
+  Future<void> _confirmUnpair() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final scam = Theme.of(ctx).extension<StatusColors>()!.scam;
+        return AlertDialog(
+          title: Text(t('unpairTitle')),
+          content: Text(t('unpairBody')),
+          actions: [
+            OutlinedButton(
+              key: const Key('family_unpair_confirm'),
+              style: OutlinedButton.styleFrom(foregroundColor: scam, side: BorderSide(color: scam, width: 2)),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(t('remove'), textAlign: TextAlign.center),
+            ),
+            FilledButton(
+              key: const Key('family_unpair_cancel'),
+              autofocus: true,
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(t('cancel'), textAlign: TextAlign.center),
+            ),
+          ],
+        );
+      },
+    );
+    if (ok == true) await _unpair();
   }
 
   Future<void> _unpair() async {
@@ -314,7 +355,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
         StateMessage(icon: Icons.error_outline, title: t('err'), actionLabel: t('retry'), onAction: _fetch),
         TextButton.icon(
           key: const Key('family_unpair'),
-          onPressed: _unpair,
+          onPressed: _confirmUnpair,
           icon: const Icon(Icons.link_off),
           label: Text(t('unpair'), textAlign: TextAlign.center),
         ),
@@ -373,7 +414,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
       const SizedBox(height: Sp.s),
       TextButton.icon(
         key: const Key('family_unpair'),
-        onPressed: _unpair,
+        onPressed: _confirmUnpair,
         icon: const Icon(Icons.link_off),
         label: Text(t('unpair'), textAlign: TextAlign.center),
       ),

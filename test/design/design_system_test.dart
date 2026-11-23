@@ -164,6 +164,37 @@ void main() {
     }
   });
 
+  group('T_design VerdictCard calm layout', () {
+    testWidgets('showDebug_false_hindiHeadline_noPercentOrEngine_reasonsBehindWhyDisclosure', (tester) async {
+      const v = Verdict(
+        text: 'ओटीपी बताइए',
+        label: RiskLabel.scam,
+        confidence: 0.87,
+        reason: 'कॉल करने वाला ओटीपी माँग रहा है',
+        triggers: ['ओटीपी बताइए'],
+        engine: 'gemma+rules',
+        latencyMs: 1420,
+        source: 'caption',
+      );
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.light(),
+        home: const Scaffold(
+          body: SingleChildScrollView(
+              child: VerdictCard(verdict: v, showDebug: false, advice: ['पैसे न भेजें, कॉल काट दें'])),
+        ),
+      ));
+      expect(find.text('धोखाधड़ी!'), findsOneWidget);
+      expect(find.textContaining('87%'), findsNothing);
+      expect(find.textContaining('gemma'), findsNothing);
+      expect(find.text('पैसे न भेजें, कॉल काट दें'), findsOneWidget);
+      expect(find.text(v.reason), findsNothing); // collapsed by default
+      expect(tester.getSize(find.byKey(const Key('verdict_why'))).height, greaterThanOrEqualTo(kTouch));
+      await tester.tap(find.text('क्यों?'));
+      await tester.pumpAndSettle();
+      expect(find.text(v.reason), findsOneWidget);
+    });
+  });
+
   group('T_design WCAG AA contrast', () {
     for (final name in ['light', 'dark']) {
       final p = name == 'light' ? Pal.light : Pal.dark;
@@ -189,6 +220,13 @@ void main() {
             expect(contrast(p.ink, tint), greaterThanOrEqualTo(4.5), reason: 'ink on ${l.name} tint');
             expect(contrast(st.solid(l), base), greaterThanOrEqualTo(4.5), reason: '${l.name} on $base');
           }
+        }
+      });
+
+      test('$name quiz answered options: right, picked-wrong and other text are AA on the page', () {
+        // quiz_screen sets disabledForegroundColor to these; Flutter's 38% default was 2.31:1.
+        for (final c in [st.safe, st.scam, p.muted]) {
+          expect(contrast(c, p.page), greaterThanOrEqualTo(4.5), reason: '$c on page');
         }
       });
     }

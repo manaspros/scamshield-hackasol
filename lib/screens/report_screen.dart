@@ -8,7 +8,7 @@ import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 import '../widgets/action_tile.dart';
 import '../widgets/section_header.dart';
-import '../widgets/status_chip.dart';
+import '../widgets/state_message.dart';
 
 /// Client for the native handoff channel (K/HandoffChannel.kt).
 /// Every call returns null/false instead of throwing, so the screen still works
@@ -82,10 +82,16 @@ class ReportStrings {
     'start': 'मैं ठगा गया: 60 मिनट शुरू करें',
     'startSub': 'पहले घंटे में बताने पर बैंक पैसे रोक सकता है।',
     'goldenTitle': 'सुनहरा घंटा',
-    'goldenHint': 'अभी 1930 पर कॉल करें और बैंक को बताएँ।',
+    'goldenHint': 'पहले घंटे में शिकायत करने से पैसा वापस मिलने की संभावना सबसे ज़्यादा',
     'expired': 'समय पूरा हुआ। फिर भी 1930 पर कॉल करें।',
     'restart': 'नया मामला शुरू करें',
-    'dial': 'कॉल करें:',
+    'calm': 'घबराएँ नहीं। ये कदम अभी उठाएँ।',
+    'loading': 'तैयार हो रहा है…',
+    'dialCta': '1930 पर कॉल करें',
+    'step1': 'सबसे पहले 1930 पर कॉल करें',
+    'stepPortal': 'cybercrime.gov.in पर शिकायत दर्ज करें',
+    'stepChakshu': 'चक्षु पर शक वाला नंबर बताएँ',
+    'stepShots': 'स्क्रीनशॉट सँभालकर रखें',
     'dialHint': 'डायल खुलेगा। हरा बटन आप खुद दबाएँ।',
     'portal': 'साइबर क्राइम पोर्टल खोलें',
     'chakshu': 'चक्षु: शक वाला नंबर बताएँ',
@@ -95,9 +101,10 @@ class ReportStrings {
     'yours': 'आप खुद भरें',
     'f_scammer_number': 'ठग का फ़ोन नंबर या UPI ID',
     'f_amount': 'कितने रुपये गए',
-    'f_utr': 'UTR या लेन-देन नंबर',
-    'f_screenshots': 'स्क्रीनशॉट (फ़ाइल के नाम)',
-    'share': 'सबूत भेजें (ZIP)',
+    'more': 'अधिक जानकारी',
+    'f_utr': 'बैंक मैसेज वाला लेन-देन नंबर',
+    'f_screenshots': 'स्क्रीनशॉट के बारे में लिखें (चाहें तो)',
+    'share': 'सबूत की फ़ाइल बनाकर भेजें',
     'openErr': 'यह नहीं खुल सका। 1930 खुद डायल करें।',
     'shareErr': 'सबूत नहीं बन सका। फिर कोशिश करें।',
     'startErr': 'घड़ी शुरू नहीं हो सकी। 1930 पर कॉल करें।',
@@ -113,10 +120,16 @@ class ReportStrings {
     'start': 'मंय ठगाय गेंव: 60 मिनट सुरू करव',
     'startSub': 'पहिली घंटा म बताहू त बैंक पइसा रोक सकथे।',
     'goldenTitle': 'सोना कस घंटा',
-    'goldenHint': 'अभी 1930 म फोन करव अउ बैंक ल बतावव।',
+    'goldenHint': 'पहिली घंटा म शिकायत करे ले पइसा लहुटे के संभावना सबले जादा',
     'expired': 'समे पूरा होगे। तभो ले 1930 म फोन करव।',
     'restart': 'नवा मामला सुरू करव',
-    'dial': 'फोन करव:',
+    'calm': 'घबरावव झन। ए कदम अभी उठावव।',
+    'loading': 'तियार होवत हे…',
+    'dialCta': '1930 म फोन करव',
+    'step1': 'सबले पहिली 1930 म फोन करव',
+    'stepPortal': 'cybercrime.gov.in म शिकायत दर्ज करव',
+    'stepChakshu': 'चक्षु म शक वाले नंबर बतावव',
+    'stepShots': 'स्क्रीनशॉट सम्हाल के राखव',
     'dialHint': 'डायल खुलही। हरियर बटन तुमन खुद दबावव।',
     'portal': 'साइबर क्राइम पोर्टल खोलव',
     'chakshu': 'चक्षु: शक वाले नंबर बतावव',
@@ -126,9 +139,10 @@ class ReportStrings {
     'yours': 'तुमन खुद भरव',
     'f_scammer_number': 'ठग के फोन नंबर या UPI ID',
     'f_amount': 'कतका रुपिया गे',
-    'f_utr': 'UTR या लेन-देन नंबर',
-    'f_screenshots': 'स्क्रीनशॉट (फाइल के नांव)',
-    'share': 'सबूत भेजव (ZIP)',
+    'more': 'अउ जानकारी',
+    'f_utr': 'बैंक मैसेज वाले लेन-देन नंबर',
+    'f_screenshots': 'स्क्रीनशॉट के बारे म लिखव (मन होवय त)',
+    'share': 'सबूत के फाइल बनाके भेजव',
     'openErr': 'ए नइ खुल सकिस। 1930 खुद डायल करव।',
     'shareErr': 'सबूत नइ बन सकिस। फेर कोसिस करव।',
     'startErr': 'घड़ी सुरू नइ हो सकिस। 1930 म फोन करव।',
@@ -161,10 +175,16 @@ class ReportStrings {
     'start': 'I got scammed: start 60 minutes',
     'startSub': 'Report in the first hour and the bank may be able to freeze the money.',
     'goldenTitle': 'Golden hour',
-    'goldenHint': 'Call 1930 now and tell your bank.',
+    'goldenHint': 'Reporting in the first hour gives the best chance of getting your money back.',
     'expired': 'Time is up. Still call 1930.',
     'restart': 'Start a new case',
-    'dial': 'Call',
+    'calm': 'Don\'t panic. Take these steps now.',
+    'loading': 'Getting ready…',
+    'dialCta': 'Call 1930',
+    'step1': 'Call 1930 first',
+    'stepPortal': 'Report at cybercrime.gov.in',
+    'stepChakshu': 'Report the suspect number on Chakshu',
+    'stepShots': 'Keep your screenshots',
     'dialHint': 'The dialer opens. You press the green button.',
     'portal': 'Open the cybercrime portal',
     'chakshu': 'Chakshu: report the suspect number',
@@ -174,9 +194,10 @@ class ReportStrings {
     'yours': 'You fill in',
     'f_scammer_number': 'Scammer phone number or UPI ID',
     'f_amount': 'Amount lost (INR)',
-    'f_utr': 'UTR / transaction ID',
-    'f_screenshots': 'Screenshots (file names)',
-    'share': 'Share evidence (ZIP)',
+    'more': 'More details',
+    'f_utr': 'Transaction number from the bank message',
+    'f_screenshots': 'Notes about your screenshots (optional)',
+    'share': 'Make and send evidence file',
     'openErr': 'Could not open this. Dial 1930 yourself.',
     'shareErr': 'Could not build the evidence file. Try again.',
     'startErr': 'Could not start the clock. Call 1930.',
@@ -302,31 +323,51 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget build(BuildContext context) {
     final s = ReportStrings.of(_lang);
     final t = Theme.of(context);
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(Sp.l),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Wrap(spacing: Sp.s, runSpacing: Sp.xs, children: [
-            for (final (code, label) in const [('hi', 'हिन्दी'), ('hne', 'छत्तीसगढ़ी'), ('en', 'English')])
-              ChoiceChip(
-                key: Key('lang_$code'),
-                label: Text(label, style: t.textTheme.labelMedium),
-                selected: _lang == code,
-                onSelected: (_) => setState(() => _lang = code),
-              ),
-          ]),
-          SectionHeader(title: s['title'], icon: Icons.report_problem),
-          _path(const Key('path_lost'), true, Icons.currency_rupee, s['pathLost'], s['pathLostSub']),
-          const SizedBox(height: Sp.m),
-          _path(const Key('path_notyet'), false, Icons.shield, s['pathNot'], s['pathNotSub']),
-          if (_loading)
-            const Padding(padding: EdgeInsets.all(Sp.xl), child: Center(child: CircularProgressIndicator()))
-          else if (_pack != null) ..._detail(t, s, _pack!),
-        ],
+    // 1930 stays pinned under the scroll area so it is one tap away at any text size.
+    return Column(children: [
+      Expanded(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(Sp.l),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Wrap(spacing: Sp.s, runSpacing: Sp.xs, children: [
+                for (final (code, label) in const [('hi', 'हिन्दी'), ('hne', 'छत्तीसगढ़ी'), ('en', 'English')])
+                  ChoiceChip(
+                    key: Key('lang_$code'),
+                    label: Text(label),
+                    selected: _lang == code,
+                    checkmarkColor: t.colorScheme.primary,
+                    onSelected: (_) => setState(() => _lang = code),
+                  ),
+              ]),
+              if (_lost == true && _remainingMs != null) _golden(t, s),
+              SectionHeader(title: s['title'], icon: Icons.report_problem, subtitle: s['calm']),
+              _path(const Key('path_lost'), true, Icons.currency_rupee, s['pathLost'], s['pathLostSub']),
+              const SizedBox(height: Sp.m),
+              _path(const Key('path_notyet'), false, Icons.shield, s['pathNot'], s['pathNotSub']),
+              if (_loading)
+                StateMessage(loading: true, title: s['loading'])
+              else if (_pack != null) ..._detail(t, s, _pack!),
+            ],
+          ),
+        ),
       ),
-    );
+      Padding(
+        padding: const EdgeInsets.fromLTRB(Sp.l, Sp.s, Sp.l, Sp.l),
+        child: FilledButton.icon(
+          key: Key('btn_dial_$_phone'),
+          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
+          onPressed: () => _run(widget.api.dial(_phone), 'openErr'),
+          icon: const Icon(Icons.phone, size: 28),
+          label: Text(s['dialCta'], textAlign: TextAlign.center),
+        ),
+      ),
+    ]);
   }
+
+  // The helpline comes from the pack; 1930 is the fallback so the button works before a path is chosen.
+  String get _phone => _pack?.targets.map((e) => e['phone']).whereType<String>().firstOrNull ?? '1930';
 
   // The chosen path gets a primary-colour outline around the shared ActionTile.
   Widget _path(Key key, bool lost, IconData icon, String title, String sub) {
@@ -342,22 +383,83 @@ class _ReportScreenState extends State<ReportScreen> {
 
   List<Widget> _detail(ThemeData t, ReportStrings s, _Pack pack) {
     final lost = _lost == true;
+    final urls = [for (final x in pack.targets) if (x['url'] is String) x['url'] as String];
+    final portal = urls.any((u) => Uri.parse(u).host.contains('cybercrime'));
     return [
-      if (lost) _golden(t, s),
-      const SizedBox(height: Sp.m),
+      if (lost && _remainingMs == null)
+        Padding(
+          padding: const EdgeInsets.only(top: Sp.m),
+          child: ActionTile(
+              key: const Key('golden_start'),
+              icon: Icons.timer,
+              label: s['start'],
+              caption: s['startSub'],
+              onTap: _startGolden),
+        ),
+      const SizedBox(height: Sp.l),
+      _steps(t, s, [
+        (Icons.phone_in_talk, s['step1'], s['dialHint']),
+        if (urls.isNotEmpty) (portal ? Icons.language : Icons.report, s[portal ? 'stepPortal' : 'stepChakshu'], null),
+        (Icons.photo_library, s['stepShots'], null),
+      ]),
+      const SizedBox(height: Sp.l),
       for (final target in pack.targets) ..._target(s, target),
       _evidence(t, s, pack),
       _fields(t, s, lost),
       if (lost && _remainingMs != null) ...[
         const SizedBox(height: Sp.m),
-        ActionTile(
-          key: const Key('btn_share'),
-          icon: Icons.ios_share,
-          label: s['share'],
-          onTap: () => _run(widget.api.goldenShare({for (final e in _ctrl.entries) e.key: e.value.text}), 'shareErr'),
-        ),
+        _secondary(const Key('btn_share'), Icons.ios_share, s, 'share',
+            () => _run(widget.api.goldenShare({for (final e in _ctrl.entries) e.key: e.value.text}), 'shareErr')),
       ],
     ];
+  }
+
+  // Numbered next steps: badge, icon, one Hindi line (and an optional caption).
+  Widget _steps(ThemeData t, ReportStrings s, List<(IconData, String, String?)> steps) {
+    final cs = t.colorScheme;
+    return _card(
+      t,
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        for (final (i, (icon, text, caption)) in steps.indexed)
+          Padding(
+            padding: EdgeInsets.only(top: i == 0 ? 0 : Sp.l),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: cs.primary, width: 2)),
+                child: Text('${i + 1}', style: t.textTheme.titleSmall?.copyWith(color: cs.primary)),
+              ),
+              const SizedBox(width: Sp.m),
+              Icon(icon, size: 28, color: cs.onSurface),
+              const SizedBox(width: Sp.s),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(text, style: t.textTheme.titleMedium),
+                  if (caption != null)
+                    Text(caption, style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                ]),
+              ),
+            ]),
+          ),
+      ]),
+    );
+  }
+
+  // Secondary action: Hindi (or chosen language) label, with a smaller English line when the screen is not in English.
+  Widget _secondary(Key key, IconData icon, ReportStrings s, String k, VoidCallback onTap) {
+    final t = Theme.of(context);
+    return OutlinedButton.icon(
+      key: key,
+      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
+      onPressed: onTap,
+      icon: Icon(icon, size: 28),
+      label: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text(s[k], textAlign: TextAlign.center),
+        if (_lang != 'en')
+          Text(ReportStrings.en[k], textAlign: TextAlign.center, style: t.textTheme.bodySmall),
+      ]),
+    );
   }
 
   Widget _card(ThemeData t, Widget child, {Color? color}) => Container(
@@ -371,93 +473,57 @@ class _ReportScreenState extends State<ReportScreen> {
       );
 
   Widget _golden(ThemeData t, ReportStrings s) {
-    final ms = _remainingMs;
-    if (ms == null) {
-      return Padding(
-        padding: const EdgeInsets.only(top: Sp.m),
-        child: ActionTile(
-            key: const Key('golden_start'),
-            icon: Icons.timer,
-            label: s['start'],
-            caption: s['startSub'],
-            onTap: _startGolden),
-      );
-    }
+    final ms = _remainingMs!;
     final st = t.extension<StatusColors>() ?? StatusColors.light;
     final expired = ms == 0;
+    // Quiet hero: tinted surface, hairline in the scam colour, a thin bar instead of a loud ring.
     return Padding(
-      padding: const EdgeInsets.only(top: Sp.m),
+      padding: const EdgeInsets.only(top: Sp.l),
       child: _card(
         t,
         color: st.tintOver(RiskLabel.scam, t.colorScheme.surface),
         Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Align(alignment: Alignment.centerLeft, child: StatusChip(label: RiskLabel.scam, text: s['goldenTitle'])),
+          Row(children: [
+            Icon(Icons.timer_outlined, size: 28, color: st.scam),
+            const SizedBox(width: Sp.s),
+            Expanded(child: Text(s['goldenTitle'], style: t.textTheme.titleMedium?.copyWith(color: st.scam))),
+          ]),
           const SizedBox(height: Sp.m),
-          Center(
-            child: SizedBox(
-              width: 180,
-              height: 180,
-              child: Stack(alignment: Alignment.center, children: [
-                SizedBox.expand(
-                  child: CircularProgressIndicator(
-                    value: ms / _goldenMs,
-                    strokeWidth: 12,
-                    color: st.scam,
-                    backgroundColor: t.colorScheme.surface,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(Sp.xl + Sp.xs),
-                  child: FittedBox(
-                    child: Text(_clock(ms),
-                        key: const Key('golden_timer'),
-                        style: t.textTheme.displayLarge?.copyWith(color: st.scam)),
-                  ),
-                ),
-              ]),
-            ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(_clock(ms),
+                key: const Key('golden_timer'),
+                style: t.textTheme.displayLarge?.copyWith(
+                    color: st.scam, fontSize: 64, fontFeatures: const [FontFeature.tabularFigures()])),
           ),
           const SizedBox(height: Sp.m),
-          Text(expired ? s['expired'] : s['goldenHint'],
-              key: const Key('golden_hint'), textAlign: TextAlign.center, style: t.textTheme.titleMedium),
-          if (expired)
-            TextButton(
+          LinearProgressIndicator(value: ms / _goldenMs, color: st.scam, backgroundColor: t.colorScheme.surface),
+          const SizedBox(height: Sp.m),
+          Text(expired ? s['expired'] : s['goldenHint'], key: const Key('golden_hint'), style: t.textTheme.titleMedium),
+          if (expired) ...[
+            const SizedBox(height: Sp.m),
+            OutlinedButton(
               key: const Key('golden_restart'),
               onPressed: _startGolden,
-              child: Text(s['restart'], style: t.textTheme.labelLarge),
+              child: Text(s['restart'], textAlign: TextAlign.center),
             ),
+          ],
         ]),
       ),
     );
   }
 
+  // The helpline is the pinned button; only url targets (portal, Chakshu) are listed here.
   List<Widget> _target(ReportStrings s, Map<Object?, Object?> target) {
-    final phone = target['phone'] as String?;
     final url = target['url'] as String?;
-    if (phone != null) {
-      return [
-        ActionTile(
-            key: Key('btn_dial_$phone'),
-            icon: Icons.phone_in_talk,
-            label: '${s['dial']} $phone',
-            caption: s['dialHint'],
-            onTap: () => _run(widget.api.dial(phone), 'openErr')),
-        const SizedBox(height: Sp.m),
-      ];
-    }
-    if (url != null) {
-      final host = Uri.parse(url).host;
-      final portal = host.contains('cybercrime');
-      return [
-        ActionTile(
-            key: Key('btn_open_$host'),
-            icon: portal ? Icons.language : Icons.report,
-            label: portal ? s['portal'] : s['chakshu'],
-            onTap: () => _run(widget.api.open(url), 'openErr')),
-        const SizedBox(height: Sp.m),
-      ];
-    }
-    return const [];
+    if (url == null) return const [];
+    final host = Uri.parse(url).host;
+    final portal = host.contains('cybercrime');
+    return [
+      _secondary(Key('btn_open_$host'), portal ? Icons.language : Icons.report, s, portal ? 'portal' : 'chakshu',
+          () => _run(widget.api.open(url), 'openErr')),
+      const SizedBox(height: Sp.m),
+    ];
   }
 
   Widget _evidence(ThemeData t, ReportStrings s, _Pack pack) {
@@ -472,11 +538,7 @@ class _ReportScreenState extends State<ReportScreen> {
         ]),
         const SizedBox(height: Sp.xs),
         if (pack.evidence.isEmpty)
-          Row(children: [
-            const Icon(Icons.info_outline, size: 32),
-            const SizedBox(width: Sp.s),
-            Expanded(child: Text(s['evidenceNone'], style: t.textTheme.bodyLarge)),
-          ])
+          StateMessage(icon: Icons.info_outline, title: s['evidenceNone'])
         else ...[
           Text(s['evidenceAuto'], style: t.textTheme.bodyLarge),
           for (final e in pack.evidence) _evidenceTile(t, s, st, e),
@@ -530,18 +592,31 @@ class _ReportScreenState extends State<ReportScreen> {
               Expanded(child: Text(s['yours'], style: t.textTheme.titleLarge)),
             ]),
             for (final k in _fieldKeys)
-              if (lost || !_lostOnlyFields.contains(k)) ...[
-                const SizedBox(height: Sp.m),
-                Text(s['f_$k'], style: t.textTheme.titleMedium),
-                const SizedBox(height: Sp.xs),
-                TextField(
-                  key: Key('field_$k'),
-                  controller: _ctrl[k],
-                  keyboardType: k == 'amount' ? TextInputType.number : TextInputType.text,
-                  style: t.textTheme.bodyLarge,
-                ),
-              ],
+              if (k != 'screenshots' && (lost || !_lostOnlyFields.contains(k))) ..._field(t, s, k),
+            // Rarely needed, so it stays out of the way until the user asks for it.
+            ExpansionTile(
+              key: const Key('more_details'),
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              title: Text(s['more'], style: t.textTheme.titleMedium),
+              expandedCrossAxisAlignment: CrossAxisAlignment.start,
+              children: _field(t, s, 'screenshots'),
+            ),
           ]),
         ),
       );
+
+  List<Widget> _field(ThemeData t, ReportStrings s, String k) => [
+        const SizedBox(height: Sp.m),
+        Text(s['f_$k'], style: t.textTheme.titleMedium),
+        const SizedBox(height: Sp.xs),
+        TextField(
+          key: Key('field_$k'),
+          controller: _ctrl[k],
+          keyboardType: k == 'amount' ? TextInputType.number : TextInputType.text,
+          style: t.textTheme.bodyLarge,
+        ),
+      ];
 }

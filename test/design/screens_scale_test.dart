@@ -9,6 +9,7 @@ import 'package:scamshield/lessons/quiz_engine.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/quiz_screen.dart';
+import 'package:scamshield/screens/report_screen.dart';
 import 'package:scamshield/screens/setup_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 import 'package:scamshield/widgets/verdict_card.dart';
@@ -106,6 +107,87 @@ void main() {
       await t.pumpAndSettle();
       expect(t.takeException(), isNull);
     });
+
+    for (final firstRun in [true, false]) {
+      testWidgets('setup_screen_${firstRun ? 'firstRun' : 'langChosen_advancedOpen'}_noOverflow_${e.key}_scale2', (t) async {
+        final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+        messenger.setMockMethodCallHandler(const MethodChannel(_events), (_) async => null);
+        messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), (c) async => switch (c.method) {
+              'serviceStatus' => {'enabled': false, 'connected': false},
+              'modelStatus' => {'status': 'MISSING', 'message': 'none'},
+              'downloadStatus' => {'status': 'IDLE'},
+              'micPermission' => false,
+              'perm.notificationsGranted' => false,
+              'perm.notificationAccessGranted' => false,
+              _ => null,
+            });
+        messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'),
+            (c) async => !firstRun && c.method == 'getString' ? 'hi' : null);
+        addTearDown(() {
+          messenger.setMockMethodCallHandler(const MethodChannel(_events), null);
+          messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
+          messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'), null);
+        });
+        await _show(t, e.value, const SetupScreen());
+        await t.pump(const Duration(milliseconds: 100)); // let the mocked channel replies land
+        await t.pumpAndSettle();
+        expect(find.byKey(const Key('setup_firstrun_card')), firstRun ? findsOneWidget : findsNothing);
+        expect(find.text('0 / 4 ज़रूरी कदम पूरे'), findsOneWidget);
+        expect(t.takeException(), isNull);
+        await t.scrollUntilVisible(find.byKey(const Key('setup_prepermission_card')), 200);
+        expect(find.byKey(const Key('setup_prepermission_card')), findsOneWidget);
+        await t.scrollUntilVisible(find.text('सेटअप'), -500, maxScrolls: 100); // back to the top
+        if (firstRun) {
+          await t.ensureVisible(find.byKey(const Key('lang_hne')));
+          await t.tap(find.byKey(const Key('lang_hne')));
+          await t.pumpAndSettle();
+          expect(find.byKey(const Key('setup_firstrun_card')), findsNothing);
+        } else {
+          await t.scrollUntilVisible(find.byKey(const Key('setup_advanced')), 500, maxScrolls: 100);
+          await t.tap(find.byKey(const Key('setup_advanced')));
+          await t.pumpAndSettle();
+          await t.drag(find.byType(ListView), const Offset(0, -6000));
+          await t.pumpAndSettle();
+        }
+        expect(t.takeException(), isNull);
+      });
+    }
+
+    for (final golden in [true, false]) {
+      testWidgets('report_screen_noOverflow_${e.key}_golden${golden ? 'Active' : 'Inactive'}_scale2', (t) async {
+        Map<String, Object?> pack() => {
+              'targets': [
+                {'phone': '1930', 'url': null},
+                {'phone': null, 'url': 'https://cybercrime.gov.in'},
+              ],
+              'evidence': [
+                {'time': '2026-11-23 10:15 IST', 'scamType': 'DIGITAL_ARREST', 'source': 'caption', 'triggers': ['CBI', 'arrest warrant']},
+              ],
+            };
+        final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+        messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), (c) async => switch (c.method) {
+              'golden.status' => golden
+                  ? {'started': true, 'startMs': 1, 'remainingMs': 3000000, 'pack': pack()}
+                  : {'started': false},
+              'report.pack' => pack(),
+              _ => true,
+            });
+        addTearDown(() => messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), null));
+        await _show(t, e.value, const ReportScreen());
+        expect(t.takeException(), isNull);
+        if (!golden) {
+          await t.ensureVisible(find.byKey(const Key('path_lost')));
+          await t.pumpAndSettle();
+          await t.tap(find.byKey(const Key('path_lost')));
+          await t.pumpAndSettle();
+        }
+        expect(find.byKey(const Key('golden_timer')), golden ? findsOneWidget : findsNothing);
+        await t.drag(find.byType(SingleChildScrollView), const Offset(0, -6000)); // reach the lower cards
+        await t.pumpAndSettle();
+        expect(t.takeException(), isNull);
+        await t.pumpWidget(const SizedBox()); // cancels the golden-hour ticker
+      });
+    }
 
     testWidgets('live_feed_screen_noOverflow_${e.key}_scale2', (t) async {
       final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;

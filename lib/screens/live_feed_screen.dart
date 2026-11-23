@@ -6,10 +6,12 @@ import '../api/text_api.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
+import '../widgets/press_scale.dart';
 import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
 import '../widgets/status_chip.dart';
 import '../widgets/verdict_card.dart';
+import 'report_screen.dart';
 
 /// Live view of the caption pipeline: raw captions, statements, verdicts, discovery output.
 class LiveFeedScreen extends StatefulWidget {
@@ -35,6 +37,10 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
   double _callRisk = 0;
   RiskLabel _callLevel = RiskLabel.safe;
   bool _streamError = false;
+  bool? _serviceOn; // null until the service reports; never claim "protected" before that
+
+  // kind 'dev' = captions_* and model status: never shown. discovery and mic_probe rows are
+  // emitted natively only when the user turned discovery mode / the mic test on, so they stay.
 
   @override
   bool get wantKeepAlive => true;
@@ -81,7 +87,7 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
           _add(_FeedItem.note('call', _inCall ? 'Call started' : 'Call ended'));
           if (_inCall) { _callRisk = 0; _callLevel = RiskLabel.safe; }
         case 'signal':
-          _add(_FeedItem.note('signal', 'In-call signal: ${e['kind']} (${e['trigger']})'));
+          _add(_FeedItem.note(e['kind'] == 'otp' ? 'signal_otp' : 'signal', 'In-call signal: ${e['kind']} (${e['trigger']})'));
         case 'mic_probe':
           final status = '${e['status']}';
           final db = e['dbfs'] is num ? ' ${(e['dbfs'] as num).toStringAsFixed(1)} dBFS, peak ${e['peak']}' : '';
@@ -97,12 +103,13 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
         case 'discovery':
           _add(_FeedItem.note('discovery', '[${e['pkg']}] ${e['text']}'));
         case 'captions_missing':
-          _add(_FeedItem.note('info', 'No captions seen 6 s into the call → trying to turn on Live Caption'));
+          _add(_FeedItem.note('dev', 'No captions seen 6 s into the call → trying to turn on Live Caption'));
         case 'captions_enable':
-          _add(_FeedItem.note('info', e['ok'] == true ? 'Live Caption turned on' : 'Could not turn on Live Caption automatically'));
+          _add(_FeedItem.note('dev', e['ok'] == true ? 'Live Caption turned on' : 'Could not turn on Live Caption automatically'));
         case 'model':
-          _add(_FeedItem.note('info', 'Model: ${e['status']} ${e['message']}'));
+          _add(_FeedItem.note('dev', 'Model: ${e['status']} ${e['message']}'));
         case 'service':
+          _serviceOn = e['connected'] == true;
           _add(_FeedItem.note('info', e['connected'] == true ? 'Protection service connected' : 'Protection service stopped'));
       }
     });
@@ -140,6 +147,7 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
       child: VerdictCard(
         key: ValueKey(identityHashCode(v)),
         verdict: v,
+        showDebug: false,
         adviceTitle: warn ? _adviceTitle : null,
         advice: _advice[v.label] ?? const [],
         footer: warn ? const _Helpline() : null,
@@ -148,7 +156,8 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
   }
 
   Widget _history(_FeedItem it, StatusColors st, ColorScheme cs) {
-    if (it.verdict != null) return VerdictCard(verdict: it.verdict!, compact: true);
+    if (it.verdict != null) return VerdictCard(verdict: it.verdict!, compact: true, showDebug: false);
+    if (it.kind == 'signal_otp') return const _OtpAlert();
     return ListTile(
       leading: Icon(
         _iconFor(it.kind),
@@ -176,8 +185,10 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final st = theme.extension<StatusColors>() ?? StatusColors.light;
-    final latest = _items.where((i) => i.verdict != null).firstOrNull;
-    final rest = [for (final i in _items) if (i != latest) i];
+    final shown = [for (final i in _items) if (i.kind != 'dev') i];
+    final latest = shown.where((i) => i.verdict != null).firstOrNull;
+    final rest = [for (final i in shown) if (i != latest) i];
+    final idle = !_inCall && _callRisk == 0; // no call and nothing scored: say nothing about risk
 
     final List<Widget> body;
     Widget? primary;
@@ -186,7 +197,7 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
         StateMessage(icon: Icons.sync_problem, title: 'लाइव फ़ीड रुक गया', subtitle: 'नीचे दबाकर फिर जोड़ें'),
       ];
       primary = _primary(Icons.refresh, 'फिर कोशिश करें', _retry);
-    } else if (_items.isEmpty) {
+    } else if (shown.isEmpty) {
       body = const [
         StateMessage(
             icon: Icons.hearing,
@@ -218,16 +229,24 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(_inCall ? 'कॉल चल रही है' : 'अभी कोई कॉल नहीं', style: theme.textTheme.titleLarge),
+                      // Only what the service itself reported; unknown says nothing.
+                      if (idle && _serviceOn != null)
+                        Text(_serviceOn! ? 'सुरक्षा चालू है' : 'सुरक्षा बंद है — सेटअप में चालू करें',
+                            style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
                     ]),
                   ),
                 ]),
-                const SizedBox(height: Sp.m),
-                StatusChip(label: _callLevel, text: '${_callLevel.hindi} · ${(_callRisk * 100).round()}%'),
-                const SizedBox(height: Sp.m),
-                LinearProgressIndicator(value: _callRisk, color: st.solid(_callLevel)),
-                const SizedBox(height: Sp.m),
-                Text(_caption.isEmpty ? 'Live Caption का टेक्स्ट आने की प्रतीक्षा…' : _caption,
-                    maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+                if (!idle) ...[
+                  const SizedBox(height: Sp.m),
+                  StatusChip(label: _callLevel, text: '${_callLevel.hindi} · ${(_callRisk * 100).round()}%'),
+                  const SizedBox(height: Sp.m),
+                  LinearProgressIndicator(value: _callRisk, color: st.solid(_callLevel)),
+                ],
+                if (!idle || _caption.isNotEmpty) ...[
+                  const SizedBox(height: Sp.m),
+                  Text(_caption.isEmpty ? 'Live Caption का टेक्स्ट आने की प्रतीक्षा…' : _caption,
+                      maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+                ],
               ]),
             ),
           ),
@@ -249,31 +268,87 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
       );
 }
 
-/// Cyber-crime helpline, shown big under a scam or suspicious verdict. There is no
-/// dialer channel in the app yet, so this is a number to read, not a button.
+/// An OTP arrived mid-call: same tinted-card grammar as a SUSPICIOUS verdict, Hindi first.
+class _OtpAlert extends StatelessWidget {
+  const _OtpAlert();
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context);
+    final st = t.extension<StatusColors>() ?? StatusColors.light;
+    const l = RiskLabel.suspicious;
+    return Semantics(
+      container: true,
+      child: Container(
+        key: const Key('otp_alert'),
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.all(Sp.xl),
+        decoration: BoxDecoration(
+          color: st.tintOver(l, t.colorScheme.surface),
+          borderRadius: BorderRadius.circular(Rad.lg),
+          border: Border.all(color: st.solid(l).withValues(alpha: 0.35)),
+        ),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(l.icon, size: 40, color: st.solid(l)),
+          const SizedBox(width: Sp.m),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('कॉल के दौरान OTP आया। किसी को न बताएँ।', style: t.textTheme.titleLarge),
+              const SizedBox(height: Sp.xs),
+              Text('An OTP arrived during the call. Do not share it.',
+                  style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+/// Cyber-crime helpline row under a scam or suspicious verdict. Opens the dialer through the
+/// same HandoffApi.dial the report screen uses (ACTION_DIAL: the user presses the green button).
 class _Helpline extends StatelessWidget {
   const _Helpline();
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(Sp.l),
-      decoration: BoxDecoration(
-        color: t.colorScheme.surface,
-        borderRadius: BorderRadius.circular(Rad.md),
-        border: Border.all(color: t.colorScheme.outline),
-      ),
-      child: Row(children: [
-        Icon(Icons.call, size: 40, color: t.colorScheme.primary),
-        const SizedBox(width: Sp.m),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('1930 पर कॉल करें', style: t.textTheme.titleLarge),
-            Text('साइबर ठगी की मुफ़्त हेल्पलाइन',
-                style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
-          ]),
+    return PressScale(
+      child: Semantics(
+        button: true,
+        child: Material(
+          color: t.colorScheme.surface,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Rad.md), side: BorderSide(color: t.colorScheme.outline)),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            key: const Key('helpline_1930'),
+            onTap: () async {
+              final ok = await const HandoffApi().dial('1930');
+              if (!ok && context.mounted) {
+                ScaffoldMessenger.maybeOf(context)
+                    ?.showSnackBar(SnackBar(content: Text(ReportStrings.hi['openErr'])));
+              }
+            },
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: kTouch),
+              child: Padding(
+                padding: const EdgeInsets.all(Sp.l),
+                child: Row(children: [
+                  Icon(Icons.call, size: 40, color: t.colorScheme.primary),
+                  const SizedBox(width: Sp.m),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('1930 पर कॉल करें', style: t.textTheme.titleLarge),
+                      Text('साइबर ठगी की मुफ़्त हेल्पलाइन',
+                          style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
+                    ]),
+                  ),
+                  Icon(Icons.chevron_right, size: 32, color: t.colorScheme.onSurfaceVariant),
+                ]),
+              ),
+            ),
+          ),
         ),
-      ]),
+      ),
     );
   }
 }
