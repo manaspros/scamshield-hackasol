@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'a11y.dart';
+
 /// Scales its child to 0.95 while a pointer is down. Uses a raw [Listener] so it
 /// never competes with the child's own tap handling.
 class PressScale extends StatefulWidget {
@@ -24,8 +26,9 @@ class _PressScaleState extends State<PressScale> {
         onPointerUp: (_) => _set(false),
         onPointerCancel: (_) => _set(false),
         child: AnimatedScale(
-          scale: _down ? 0.95 : 1,
-          duration: const Duration(milliseconds: 100),
+          // Reduced motion: no press bounce at all.
+          scale: _down && motion(context, const Duration(milliseconds: 100)) > Duration.zero ? 0.95 : 1,
+          duration: motion(context, const Duration(milliseconds: 100)),
           curve: Curves.easeOut,
           child: widget.child,
         ),

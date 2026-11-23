@@ -481,7 +481,12 @@ void main() {
         });
         addTearDown(() => t.pumpWidget(const SizedBox())); // registered after the mocks: runs before they go away
         await _show(t, e.value, const TryApiScreen());
+        // At 2x the empty block sits below the fold of the lazy ListView: scroll it into view, then back up.
+        final list = find.descendant(of: find.byType(ListView), matching: find.byType(Scrollable)).first;
+        await t.scrollUntilVisible(find.byKey(const Key('try_empty')), 200, scrollable: list);
         expect(find.byKey(const Key('try_empty')), findsOneWidget);
+        await t.scrollUntilVisible(find.byType(TextField).first, -200, scrollable: list);
+        await t.pumpAndSettle();
         expect(t.takeException(), isNull);
         if (state == 'empty') {
           // Empty input: a visible Hindi inline error, and no channel call.

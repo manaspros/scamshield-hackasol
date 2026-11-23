@@ -547,7 +547,17 @@ class _QuizScreenState extends State<QuizScreen> {
             for (var i = 0; i < q.options.length; i++) _option(context, q, i),
             if (answered) ...[
               const SizedBox(height: Sp.s),
-              Container(
+              // Live region: TalkBack reads right/wrong, the right answer and why as soon as it appears.
+              Semantics(
+                container: true,
+                liveRegion: true,
+                label: [
+                  _name == null ? (right ? _s['right'] : _s['wrong']) : _l(right ? 'correct_name' : 'not_quite_name', {'name': _name}),
+                  if (!right) '${_s['answerWas']} ${q.options[q.correctIndex]}',
+                  q.explanation,
+                ].join('. '),
+                child: ExcludeSemantics(
+                  child: Container(
                 key: const Key('feedback'),
                 padding: const EdgeInsets.all(Sp.l + 4),
                 decoration: BoxDecoration(
@@ -579,6 +589,8 @@ class _QuizScreenState extends State<QuizScreen> {
                   Text(q.explanation, style: theme.textTheme.bodyLarge?.copyWith(color: const Color(0xFFD1D1D6), fontSize: 17)),
                 ]),
               ),
+                ),
+              ),
             ],
           ],
         ),
@@ -609,9 +621,25 @@ class _QuizScreenState extends State<QuizScreen> {
     final bg = good ? st.tintOver(RiskLabel.safe, p.surface) : bad ? st.tintOver(RiskLabel.scam, p.surface) : p.surface;
     final dot = good ? st.safe : bad ? st.scam : (p.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF0F0F2));
     final onDot = good || bad ? (p.isDark ? Colors.black : Colors.white) : p.ink;
+    // Right/wrong is shown by colour and an icon; say it in words too.
+    final status = !answered
+        ? null
+        : isRight
+            ? _l(isPicked ? 'opt_right_mine' : 'opt_right')
+            : isPicked
+                ? _l('opt_wrong_mine')
+                : null;
     return Padding(
       padding: const EdgeInsets.only(bottom: Sp.s + 2),
-      child: Material(
+      child: Semantics(
+        key: Key('option_sem_$i'),
+        container: true,
+        button: !answered,
+        selected: isPicked,
+        label: '${String.fromCharCode(65 + i)}. ${q.options[i]}${status == null ? '' : '. $status'}',
+        onTap: answered ? null : () => _pick(q, i),
+        excludeSemantics: true,
+        child: Material(
         color: bg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: border, width: 2)),
         clipBehavior: Clip.antiAlias,
@@ -643,6 +671,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

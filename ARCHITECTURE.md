@@ -32,6 +32,7 @@ flowchart TD
 - One pipeline for every source; sources differ only in the `Source` enum value (CAPTION, PASTE, SHARE, SMS, WHATSAPP, NOTIFICATION, RECORDING, SIGNAL) (§2).
 - Layering: deterministic logic is pure Kotlin in `core/` and unit-tested; the trained/on-device model and speech-to-text are the only learned parts; synthetic data generation is offline only (§3A).
 - Default alert: heads-up notification for SCAM/SUSPICIOUS, bubble for live sources, both with a Report action (`AlertPolicy`, `AlertDispatcher`) (§2).
+- Rules see a normalised copy of the text (`TextNormalizer`: NFKC, zero-width, Cyrillic/Greek lookalikes, nukta, spelled-out "O T P"); `src/test/resources/redteam_cases.txt` holds the red-team probes `RedTeamCasesTest` runs in rules-only mode.
 
 ## 2. Fusion rule
 
@@ -59,7 +60,7 @@ flowchart TD
 | Paste / share | Try API and `ShareReceiver` (`text/plain`) | Try API shows scam-type chip and triggers; `ShareReceiver` is a translucent activity (source SHARE, classifies then alerts). Fake-QR text and a ML Kit "Scan QR" button feed `UpiQr`; shared `.apk` goes to `ApkGuard` (T2.1, T4.2, T4.3, T5.8) |
 | Recorded call | file, `AudioDecoder`, `PcmResampler`, Vosk Hindi small model, `RecordingPipeline`, same `CallRiskTracker` | Offline; whisper.cpp is the fallback if Vosk WER is poor (§2). Vosk model (`vosk-model-small-hi-0.22`) downloads on device; Recording screen (SAF pick or shared `audio/*`) shows a per-statement timeline (T2.6, T2.7). Device run T2.8 pending (phone) |
 | Demo Lab | 11 scripted synthetic scenarios, feature-flagged `demo_mode` (T8.1) | Source mix of SMS and call sources through the real `Pipeline`; works without a phone or model (rules-only) |
-| In-call signals | `InCallSignals`: OTP, UPI app, AnyDesk during a call | Source SIGNAL; needs on-phone test (Current state) |
+| In-call signals | `InCallSignals`: OTP, UPI app, AnyDesk, screen share, app installed during a call | Source SIGNAL. Critical signals (OTP, remote app, screen share, install) ask "Are you sure?" and keep the card open until answered; a payment app is a chip. With the accessibility service off, `ListenerCallSignals` still catches an OTP / screen-share notification while the dialer's call notification is up, as a heads-up. Needs on-phone test |
 
 ## 5. Verdict log
 

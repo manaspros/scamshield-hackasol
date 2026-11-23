@@ -4,8 +4,11 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_language.dart';
+import '../l10n/strings_shell.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
+import 'a11y.dart';
 
 /// Floating "island" surface: rounded, translucent, blurred, with a soft shadow.
 /// The one container for dropdowns, alerts and floating bars.
@@ -116,15 +119,30 @@ class _IslandMenuState<T> extends State<IslandMenu<T>> {
   Widget build(BuildContext context) {
     final p = palOf(context);
     final th = Theme.of(context);
+    final lang = AppLanguage.of(context);
     return OverlayPortal(
       controller: _ctrl,
-      overlayChildBuilder: (ctx) => Stack(
+      // Its own route for TalkBack: focus stays inside the open menu, and the backdrop is a labelled close button.
+      overlayChildBuilder: (ctx) => Semantics(
+        scopesRoute: true,
+        namesRoute: true,
+        explicitChildNodes: true,
+        label: widget.header ?? shellT(lang, 'menu'),
+        child: Stack(
         children: [
           Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
+            child: Semantics(
+              key: const Key('island_menu_dismiss'),
+              label: shellT(lang, 'close'),
+              button: true,
               onTap: _close,
-              child: ColoredBox(color: Colors.black.withValues(alpha: p.isDark ? 0.45 : 0.18)),
+              onDismiss: _close,
+              excludeSemantics: true,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _close,
+                child: ColoredBox(color: Colors.black.withValues(alpha: p.isDark ? 0.45 : 0.18)),
+              ),
             ),
           ),
           Builder(
@@ -147,7 +165,7 @@ class _IslandMenuState<T> extends State<IslandMenu<T>> {
                 width: w,
                 child: TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0, end: 1),
-                  duration: const Duration(milliseconds: 180),
+                  duration: motion(ctx, const Duration(milliseconds: 180)),
                   curve: Curves.easeOutCubic,
                   builder: (_, t, child) => Opacity(
                     opacity: t,
@@ -187,6 +205,7 @@ class _IslandMenuState<T> extends State<IslandMenu<T>> {
             },
           ),
         ],
+      ),
       ),
       child: KeyedSubtree(key: _anchorKey, child: widget.builder(context, _ctrl.isShowing, _toggle)),
     );
@@ -302,14 +321,19 @@ class _IslandToast extends StatefulWidget {
 }
 
 class _IslandToastState extends State<_IslandToast> with SingleTickerProviderStateMixin {
-  late final _anim = AnimationController(vsync: this, duration: const Duration(milliseconds: 260))..forward();
+  late final _anim = AnimationController(vsync: this, duration: const Duration(milliseconds: 260));
   Timer? _timer;
   bool _leaving = false;
 
+  // MediaQuery is not readable in initState: start once dependencies are known.
   @override
-  void initState() {
-    super.initState();
-    _timer = Timer(widget.duration, _leave);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _anim.duration = motion(context, const Duration(milliseconds: 260));
+    if (_timer != null) return;
+    _anim.forward();
+    // With TalkBack on, stay long enough to be found and read (never cut at 3 s).
+    _timer = Timer(readingTime(context, widget.duration), _leave);
   }
 
   Future<void> _leave() async {
@@ -398,9 +422,7 @@ class _IslandToastState extends State<_IslandToast> with SingleTickerProviderSta
                                         ),
                                       ),
                                     Text(
-                                      widget.message,
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
+                                      widget.message, // never clipped: the whole message must be readable
                                       style: th.textTheme.bodySmall?.copyWith(
                                         color: widget.title == null ? const Color(0xFFF5F5F7) : const Color(0xFFC7C7CC),
                                       ),

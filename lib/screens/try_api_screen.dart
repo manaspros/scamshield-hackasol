@@ -8,6 +8,7 @@ import '../l10n/strings_shell.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
+import '../widgets/a11y.dart';
 import '../widgets/action_tile.dart';
 import '../widgets/press_scale.dart';
 import '../widgets/section_header.dart';
@@ -90,7 +91,9 @@ class _TryApiScreenState extends State<TryApiScreen> {
   // Raw detail goes to the log only; the user sees one fixed message and a retry.
   void _fail(Object e, VoidCallback retry) {
     debugPrint('try_api: $e');
-    if (mounted) setState(() { _error = null; _retry = retry; });
+    if (!mounted) return;
+    setState(() { _error = null; _retry = retry; });
+    announce(context, _t('failed')); // iOS; on Android the StateMessage title is a live region
   }
 
   Future<void> _checkUpi(String link) async {
@@ -141,8 +144,10 @@ class _TryApiScreenState extends State<TryApiScreen> {
       );
 
   // showDebug:false (UX audit #3): Hindi headline, advice + 1930 row, reasons behind 'क्यों?'. No % on this screen.
-  List<Widget> _result(Verdict v) {
+  List<Widget> _result(({Verdict v, DateTime at}) entry) {
+    final v = entry.v;
     final warn = v.label != RiskLabel.safe;
+    final advice = _advice(v.label);
     return [
       if (v.scamTypeLabel != null && warn)
         Padding(
@@ -152,12 +157,17 @@ class _TryApiScreenState extends State<TryApiScreen> {
               // hi/hne keep the bilingual chip; en shows English only
               child: StatusChip(label: v.label, text: _en ? scamTypeIn(v, 'en') : v.scamTypeLabel)),
         ),
-      VerdictCard(
-        verdict: v,
-        showDebug: false,
-        adviceTitle: warn ? _t('advice_title') : null,
-        advice: _advice(v.label),
-        footer: warn ? _helpline() : null,
+      // Keyed per check, so TalkBack reads every new result once (even the same verdict twice), never on a rebuild.
+      LiveAnnounce(
+        key: ValueKey(entry.at),
+        message: '${v.label.headlineIn(_lang)}. ${advice.isEmpty ? v.label.textIn(_lang) : advice.first}',
+        child: VerdictCard(
+          verdict: v,
+          showDebug: false,
+          adviceTitle: warn ? _t('advice_title') : null,
+          advice: advice,
+          footer: warn ? _helpline() : null,
+        ),
       ),
     ];
   }
@@ -472,7 +482,7 @@ class _TryApiScreenState extends State<TryApiScreen> {
           _upiTile(),
           if (_upi != null) _upiCard(),
           if (_history.isEmpty && _upi == null) _empty(),
-          if (_history.isNotEmpty) ..._result(_history.first.v),
+          if (_history.isNotEmpty) ..._result(_history.first),
           if (_history.length > 1) _historyRows(),
         ]),
       ),

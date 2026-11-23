@@ -448,11 +448,17 @@ class _RecordingScreenState extends State<RecordingScreen> {
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Icon(_stage == 'download' ? Icons.download : Icons.hearing, size: 32, color: t.colorScheme.primary),
             const SizedBox(width: Sp.m),
+            // Only the stage name is the live region: a changing % inside it made TalkBack speak every percent.
             Expanded(
-              child: Semantics(
-                liveRegion: true,
-                child: Text('${s['stage_$_stage']}  $_pct%', key: const Key('progress_stage'), style: t.textTheme.titleMedium),
-              ),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Flexible(
+                  child: Semantics(
+                    liveRegion: true,
+                    child: Text(s['stage_$_stage'], key: const Key('progress_stage'), style: t.textTheme.titleMedium),
+                  ),
+                ),
+                ExcludeSemantics(child: Text('  $_pct%', style: t.textTheme.titleMedium)),
+              ]),
             ),
           ]),
           const SizedBox(height: Sp.m),
@@ -461,6 +467,8 @@ class _RecordingScreenState extends State<RecordingScreen> {
             child: LinearProgressIndicator(
               key: const Key('progress_bar'),
               value: _pct > 0 ? _pct / 100 : null,
+              semanticsLabel: s['stage_$_stage'],
+              semanticsValue: '$_pct%', // read on focus, not pushed on every tick
               minHeight: 12,
             ),
           ),

@@ -131,15 +131,12 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     return Scaffold(
       appBar: shellBar(
         title: home
-            ? FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.shield_rounded, color: palOf(context).accent, size: 28),
-                  const SizedBox(width: Sp.s),
-                  const Text('ScamShield'),
-                ]),
-              )
+            // Keeps the user's text size (the bar is clamped at 1.2x); no FittedBox shrinking it.
+            ? Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.shield_rounded, color: palOf(context).accent, size: 28),
+                const SizedBox(width: Sp.s),
+                const Flexible(child: Text('ScamShield', overflow: TextOverflow.ellipsis)),
+              ])
             : Text(t(_tabKeys[_tab]), overflow: TextOverflow.ellipsis),
       ),
       body: IndexedStack(index: _tab, children: [

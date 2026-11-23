@@ -23,6 +23,7 @@ class Pal {
     required this.ink,
     required this.muted,
     required this.hairline,
+    required this.fieldLine,
     required this.accent,
     required this.onAccent,
   });
@@ -33,7 +34,8 @@ class Pal {
   final Color surfaceAlt; // inputs, chips, nav
   final Color ink;
   final Color muted;
-  final Color hairline;
+  final Color hairline; // decorative dividers only (not a boundary anyone must see)
+  final Color fieldLine; // input outlines: >= 3:1 on the field fill and the page (WCAG 1.4.11)
   final Color accent;
   final Color onAccent;
 
@@ -45,8 +47,10 @@ class Pal {
     surface: Color(0xFFFFFFFF),
     surfaceAlt: Color(0xFFFAFAFC),
     ink: Color(0xFF1D1D1F),
-    muted: Color(0xFF6E6E73), // 4.66:1 on parchment; DESIGN.md's #7A7A7A fails AA
+    // 5.5:1 on page, 5.2:1 on #EEEEF1, 4.8:1 on accentTint; #6E6E73 was 4.38:1 on #EEEEF1
+    muted: Color(0xFF636366),
     hairline: Color(0xFFE0E0E0),
+    fieldLine: Color(0xFF86868B), // 3.6:1 on white, 3.3:1 on page
     accent: Color(0xFF0066CC),
     onAccent: Color(0xFFFFFFFF),
   );
@@ -59,6 +63,7 @@ class Pal {
     ink: Color(0xFFF5F5F7),
     muted: Color(0xFFA1A1A6),
     hairline: Color(0xFF38383A),
+    fieldLine: Color(0xFF7C7C80), // 4.1:1 on #1C1C1E, 5.1:1 on black
     accent: Color(0xFF2997FF),
     onAccent: Color(0xFF000000), // white on Sky Blue is only 3.0:1
   );

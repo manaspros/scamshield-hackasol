@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
@@ -405,12 +406,25 @@ class _FamilyScreenState extends State<FamilyScreen> {
       // Replaces the "code right now" label: the ring already shows it is live, and the room is needed at 2x.
       Text(t('askCaller'), key: const Key('family_ask_caller'), style: theme.textTheme.titleMedium),
       const SizedBox(height: Sp.s),
-      Center(
-        child: SizedBox(
-          width: 280,
-          height: 280,
+      // The ring grows with the user's text size (up to the screen width) instead of shrinking the code;
+      // past that the code wraps between its two groups of three.
+      LayoutBuilder(builder: (context, box) {
+        final codeStyle = AppText.display
+            .copyWith(fontSize: 56, color: theme.colorScheme.onSurface, fontFeatures: const [FontFeature.tabularFigures()]);
+        final tp = TextPainter(
+          text: TextSpan(text: spaced, style: codeStyle),
+          textDirection: TextDirection.ltr,
+          textScaler: MediaQuery.textScalerOf(context),
+          maxLines: 1,
+        )..layout();
+        final codeW = tp.width;
+        tp.dispose();
+        final double d = (codeW + 2 * Sp.xxl).clamp(280.0, math.max(280.0, box.maxWidth)).toDouble();
+        return Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: d, maxWidth: d, minHeight: d),
           child: Stack(alignment: Alignment.center, children: [
-            SizedBox.expand(
+            Positioned.fill(
               child: CircularProgressIndicator(
                 key: const Key('family_ring'),
                 value: _remaining / _step,
@@ -420,25 +434,19 @@ class _FamilyScreenState extends State<FamilyScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Sp.xxl),
+              padding: const EdgeInsets.symmetric(horizontal: Sp.xxl, vertical: Sp.xl),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(spaced,
-                      key: const Key('family_code'),
-                      style: AppText.display.copyWith(fontSize: 56, color: theme.colorScheme.onSurface, fontFeatures: const [FontFeature.tabularFigures()])),
-                ),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text('$_remaining ${t('sec')}',
-                      key: const Key('family_remaining'),
-                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
-                ),
+                Text(spaced, key: const Key('family_code'), textAlign: TextAlign.center, style: codeStyle),
+                Text('$_remaining ${t('sec')}',
+                    key: const Key('family_remaining'),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
               ]),
             ),
           ]),
         ),
-      ),
+      );
+      }),
       const SizedBox(height: Sp.l),
       Text(t('ask'), textAlign: TextAlign.center, style: theme.textTheme.headlineSmall),
       const SizedBox(height: Sp.m),

@@ -136,4 +136,40 @@ void main() {
     }
     expect(t.takeException(), isNull);
   });
+
+  testWidgets('A11Y_quiz_answeredOptionsSayRightOrWrong_feedbackIsLiveRegion', (t) async {
+    await _phone(t);
+    final sem = t.ensureSemantics();
+    await _pump(t, InMemoryQuizStore());
+    final otp = _hi().first;
+    await t.scrollUntilVisible(find.byKey(const Key('lesson_otp')), 200, scrollable: find.byType(Scrollable).first);
+    await t.ensureVisible(find.byKey(const Key('lesson_otp')));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(const Key('lesson_otp')));
+    await t.pumpAndSettle();
+    for (var i = 0; i < 3; i++) {
+      await t.tap(find.byKey(const Key('cards_next')));
+      await t.pumpAndSettle();
+    }
+    final q = otp.questions[0];
+    final wrong = (q.correctIndex + 1) % q.options.length;
+    // Before answering: a plain button with the letter and the option, no verdict.
+    await t.ensureVisible(find.byKey(Key('option_sem_$wrong')));
+    await t.pumpAndSettle();
+    expect(t.getSemantics(find.byKey(Key('option_sem_$wrong'))),
+        isSemantics(label: '${String.fromCharCode(65 + wrong)}. ${q.options[wrong]}', isButton: true));
+    await t.tap(find.byKey(Key('option_$wrong')));
+    await t.pumpAndSettle();
+    // Feedback panel: one live region that reads the verdict, the right answer and why.
+    final fb = t.getSemantics(find.byKey(const Key('feedback')));
+    expect(fb, isSemantics(isLiveRegion: true));
+    expect(fb.label, startsWith('ध्यान दें. सही उत्तर: ${q.options[q.correctIndex]}'));
+    // Right/wrong is no longer colour-only: each answered tile says it.
+    for (final (i, says) in [(wrong, 'आपका उत्तर, गलत'), (q.correctIndex, 'सही उत्तर')]) {
+      await t.scrollUntilVisible(find.byKey(Key('option_sem_$i')), -150, scrollable: find.byType(Scrollable).first);
+      expect(t.getSemantics(find.byKey(Key('option_sem_$i'))),
+          isSemantics(label: '${String.fromCharCode(65 + i)}. ${q.options[i]}. $says', isSelected: i == wrong));
+    }
+    sem.dispose();
+  });
 }

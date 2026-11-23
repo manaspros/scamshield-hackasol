@@ -210,17 +210,19 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
       const SizedBox(height: Sp.s + 2),
       ValueListenableBuilder<List<FamilyContact>>(
         valueListenable: ProfileStore.contacts,
-        builder: (context, list, _) => SizedBox(
-          // Tall enough for avatar + two text lines at any text size.
-          height: 84 + 48 * MediaQuery.textScalerOf(context).scale(1),
-          child: ListView(scrollDirection: Axis.horizontal, children: [
-            for (var i = 0; i < list.length; i++)
-              Padding(
-                padding: const EdgeInsets.only(right: Sp.s + 2),
-                child: _contactTile(list[i], i, key: Key('family_contact_$i')),
-              ),
-            _addTile(),
-          ]),
+        // Sized by its tallest tile, so a name or relation can take two lines at any text size.
+        builder: (context, list, _) => SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: IntrinsicHeight(
+            child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              for (var i = 0; i < list.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: Sp.s + 2),
+                  child: _contactTile(list[i], i, key: Key('family_contact_$i')),
+                ),
+              _addTile(),
+            ]),
+          ),
         ),
       ),
     ]);
@@ -246,8 +248,8 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
                 style: th.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
           ),
           const SizedBox(height: 6),
-          Text(c.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: th.textTheme.titleSmall),
-          Text(c.relation, maxLines: 1, overflow: TextOverflow.ellipsis, style: th.textTheme.bodySmall?.copyWith(color: p.muted, fontSize: 14)),
+          Text(c.name, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: th.textTheme.titleSmall),
+          Text(c.relation, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: th.textTheme.bodySmall?.copyWith(color: p.muted)),
         ]),
       ),
     );
