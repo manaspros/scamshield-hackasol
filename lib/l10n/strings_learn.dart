@@ -34,8 +34,12 @@ const learnStrings = Tri(
     'rem_add': 'जानकारी जोड़ें', 'rem_skip': 'छोड़ें, क्विज़ शुरू करें', 'missing': 'नहीं भरा', 'optional': 'वैकल्पिक',
     'no_model_hint': 'अपने लिए बने सवालों के लिए प्रोफ़ाइल में AI मॉडल डाउनलोड करें।',
     'question_of': 'सवाल {i}/{n}',
+    'opt_right': 'सही उत्तर', 'opt_right_mine': 'आपका उत्तर, सही', 'opt_wrong_mine': 'आपका उत्तर, गलत',
+    'fc_flip_do': 'पलटें',
   },
   hne: {
+    'opt_right': 'सही जवाब', 'opt_right_mine': 'तुंहर जवाब, सही', 'opt_wrong_mine': 'तुंहर जवाब, गलत',
+    'fc_flip_do': 'पलटव',
     'plan_label': 'तुंहर योजना', 'ai_quiz': 'AI क्विज़ सुरू करव', 'quiz_btn': 'क्विज़ सुरू करव',
     'deck_title': 'तुंहर फ़्लैशकार्ड', 'lessons': 'पाठ', 'badge_new': 'नवा',
     'fc_knew': 'मोला पता रहिस', 'fc_again': 'फेर देखव', 'rem_add': 'जानकारी जोड़व', 'rem_skip': 'छोड़व, क्विज़ सुरू करव',
@@ -72,6 +76,8 @@ const learnStrings = Tri(
     'rem_add': 'Add details', 'rem_skip': 'Skip, start the quiz', 'missing': 'Missing', 'optional': 'Optional',
     'no_model_hint': 'Download the AI model in Profile to get questions made for you.',
     'question_of': 'Question {i}/{n}',
+    'opt_right': 'Correct answer', 'opt_right_mine': 'Your answer, correct', 'opt_wrong_mine': 'Your answer, wrong',
+    'fc_flip_do': 'flip',
   },
 );
 

@@ -8,6 +8,7 @@ import '../l10n/strings_home.dart';
 import '../l10n/strings_settings.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
+import '../widgets/a11y.dart';
 import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
 import '../widgets/island.dart';
@@ -470,13 +471,11 @@ class _Segmented<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = palOf(context);
     final th = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: p.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEEEEF1), borderRadius: BorderRadius.circular(14)),
-      child: Row(children: [
+    // At large text the segments stack, so each label keeps its full size and words.
+    final stacked = MediaQuery.textScalerOf(context).scale(16) > 24;
+    final segs = [
         for (final (v, label, icon, key) in items)
-          Expanded(
-            child: Semantics(
+            Semantics(
               selected: v == value,
               button: true,
               child: GestureDetector(
@@ -484,9 +483,9 @@ class _Segmented<T> extends StatelessWidget {
                 behavior: HitTestBehavior.opaque,
                 onTap: () => onChanged(v),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: motion(context, const Duration(milliseconds: 200)),
                   curve: Curves.easeOutCubic,
-                  constraints: const BoxConstraints(minHeight: 44),
+                  constraints: const BoxConstraints(minHeight: kTouch),
                   decoration: BoxDecoration(
                     color: v == value ? (p.isDark ? const Color(0xFF48484A) : Colors.white) : Colors.transparent,
                     borderRadius: BorderRadius.circular(11),
@@ -498,16 +497,22 @@ class _Segmented<T> extends StatelessWidget {
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(label,
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: th.textTheme.labelMedium?.copyWith(fontSize: 15, color: v == value ? p.ink : p.muted, fontWeight: FontWeight.w600)),
+                          textAlign: TextAlign.center,
+                          style: th.textTheme.labelMedium?.copyWith(fontSize: 16, color: v == value ? p.ink : p.muted, fontWeight: FontWeight.w600)),
                     ),
                   ]),
                 ),
               ),
             ),
-          ),
-      ]),
+    ];
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(color: p.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEEEEF1), borderRadius: BorderRadius.circular(14)),
+      child: stacked
+          ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: segs)
+          : Row(children: [for (final s in segs) Expanded(child: s)]),
     );
   }
 }

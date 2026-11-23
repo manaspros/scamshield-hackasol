@@ -213,7 +213,12 @@ void main() {
       await t.tap(find.byKey(const Key('mp_opt_gemma3-270m'))); // disabled: nothing happens
       await t.pumpAndSettle();
       expect(find.byKey(const Key('mp_opt_gemma3-270m')), findsOneWidget, reason: 'disabled row keeps the island open');
+      // Tag chips are 16 sp and wrap now, so the rows are taller: scroll the island to the row first.
+      await t.ensureVisible(find.byKey(const Key('mp_opt_gemma3-1b-int4')));
+      await t.pumpAndSettle();
       await t.tap(find.byKey(const Key('mp_opt_gemma3-1b-int4')));
+      await t.pumpAndSettle();
+      await t.ensureVisible(find.byKey(const Key('mp_action')));
       await t.pumpAndSettle();
       await t.tap(find.byKey(const Key('mp_action')));
       await t.pump();
@@ -228,6 +233,8 @@ void main() {
     testWidgets('MODEL_tooHeavy_asksBeforeDownloading', (t) async {
       _native(device: {'totalRamMb': 3500, 'freeStorageMb': 21000});
       await _pump(t, const ModelPickerScreen(listenToEvents: false, syncOnOpen: false));
+      await t.ensureVisible(find.byKey(const Key('mp_action')));
+      await t.pumpAndSettle();
       await t.tap(find.byKey(const Key('mp_action')));
       await t.pumpAndSettle();
       expect(find.text('This model may be too heavy'), findsOneWidget);

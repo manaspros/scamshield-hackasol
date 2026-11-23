@@ -98,6 +98,10 @@ void main() {
     testWidgets('L10N_settings_languageRowFirstAndSwitchesLive', (t) async {
       fakeSettings();
       await _pump(t, const SettingsScreen());
+      // At 2x the theme picker stacks its segments (full-size labels), so give the lazy list room to build
+      // both the language row and the Protection header.
+      t.view.physicalSize = const Size(360, 1400);
+      await t.pumpAndSettle();
       final row = find.byKey(const Key('settings_language_row'));
       expect(row, findsOneWidget);
       // In the first group: above the "Protection" header.

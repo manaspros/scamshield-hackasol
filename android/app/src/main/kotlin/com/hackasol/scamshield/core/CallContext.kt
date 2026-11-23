@@ -12,14 +12,21 @@ object CallContext {
 
     private class Seen(val number: String?, val tsMs: Long, val key: String?)
     @Volatile private var latest: Seen? = null
+    /** Bumped when a call notification arrives while no call was known: one value per call, for per-call dedupe. */
+    @Volatile var callGeneration = 0L; private set
 
     /** Only the platform's call category counts: a package match would also take a dialer's missed-call or promo notification. */
     fun isCallNotification(category: String?): Boolean = category == CATEGORY_CALL
 
     /** [key] is the notification's key, so only its own removal clears the number (see [onRemoved]). */
+    @Synchronized
     fun onCallNotification(title: String, text: String, nowMs: Long, key: String? = null) {
+        if (!inCall(nowMs)) callGeneration++
         latest = Seen(numberIn(title) ?: numberIn(text), nowMs, key)
     }
+
+    /** A call notification is showing (a number or a saved contact's name), seen within the last 2 h. */
+    fun inCall(nowMs: Long): Boolean = latest?.let { nowMs - it.tsMs in 0..MAX_AGE_MS } ?: false
 
     /** Clears only when the removed notification is the one that set the current number. */
     @Synchronized

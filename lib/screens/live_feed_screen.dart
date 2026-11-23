@@ -10,6 +10,7 @@ import '../l10n/strings_shell.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
+import '../widgets/a11y.dart';
 import '../widgets/press_scale.dart';
 import '../widgets/section_header.dart';
 import '../widgets/state_message.dart';
@@ -157,17 +158,28 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
         _ => const [],
       };
 
+  // What a screen reader says for the leading verdict: headline + the first thing to do.
+  String _spoken(Verdict v) {
+    final advice = _advice(v.label);
+    return '${v.label.headlineIn(_lang)}. ${advice.isEmpty ? v.label.textIn(_lang) : advice.first}';
+  }
+
   Widget _dominant(Verdict v) {
     final warn = v.label != RiskLabel.safe;
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 200),
-      child: VerdictCard(
-        key: ValueKey(identityHashCode(v)),
-        verdict: v,
-        showDebug: false,
-        adviceTitle: warn ? _t('advice_title') : null,
-        advice: _advice(v.label),
-        footer: warn ? const _Helpline() : null,
+    // Outside the switcher so it keeps its state: TalkBack hears a verdict change, not every rebuild.
+    return LiveAnnounce(
+      key: const Key('live_announce'),
+      message: _spoken(v),
+      child: AnimatedSwitcher(
+        duration: motion(context, const Duration(milliseconds: 200)),
+        child: VerdictCard(
+          key: ValueKey(identityHashCode(v)),
+          verdict: v,
+          showDebug: false,
+          adviceTitle: warn ? _t('advice_title') : null,
+          advice: _advice(v.label),
+          footer: warn ? const _Helpline() : null,
+        ),
       ),
     );
   }
@@ -211,7 +223,11 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
     final st = theme.extension<StatusColors>() ?? StatusColors.light;
     final shown = [for (final i in _items) if (i.kind != 'dev') i];
     final latest = shown.where((i) => i.verdict != null).firstOrNull;
-    final rest = [for (final i in shown) if (i != latest) i];
+    // An OTP that arrived after the latest verdict leads the list: it is the newest danger, and a live region
+    // TalkBack can only read once it is on screen (a lazy list never builds rows below the fold).
+    final newestOtp = shown.where((i) => i.kind == 'signal_otp').firstOrNull;
+    final otpLeads = newestOtp != null && (latest == null || shown.indexOf(newestOtp) < shown.indexOf(latest));
+    final rest = [for (final i in shown) if (i != latest && !(otpLeads && identical(i, newestOtp))) i];
     final idle = !_inCall && _callRisk == 0; // no call and nothing scored: say nothing about risk
 
     final List<Widget> body;
@@ -238,6 +254,7 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
       Expanded(
         child: ListView(padding: const EdgeInsets.all(Sp.l), children: [
           // The newest verdict leads; call status sits under it, history below.
+          if (!_streamError && otpLeads) _OtpAlert(key: ObjectKey(newestOtp), live: true),
           if (!_streamError && latest != null) _dominant(latest.verdict!),
           Card(
             margin: const EdgeInsets.symmetric(vertical: 6),
@@ -291,16 +308,15 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
 
 /// An OTP arrived mid-call: same tinted-card grammar as a SUSPICIOUS verdict, Hindi first.
 class _OtpAlert extends StatelessWidget {
-  const _OtpAlert();
+  const _OtpAlert({super.key, this.live = false});
+  final bool live;
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
     final st = t.extension<StatusColors>() ?? StatusColors.light;
     const l = RiskLabel.suspicious;
     final lang = AppLanguage.of(context);
-    return Semantics(
-      container: true,
-      child: Container(
+    final card = Container(
         key: const Key('otp_alert'),
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.all(Sp.xl),
@@ -323,8 +339,11 @@ class _OtpAlert extends StatelessWidget {
             ]),
           ),
         ]),
-      ),
-    );
+      );
+    if (!live) return Semantics(container: true, child: card);
+    final spoken = lang == 'en' ? liveT(lang, 'otp') : '${liveT(lang, 'otp')} ${liveT(lang, 'otp_sub')}';
+    // The label already carries both lines; the card's own text would be read twice.
+    return LiveAnnounce(message: spoken, child: ExcludeSemantics(child: card));
   }
 }
 

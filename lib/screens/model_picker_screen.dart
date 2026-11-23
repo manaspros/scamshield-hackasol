@@ -367,10 +367,12 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
     );
   }
 
+  // 16 sp like all other text; wraps onto a second line instead of being cut.
   Widget _tagChip(ThemeData th, (String, Color, Color) t) => Container(
+        constraints: const BoxConstraints(maxWidth: 160),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-        decoration: BoxDecoration(color: t.$3, borderRadius: BorderRadius.circular(Rad.pill)),
-        child: Text(t.$1, maxLines: 1, overflow: TextOverflow.ellipsis, style: th.textTheme.labelSmall?.copyWith(color: t.$2, fontWeight: FontWeight.w700, fontSize: 13)),
+        decoration: BoxDecoration(color: t.$3, borderRadius: BorderRadius.circular(Sp.m)),
+        child: Text(t.$1, textAlign: TextAlign.center, style: th.textTheme.labelSmall?.copyWith(color: t.$2, fontWeight: FontWeight.w700)),
       );
 
   Widget _deviceCard(ThemeData th, Pal p) {

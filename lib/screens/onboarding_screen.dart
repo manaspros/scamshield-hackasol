@@ -8,6 +8,7 @@ import '../l10n/strings_home.dart';
 import '../lessons/prefs_store.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
+import '../widgets/a11y.dart';
 import '../widgets/premium.dart';
 import '../widgets/shell_bar.dart';
 import 'family_screen.dart';
@@ -288,7 +289,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           ),
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.6, end: 1),
-            duration: const Duration(milliseconds: 700),
+            duration: motion(context, const Duration(milliseconds: 700)),
             curve: Curves.elasticOut,
             builder: (_, s, child) => Transform.scale(scale: s, child: child),
             child: Container(
@@ -371,7 +372,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                   boxShadow: Elev.island(th.brightness),
                 ),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Text(t('ob_code'), style: th.textTheme.labelSmall?.copyWith(color: const Color(0xFFA1A1A6), fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: 0.6)),
+                  Text(t('ob_code'), style: th.textTheme.labelSmall?.copyWith(color: const Color(0xFFA1A1A6), fontWeight: FontWeight.w700, letterSpacing: 0.6)),
                   Text('482 913', style: th.textTheme.headlineSmall?.copyWith(color: const Color(0xFFF5F5F7), fontWeight: FontWeight.w800, letterSpacing: 3)),
                 ]),
               ),
@@ -429,7 +430,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
               alignment: Alignment.center,
               child: TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0.3, end: 1),
-                duration: const Duration(milliseconds: 650),
+                duration: motion(context, const Duration(milliseconds: 650)),
                 curve: Curves.elasticOut,
                 builder: (_, s, child) => Transform.scale(scale: s, child: child),
                 child: Container(

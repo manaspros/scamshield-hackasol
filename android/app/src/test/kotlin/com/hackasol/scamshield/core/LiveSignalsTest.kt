@@ -125,10 +125,11 @@ class LiveSignalsTest {
         }
     }
 
-    @Test fun LIVE_policy_paymentAppIsNotificationOnlyUnlessCallAlreadyHighRisk() {
+    @Test fun LIVE_policy_paymentAppIsAChipUnlessCallAlreadyHighRisk() {
+        // A silent notification is never seen mid-call: a chip is visible but pops no card and makes no sound.
         val low = AlertPolicy.plan(v(Label.SUSPICIOUS), KIND_PAYMENT_APP, Label.SUSPICIOUS)
-        assertEquals(AlertPlan(bubble = false, notify = true, reportAction = true), low)
-        assertEquals(AlertPlan(bubble = false, notify = true, reportAction = true), AlertPolicy.plan(v(Label.SUSPICIOUS), KIND_PAYMENT_APP, Label.SAFE))
+        assertEquals(AlertPlan.of(Surface.CHIP), low)
+        assertEquals(AlertPlan.of(Surface.CHIP), AlertPolicy.plan(v(Label.SUSPICIOUS), KIND_PAYMENT_APP, Label.SAFE))
         val high = AlertPolicy.plan(v(Label.SUSPICIOUS), KIND_PAYMENT_APP, Label.SCAM)
         assertEquals(AlertPlan(bubble = true, notify = true, reportAction = true), high)
     }
@@ -141,10 +142,10 @@ class LiveSignalsTest {
         val shown = tracker.record(pay, 4_000)
         assertEquals(Label.SCAM, tracker.level())
         assertTrue(AlertPolicy.plan(pay.copy(label = shown), KIND_PAYMENT_APP, tracker.level()).bubble)
-        // Alone, the same payment signal stays quiet.
+        // Alone, the same payment signal is only a chip, never a card.
         val fresh = CallRiskTracker()
         val s2 = fresh.record(pay, 1_000)
-        assertFalse(AlertPolicy.plan(pay.copy(label = s2), KIND_PAYMENT_APP, fresh.level()).bubble)
+        assertEquals(Surface.CHIP, AlertPolicy.plan(pay.copy(label = s2), KIND_PAYMENT_APP, fresh.level()).surface)
     }
 
     // ---- call-start re-check + dedupe ----
@@ -255,4 +256,50 @@ class LiveSignalsTest {
         assertEquals(Label.SAFE, r.steps.last().fused.label)   // deduped: "No signal raised"
         assertFalse(r.pass)
     }
+
+    // ---- red-team fixes ----
+
+    @Test fun LIVE_otpSignalNeverCarriesTheCode() {
+        for (t in listOf("482913 is your OTP for login", "Your OTP is 482913", "Use verification code 48 29 13 to sign in")) {
+            val s = InCallSignals.fromNotification(t)!!
+            assertEquals(KIND_OTP, s.kind)
+            assertEquals(InCallSignals.OTP_TRIGGER, s.trigger)
+            assertFalse(InCallSignals.toVerdict(s).text.contains("482913"))
+        }
+    }
+
+    @Test fun LIVE_listenerFallbackOnlyWhenAccessibilityIsOff() {
+        val l = ListenerCallSignals()
+        val otp = "Your OTP is 482913"
+        assertNull(l.onNotification(otp, inCall = true, callGeneration = 1, accessibilityRunning = true, enabled = true))
+        assertNull(l.onNotification(otp, inCall = false, callGeneration = 1, accessibilityRunning = false, enabled = true))
+        assertNull(l.onNotification(otp, inCall = true, callGeneration = 1, accessibilityRunning = false, enabled = false))
+        assertEquals(KIND_OTP, l.onNotification(otp, true, 1, false, true)?.kind)
+        assertNull("once per call", l.onNotification(otp, true, 1, false, true))
+        assertEquals(KIND_SCREEN_SHARE, l.onNotification("You're sharing your screen", true, 1, false, true)?.kind)
+        assertEquals("next call alerts again", KIND_OTP, l.onNotification(otp, true, 2, false, true)?.kind)
+        assertNull(l.onNotification("Lunch at 1?", true, 2, false, true))
+    }
+
+    @Test fun LIVE_callContextGenerationPerCall() {
+        CallContext.clear()
+        val g0 = CallContext.callGeneration
+        assertFalse(CallContext.inCall(1_000))
+        CallContext.onCallNotification("Mom", "Ongoing call", 1_000, "k")
+        CallContext.onCallNotification("Mom", "Ongoing call", 2_000, "k")   // same call, notification updated
+        assertTrue(CallContext.inCall(2_500))
+        assertEquals(g0 + 1, CallContext.callGeneration)
+        CallContext.onRemoved("k")
+        assertFalse(CallContext.inCall(3_000))
+        CallContext.onCallNotification("+91 98000 00010", "Incoming call", 4_000, "k")
+        assertEquals(g0 + 2, CallContext.callGeneration)
+        CallContext.clear()
+    }
+
+    @Test fun LIVE_criticalKindsAskAndPaymentIsNotCritical() {
+        assertTrue(InCallSignals.CRITICAL_KINDS.containsAll(listOf(KIND_OTP, KIND_REMOTE_APP, KIND_SCREEN_SHARE, KIND_APP_INSTALLED)))
+        assertFalse(KIND_PAYMENT_APP in InCallSignals.CRITICAL_KINDS)
+        for (lang in listOf("en", "hi")) assertTrue(L10n.areYouSure(lang).isNotBlank() && L10n.imSure(lang).isNotBlank() && L10n.leaveApp(lang).isNotBlank())
+    }
 }
+

@@ -92,6 +92,7 @@ abstract final class AppTheme {
     );
     final text = AppText.textTheme(p.ink);
     final hairline = BorderSide(color: p.hairline);
+    final fieldSide = BorderSide(color: p.fieldLine); // hairline is 1.3:1, too faint to find a field by
     const focusSide = BorderSide(color: Pal.focus, width: 2);
     final focusInk = BorderSide(color: p.ink, width: 2); // focus-blue is invisible on a blue fill
     const stadium = StadiumBorder();
@@ -202,8 +203,8 @@ abstract final class AppTheme {
         floatingLabelStyle: AppText.caption.copyWith(color: p.accent),
         helperStyle: AppText.caption.copyWith(color: p.muted),
         errorStyle: AppText.caption.copyWith(color: st.scam),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(Rad.md), borderSide: hairline),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(Rad.md), borderSide: hairline),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(Rad.md), borderSide: fieldSide),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(Rad.md), borderSide: fieldSide),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(Rad.md), borderSide: focusSide),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(Rad.md), borderSide: BorderSide(color: st.scam)),
         focusedErrorBorder:

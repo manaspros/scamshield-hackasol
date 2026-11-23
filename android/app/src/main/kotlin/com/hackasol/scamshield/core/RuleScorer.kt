@@ -9,13 +9,20 @@ object RuleScorer {
 
     private class Rule(val tag: String, val weight: Double, pattern: String) {
         // Case-insensitive + Unicode-aware word boundaries on both Android and the JVM (see UnicodeRegex).
-        val regex = UnicodeRegex.of(pattern)
+        // Patterns get the same nukta/NFKC folding as the text, so "करोड़" in a pattern still matches folded input.
+        val regex = UnicodeRegex.of(TextNormalizer.foldScript(pattern))
     }
 
-    private val SHARE = "(batao|bataiye|bataye|bata do|bata dijiye|share|bhejo|bhej do|tell|send|read out|bol do|बताइए|बताओ|बता दो|बता दीजिए|भेजो|भेज दो)"
+    private val SHARE = "(batao|btao|bataiye|bataye|batayein|bata do|bata dijiye|share|bhejo|bhej do|bhej de|bhejiye|bhej dijiye|" +
+        "dijiye|de do|de dijiye|forward|tell|send|read out|bol do|बताइए|बताओ|बता दो|बता दीजिए|भेजो|भेज दो|भेजिए|दीजिए|दे दो|शेयर)"
+    // An OTP by another name: "6 digit code", "6 digit ka number".
+    private const val OTP_TERM = "(?:otp|ओटीपी|verification code|\\d[- ]?digit (?:ka )?(?:code|number|otp)|" +
+        // A bare "code" is only an OTP when it arrived ("jo code aaya", "the code you received"): "send me the code for the
+        // assignment" is not one.
+        "(?:aaya|aya|received|came|got|आया)\\W+(?:\\w+\\W+){0,4}?(?:code|कोड)|(?:code|कोड)(?=.{0,30}?(?:aaya|aya|received|came|you got|आया)))"
 
     // Fee-for-prize: a prize/lottery word and a fee/pay word within ~12 words, either order. No "you won" alone (too chatty).
-    private val PRIZE_W = "(?:lottery|lucky draw|\\bprize\\b|you(?:'ve| have) won|aapne jeeta|इनाम|लॉटरी|जीत|\\bkbc\\b|crorepati|jackpot|केबीसी|करोड़पति)"
+    private val PRIZE_W = "(?:lottery|lucky draw|\\bprize\\b|you(?:'ve| have) won|aapne jeet\\w*|इनाम|लॉटरी|जीत\\S*|\\bkbc\\b|crorepati|jackpot|केबीसी|करोड़पति)"
     private val FEE_W = "(?:\\b(?:fees?|charges?|tax|pay|deposit|jama|gst)\\b|शुल्क|भुगतान|फीस|टैक्स|जमा)"
 
     // URL heuristics stay generic; brand-vs-link matching lives in the KB layer. Official suffixes are skipped.
@@ -25,43 +32,55 @@ object RuleScorer {
     private const val SEXT_THREAT = "(?:viral|send|share|leak|contacts?|friends|family|post|pay|वायरल|भेज|शेयर)"
 
     private val rules = listOf(
-        Rule("otp_share", 0.90, "(otp|ओटीपी|o\\.t\\.p|verification code|code|कोड)\\W+(?:\\w+\\W+){0,5}$SHARE|\\b(?:share|tell|read out)\\W+(?:\\w+\\W+){0,3}(?:otp|ओटीपी|verification code)"),
+        Rule("otp_share", 0.90, "$OTP_TERM\\W+(?:\\w+\\W+){0,5}$SHARE|" +
+            "\\b(?:share|tell|read(?: out)?|send|forward|bhej\\w*|bata\\w*|send kar do|de do)\\W+(?:\\w+\\W+){0,3}(?:otp|ओटीपी|verification code|\\d[- ]?digit (?:ka )?(?:code|number))|" +
+            // "kisi aur ko mat batana, sirf mujhe batao": the ask is to the speaker, however far from the word OTP.
+            "(?:otp|ओटीपी).{0,80}?\\b(?:mujhe|hume|humein|hamein|mere ko|मुझे|हमें)\\s+(?:bata\\w*|bhej\\w*|de\\s?d\\w*|bol\\w*|बता\\S*|भेज\\S*|दे\\S*)|" +
+            "\\b(?:mujhe|tell me|send me|give me|मुझे)\\W+(?:\\w+\\W+){0,3}(?:otp|ओटीपी)"),
         Rule("otp", 0.50, "\\botp\\b|ओटीपी|one[- ]time password"),
-        Rule("pin", 0.75, "upi pin|atm pin|mpin|cvv|पिन (नंबर|बताओ|बताइए)|pin (batao|bataiye|daalo|dalo|enter)"),
+        Rule("pin", 0.75, "upi pin|atm pin|mpin|cvv|पिन (नंबर|बताओ|बताइए|डाल\\S*)|pin (batao|bataiye|daalo|dalo|dal do|dalna|daalna|enter)"),
         Rule("digital_arrest", 0.92, "digital arrest|डिजिटल अरेस्ट|डिजिटल गिरफ्तारी"),
-        Rule("authority", 0.45, "\\b(cbi|ncb|crime branch|cyber cell|customs|narcotics|income tax department|trai)\\b|सीबीआई|कस्टम(?!र)|क्राइम ब्रांच|पुलिस स्टेशन|police officer|customs officer|mumbai police|delhi police|पुलिस (?:अधिकारी|वाले)|कस्टम (?:अधिकारी|विभाग)|नारकोटिक्स"),
-        Rule("arrest", 0.55, "\\barrest\\b|warrant|गिरफ्तार|वारंट|\\bfir\\b|case (darj|register)|money laundering|मनी लॉन्ड्रिंग"),
+        Rule("authority", 0.45, "\\b(cbi|ncb|crime branch|cyber cell|customs|narcotics|income tax department|trai|enforcement directorate)\\b|सीबीआई|कस्टम(?!र)|क्राइम ब्रांच|पुलिस स्टेशन|police officer|customs officer|mumbai police|delhi police|पुलिस (?:अधिकारी|वाले)|कस्टम (?:अधिकारी|विभाग)|नारकोटिक्स"),
+        Rule("arrest", 0.55, "\\barrest\\w*|giraftar\\w*|warrant|गिरफ्तार|वारंट|\\bfir\\b|case (darj|register)|money laundering|मनी लॉन्ड्रिंग"),
         Rule("parcel", 0.30, "\\bparcel\\b|\\bcourier\\b|fedex|पार्सल|कूरियर"),
         Rule("contraband", 0.55, "\\bdrugs\\b|ड्रग्स|narcotics? (?:found|items)|illegal (items|passport)|fake passport|नशीली|मादक"),
-        Rule("secrecy", 0.75, "kisi ko (mat|na|nahi) (batana|bataye|bataiye|batayein)|don'?t tell anyone|do not tell anyone|किसी को (मत|न|नहीं) बता"),
-        Rule("stay_on_call", 0.70, "(call|phone) (mat|na) (kaato|kaatna|katna|cut karna|cut)|don'?t (disconnect|hang up|cut the call)|फ़?फोन मत काट|कॉल मत काट"),
+        Rule("secrecy", 0.75, "kisi (?:aur |or )?ko (mat|na|nahi) (batana|bataye|bataiye|batayein)|don'?t tell anyone|do not tell anyone|किसी को (मत|न|नहीं) बता"),
+        Rule("stay_on_call", 0.70, "(call|phone) (mat|na) (kaato|kaatna|katna|cut karna|cut)|don'?t (disconnect|hang up|cut the call)(?!.{0,50}?(?:transferr|connect(?:ing)? you|hold|manager|supervisor))|फ़?फोन मत काट|कॉल मत काट"),
         Rule("money_transfer", 0.70, "safe account|secure account|rbi account|verification (amount|fee|charge)|(paise|amount|money) (transfer|bhej)|transfer (karo|kar do|kijiye|karein)|पैसे (भेज|ट्रांसफर)|refundable"),
-        Rule("remote_app", 0.85, "anydesk|any desk|teamviewer|team viewer|quick ?support|rustdesk|screen ?share|स्क्रीन शेयर"),
-        Rule("kyc", 0.40, "\\bkyc\\b|केवाईसी"),
-        Rule("account_block", 0.55, "(account|khata|card|sim) (block|band|suspend|freeze|deactivate)|खाता (बंद|ब्लॉक)|सिम (बंद|ब्लॉक)"),
-        Rule("prize", 0.50, "lottery|lucky draw|\\bprize\\b|you have won|aapne jeeta|इनाम|लॉटरी|\\bkbc\\b"),
+        // "the code shown on your screen" is a remote-access pairing code (AnyDesk / TeamViewer ID).
+        Rule("remote_app", 0.85, "any[- ]?desk|code (?:shown|showing|visible|dikh\\w*) (?:on|in|par|pe) (?:the |your )?screen|share (?:the |your |my )?(?:mobile |phone )?screen|teamviewer|team viewer|quick ?support|rustdesk|screen ?share|स्क्रीन शेयर"),
+        // 0.35: below SUSPICIOUS_AT alone, so a genuine "KYC due" reminder stays SAFE; it still adds to block/link/call signals.
+        Rule("kyc", 0.35, "\\bkyc\\b|केवाईसी"),
+        Rule("account_block", 0.55, "\\b(?:account|a/c|khata|card|sim|wallet)\\W+(?:\\w+\\W+){0,4}?(?:block\\w*|band\\b|suspend\\w*|freez\\w*|frozen|deactivat\\w*)|खाता\\s+(?:\\S+\\s+){0,3}?(?:बंद|ब्लॉक|फ्रीज)|सिम (बंद|ब्लॉक)"),
+        // 0.35: "I won the office lucky draw" is chat; a fee, a claim number or an amount (prize_fee, lottery_claim) makes it a scam.
+        Rule("prize", 0.35, "lottery|lucky draw|\\bprize\\b|you have won|aapne jeeta|इनाम|लॉटरी|\\bkbc\\b"),
         Rule("prize_fee", 0.80, "$PRIZE_W\\W+(?:\\w+\\W+){0,12}$FEE_W|$FEE_W\\W+(?:\\w+\\W+){0,12}$PRIZE_W"),
         Rule("bank_claim", 0.30, "(bank|sbi|hdfc|icici|axis|rbi|paytm|phonepe) (se|from) (bol|baat|speaking|calling)|बैंक से बोल"),
         Rule("app_install", 0.55, "\\.apk\\b|app (download|install) (karo|kijiye|karein)|link (par|pe) click|लिंक पर क्लिक"),
         // "processing fee" counts as loan evidence only next to loan wording, so a lottery fee is not typed LOAN_APP.
         Rule("loan", 0.40, "instant loan|pre-?approved loan|\\bloan\\b.{0,80}processing fee|processing fee.{0,80}\\bloan\\b|लोन (मंजूर|अप्रूव)"),
         Rule("video_stay", 0.60, "video call (pe|par) (raho|rahiye|rahna)|camera (on|chalu) (rakho|rakhiye)"),
-        Rule("elec_cut", 0.65, "(?:bijli|electricity|power|बिजली)(?!.{0,120}?(?:maintenance|scheduled|मेंटेनेंस|रखरखाव))\\W.{0,60}?(?:\\bkat\\w*|\\bkaat\\w*|disconnected|cut off|will be cut|काट\\S*|कट\\s|बंद|band (?:ho|kar))"),
+        Rule("elec_cut", 0.65, "(?:bijli|electricity|power|light connection|\\beb\\b|बिजली)(?!.{0,120}?(?:maintenance|scheduled|मेंटेनेंस|रखरखाव))\\W.{0,60}?(?:\\bkat\\w*|\\bkaat\\w*|disconnect\\w*|cut off|will be cut|stopp\\w*|काट\\S*|कट\\s|बंद|band (?:ho|kar)|विच्छेद)"),
         Rule("sim_kyc", 0.60, "\\bsim\\b.{0,50}?(?:block|\\bband\\b|\\bbandh\\b|deactivat|suspend|disconnect|expire|swap|\\bkyc\\b|केवाईसी)|सिम.{0,40}?(?:बंद|बन्द|ब्लॉक|केवाईसी)|mobile number.{0,40}?(?:block|\\bband\\b|deactivat|disconnect)|मोबाइल नंबर.{0,30}?(?:बंद|ब्लॉक)"),
         Rule("care_refund", 0.65, "(?:refund|रिफंड|paise wapas|पैसे वापस).{0,70}?(?:customer care|helpline|toll ?free|support number|download|install|anydesk|teamviewer|डाउनलोड|इंस्टॉल|कस्टमर केयर|हेल्पलाइन)|(?:customer care|helpline|support) (?:number|no\\b).{0,60}?(?:refund|रिफंड)|(?:download|install|डाउनलोड).{0,40}?(?:refund|रिफंड)"),
-        Rule("upi_collect", 0.75, "(?:enter|daalo|dalo|dal do|put|डालें|डालो|दर्ज|डाल)\\W.{0,20}?(?:pin|पिन).{0,50}?(?:receive|recieve|credit|refund|milega|milenge|प्राप्त|पाने|मिलेगा|मिलेंगे)|(?:receive|recieve|paane|पाने|मिलेंगे).{0,50}?(?:enter|daal\\w*|put|डाल\\w*).{0,20}?(?:pin|पिन)|(?:receive|recieve|paane|पाने|मिलेंगे).{0,50}?(?:pin|पिन).{0,15}?(?:डाल|दर्ज|daal|dalo|enter)|collect request.{0,60}?(?:approve|accept|pin|enter)|(?:approve|accept).{0,25}?collect request|पिन.{0,30}?(?:पैसे मिल|पाने|रिसीव)"),
+        Rule("upi_collect", 0.75, "(?:enter|daalo|dalo|dal do|put|डालें|डालो|दर्ज|डाल)\\W.{0,20}?(?:pin|पिन).{0,50}?(?:receive|recieve|credit|refund|milega|milenge|प्राप्त|पाने|मिलेगा|मिलेंगे)|(?:receive|recieve|paane|पाने|मिलेंगे).{0,50}?(?:enter|daal\\w*|put|डाल\\w*).{0,20}?(?:pin|पिन)|(?:receive|recieve|paane|पाने|मिलेंगे).{0,50}?(?:pin|पिन).{0,15}?(?:डाल|दर्ज|daal|dalo|enter)|(?:accept|approve)\\W.{0,40}?request.{0,60}?(?:pin|पिन)|(?:enter|daal\\w*|dal\\w*)\\W.{0,20}?(?:pin|पिन).{0,40}?(?:get|cashback|reward)|collect request.{0,60}?(?:approve|accept|pin|enter)|(?:approve|accept).{0,25}?collect request|पिन.{0,30}?(?:पैसे मिल|पाने|रिसीव)"),
         Rule("qr_receive", 0.75, "(?:scan|स्कैन).{0,30}?(?:qr|क्यूआर|क्यू आर).{0,50}?(?:receive|recieve|get|payment|refund|paise|money|पैसे|रिफंड|पाएं|पाने|मिलेंगे)|(?:receive|get|पाने).{0,30}?(?:payment|money|paise|पैसे).{0,30}?(?:scan|qr|स्कैन|क्यूआर)|(?:army|military|crpf|cisf|fauj|soldier|फौजी|सेना).{0,80}?(?:qr|scan|advance|क्यूआर|स्कैन)|(?:olx|quikr).{0,80}?(?:qr|scan|advance|token|क्यूआर|स्कैन)"),
-        Rule("job_task", 0.65, "\\btasks?\\b.{0,60}?(?:earn|commission|daily|income|kamao|कमाएं|कमाओ)|(?:like|review|rating|subscribe|rate|लाइक|रिव्यू).{0,40}?(?:earn|income|kamao|kamai|commission|per (?:video|task|review)|कमाएं|कमाओ|कमाई)|(?:part[- ]?time|work from home|wfh|ghar baithe|घर बैठे).{0,60}?(?:earn|income|salary|kamao|kamai|daily|per day|roz|कमाएं|कमाओ|रोज)|(?:earn|kamao|कमाएं|कमाओ)\\W.{0,25}?(?:daily|per day|roz|रोज|प्रतिदिन)|prepaid task|telegram.{0,50}?(?:task|job|earn)|(?:task|job).{0,50}?telegram|टेलीग्राम.{0,40}?(?:टास्क|जॉब|कमा)"),
-        Rule("invest_scam", 0.65, "guaranteed (?:returns?|profits?|income)|(?:double|doubl\\w+|dugna|2x|दोगुना|दुगना).{0,25}?(?:money|paise|amount|rupees|पैसे|रुपये)|\\d+\\s?%\\s*(?:daily|weekly|per (?:day|week)|roz)|(?:daily|weekly|roz|रोज)\\W.{0,15}?\\d+\\s?(?:%|percent|प्रतिशत)|\\d+\\s?(?:प्रतिशत|percent).{0,20}?(?:मुनाफा|return|profit)|vip (?:group|tips|signals?|channel)|ipo allot\\w*.{0,50}?(?:group|vip|guarantee|profit|apply)|(?:stock|trading|crypto|forex|bitcoin|share market|शेयर|ट्रेडिंग).{0,60}?(?:whatsapp|telegram|vip|guarantee|\\bgroup\\b|ग्रुप|गारंटी|मुनाफा)|invest\\w*.{0,50}?(?:guarantee|\\bgroup\\b|return per|मुनाफा|ग्रुप)|निवेश.{0,40}?(?:मुनाफा|ग्रुप|गारंटी)|मुनाफा.{0,40}?गारंटी"),
+        Rule("job_task", 0.65, "\\btasks?\\b.{0,60}?(?:earn|commission|daily|income|kamao|कमाएं|कमाओ)|(?:like|review|rating|subscribe|rate|लाइक|रिव्यू).{0,40}?(?:earn|income|kamao|kamai|commission|per (?:video|task|review)|कमाएं|कमाओ|कमाई)|(?:₹|rs\\.?)\\s?\\d+.{0,15}?\\b(?:for each|per|har)\\s+(?:like|review|video|task|rating)|(?:part[- ]?time|work[- ]from[- ]home|wfh|ghar baithe|घर बैठे).{0,60}?(?:earn|income|salary|kamao|kamai|daily|per day|roz|कमाएं|कमाओ|रोज)|(?:earn|kamao|कमाएं|कमाओ)\\W(?!.{0,25}?cashback).{0,25}?(?:daily|per day|roz|रोज|प्रतिदिन)|(?:simple|easy|online|ghar se)\\s+(?:online\\s+)?(?:work|job|kaam).{0,60}?(?:earn|kamao|kamai|₹|rs\\.?\\s?\\d)|\\b(?:earn|kamao)\\W+(?:rs\\.?|₹)\\s?\\d.{0,25}?\\bper (?:review|task|like|rating|video)\\b|prepaid task|telegram.{0,50}?(?:task|job|earn)|(?:task|job).{0,50}?telegram|टेलीग्राम.{0,40}?(?:टास्क|जॉब|कमा)"),
+        Rule("invest_scam", 0.65, "guaranteed (?:returns?|profits?|income)|(?:double|doubl\\w+|dugna|2x|दोगुना|दुगना).{0,25}?(?:money|paise|amount|rupees|पैसे|रुपये)|\\d+\\s?%\\s*(?:daily|weekly|per (?:day|week)|roz)|(?:daily|weekly|roz|रोज)\\W.{0,15}?\\d+\\s?(?:%|percent|प्रतिशत)|\\d+\\s?(?:प्रतिशत|percent).{0,20}?(?:मुनाफा|return|profit)|vip (?:group|tips|signals?|channel)|ipo allot\\w*.{0,50}?(?:group|vip|guarantee|profit|apply)|(?:stock|trading|crypto|forex|bitcoin|share market|शेयर|ट्रेडिंग).{0,60}?(?:whatsapp|telegram|vip|guarantee|गारंटी|मुनाफा|\\d\\s?(?:guna|x)\\b)|(?:paisa|paise|money|amount|rupees|पैसे|पैसा)\\s+(?:double|dugna|doguna|दोगुना|दुगना)|\\b(?:\\d|do|teen|char|das)\\s?guna\\b|\\d\\s?गुना|invest\\w*\\W.{0,30}?\\b(?:get|earn|return|milega|paao)\\b.{0,30}?\\d.{0,20}?\\b(?:days?|din|hafte|weeks?)\\b|invest\\w*.{0,50}?(?:guarantee|\\bgroup\\b|return per|मुनाफा|ग्रुप)|निवेश.{0,40}?(?:मुनाफा|ग्रुप|गारंटी)|मुनाफा.{0,40}?गारंटी"),
         Rule("join_group", 0.35, "\\bjoin\\b.{0,30}?(?:group|channel|telegram|whatsapp)|(?:group|channel|ग्रुप).{0,20}?(?:join|जुड़)|ग्रुप में (?:जुड़|ऐड)"),
         Rule("sextortion", 0.70, "(?:nude|naked|obscene|nangi|nanga|अश्लील|न्यूड|आपत्तिजनक).{0,40}?(?:video|vedio|photo|pic|clip|वीडियो|फोटो)|(?:video|vedio|photo|pics?|clips?|वीडियो|फोटो).{0,30}?(?:nude|naked|obscene|अश्लील|न्यूड|आपत्तिजनक)|viral\\s?(?:kar|kardunga|kar dunga|kar denge|ho jayega|hoga)|वायरल\\s?(?:कर|हो)|(?:video call|वीडियो कॉल).{0,60}?(?:record|रिकॉर्ड)\\w*.{0,60}?$SEXT_THREAT|record\\w*.{0,30}?video call.{0,60}?$SEXT_THREAT|(?:video|वीडियो).{0,30}?(?:viral|वायरल).{0,40}?(?:contacts?|friends|family|relatives|sabko|कॉन्टैक्ट|दोस्तों|रिश्तेदारों)"),
-        Rule("blackmail_pay", 0.55, "(?:pay|paise|rs\\.?|₹|\\d{3,}|पैसे|रुपये).{0,60}?(?:or else|otherwise|nahi to|nahi toh|warna|वरना|नहीं तो).{0,50}?(?:viral|share|send|post|leak|expose|upload|वायरल|शेयर|भेज)|(?:viral|share|leak|expose|वायरल).{0,40}?(?:unless|if you (?:don'?t|do not)) pay"),
+        Rule("blackmail_pay", 0.55, "(?:pay|paise|rs\\.?|₹|\\d{3,}|bhejo|पैसे|रुपये).{0,60}?(?:or else|otherwise|nahi to|nahi toh|warna|or (?:i|we)\\b|वरना|नहीं तो).{0,50}?(?:viral|share|send|post|leak|expose|upload|bhej\\w*|वायरल|शेयर|भेज)|(?:viral|share|leak|expose|वायरल).{0,40}?(?:unless|if you (?:don'?t|do not)) pay"),
         Rule("loan_threat", 0.75, "(?:loan|लोन|recovery).{0,80}?(?:contacts?|phonebook|gallery|photos?|relatives|family|कॉन्टैक्ट).{0,60}?(?:share|send|message|call|viral|inform|bhej|वायरल|भेज)|(?:morph\\w*|edited).{0,30}?(?:photo|pic).{0,60}?(?:contacts|relatives|friends|family)|(?:repay|payback|wapas|loan|लोन).{0,40}?(?:\\bor\\b|nahi to|warna|वरना).{0,40}?(?:contacts|relatives|viral|police|legal (?:action|notice)|\\bcase (?:darj|file|register)\\w*)|(?:loan|लोन).{0,60}?(?:overdue|pending|बकाया).{0,60}?(?:legal (?:action|notice|case)|police|\\bcase (?:darj|file|register)\\w*|contacts|कानूनी)"),
-        Rule("loan_fee", 0.60, "(?:loan|लोन).{0,90}?(?:fee|charges?|insurance|फीस|शुल्क).{0,60}?(?:pay|send|deposit|transfer|bhej|jama|भेज|जमा|पहले)|(?:pay|send|deposit|bhej|jama|भेज|जमा).{0,40}?(?:fee|charges?|फीस).{0,90}?(?:loan|लोन)"),
+        Rule("loan_fee", 0.60, "(?:loan|लोन).{0,90}?(?:fee|charges?|insurance|फीस|शुल्क).{0,60}?(?:pay|send|deposit|transfer|bhej|jama|भेज|जमा|पहले)|" +
+            "(?:loan|लोन).{0,60}?\\b(?:pay|send|deposit|bhej\\w*|jama)\\b.{0,30}?(?:fee|charges?|फीस|शुल्क)|(?:pay|send|deposit|bhej|jama|भेज|जमा).{0,40}?(?:fee|charges?|फीस).{0,90}?(?:loan|लोन)"),
         Rule("courier_hold", 0.50, "(?:parcel|courier|package|पार्सल|कूरियर).{0,80}?(?:aadhaar|aadhar|आधार|passport|पासपोर्ट|sim cards?|customs|कस्टम(?!र)|mumbai|मुंबई|narcotic|नारकोटिक).{0,60}?(?:seiz|held|stopp|detain|\\brok\\w*|pakd\\w*|found|caught|जब्त|रोक|पकड़|मिल)"),
-        Rule("lottery_claim", 0.55, "(?:kaun banega|कौन बनेगा|\\bkbc\\b|केबीसी).{0,80}?(?:fee|charges?|call|contact|whatsapp|claim|won|jeet|number|pay|deposit|शुल्क|संपर्क|जीत|नंबर)|(?:fee|call|contact|whatsapp|claim|won|jeet|number|pay|deposit|संपर्क|जीत|नंबर).{0,80}?(?:kaun banega|कौन बनेगा|\\bkbc\\b|केबीसी)|lucky (?:draw|winner|customer|number)|jackpot|(?:won|jeeta|jeete|जीता|जीती|जीते).{0,30}?(?:rs\\.?|₹|lakh|crore|लाख|करोड़)|(?:lakh|crore|लाख|करोड़).{0,30}?(?:won|jeeta|prize|lottery|inaam|इनाम|लॉटरी)|winner of"),
+        Rule("lottery_claim", 0.55, "(?:kaun banega|कौन बनेगा|\\bkbc\\b|केबीसी).{0,80}?(?:fee|charges?|call|contact|whatsapp|claim|won|jeet|number|pay|deposit|शुल्क|संपर्क|जीत|नंबर)|(?:fee|call|contact|whatsapp|claim|won|jeet|number|pay|deposit|संपर्क|जीत|नंबर).{0,80}?(?:kaun banega|कौन बनेगा|\\bkbc\\b|केबीसी)|lucky (?:winner|customer|number)|jackpot|you(?:'ve| have)? (?:won|been selected for) (?:a |the |an )?(?:\\w+ )?(?:lottery|prize|jackpot|lucky draw|reward)|aapne (?:\\w+ )?(?:lottery|inaam|इनाम|लॉटरी) jeet\\w*|(?:won|jeeta|jeete|जीता|जीती|जीते).{0,30}?(?:rs\\.?|₹|lakh|crore|लाख|करोड़)|(?:lakh|crore|लाख|करोड़).{0,30}?(?:won|jeet\\w*|prize|lottery|inaam|इनाम|लॉटरी|जीत\\S*)|winner of"),
+        // Post-filtered in matches(): "paise ki zarurat nahi" and money to another family member ("mummy ko transfer kar dena") are family talk.
         Rule("family_emerg", 0.75, "(?:\\b(?:papa|mummy|mom|dad|bhaiya|bhai|didi|beta|uncle|mama|chacha)\\b|पापा|मम्मी|माँ|भैया|दीदी|अंकल|मामा|चाचा).{0,60}?(?:hospital|haspital|accident|police|arrest|emergency|अस्पताल|एक्सीडेंट|पुलिस|इमरजेंसी|गिरफ्तार).{0,80}?(?:\\b(?:paise|money|transfer|bhej\\w*|rupees?|rs)\\b|₹|पैसे|रुपये|भेज\\w*)|(?:aapka|your|आपका|आपकी) (?:beta|son|bhai|daughter|beti|husband|pati|बेटा|बेटी|भाई|पति).{0,60}?(?:accident|arrest|hospital|police|custody|गिरफ्तार|एक्सीडेंट|अस्पताल|पुलिस).{0,80}?(?:paise|money|pay|bail|settle|bhej|transfer|पैसे|जमानत|भेज)"),
-        Rule("new_number", 0.45, "(?:mera|my) (?:old )?(?:phone|mobile|number) (?:kharab|toot|gum|lost|broken|damaged|changed|band)|(?:naye|naya|new) number (?:se|hai|from|is my|par|save)|this is my new number|ye mera (?:naya|new) number|मेरा फोन (?:खराब|टूट|खो)|नए नंबर से|नया नंबर"),
+        Rule("new_number", 0.35, "(?:mera|my) (?:old )?(?:phone|mobile|number) (?:kharab|toot|gum|lost|broken|damaged|changed|band)|(?:naye|naya|new) number (?:se|hai|from|is my|par|save)|this is my new number|ye mera (?:naya|new) number|मेरा फोन (?:खराब|टूट|खो)|नए नंबर से|नया नंबर"),
+        Rule("new_number_money", 0.60, "(?:new number|naya number|naye number|नया नंबर|नए नंबर).{0,120}?(?:\\bsend\\b|bhej\\w*|\\bpay\\b|transfer|money|paise|₹|rs\\.?\\s?\\d|\\d{4,}|urgent\\w*|पैसे|भेज)"),
+        Rule("hacked_friend", 0.60, "(?:account|id|phone|whatsapp|insta\\w*|facebook|\\bfb\\b).{0,20}?hack\\w*.{0,80}?(?:bhej\\w*|send|transfer|paise|money|₹|rs\\.?\\s?\\d)"),
+        Rule("gift_card", 0.60, "gift ?cards?.{0,80}?(?:buy|purchase|kharid\\w*|send|scratch|codes?|urgent)|(?:buy|purchase|kharid\\w*).{0,40}?gift ?cards?"),
         Rule("fee_ask", 0.30, "(?:registration|joining|processing|activation|security|insurance|release|clearance|claim)\\W+(?:fee|fees|charges?|deposit|amount)|(?:रजिस्ट्रेशन|प्रोसेसिंग|जॉइनिंग)\\s*(?:फीस|शुल्क)"),
         Rule("call_ask", 0.35, "\\b(?:call|contact|dial|whatsapp)\\s+(?:us\\s+)?(?:this|the|our (?:officer|agent|executive)|immediately|now|officer|helpline|customer care|support)\\b|\\bcall\\s+(?:on|at)\\s+\\+?\\d|(?:officer|adhikari|helpline|customer care)\\s+(?:ko|se)\\s+(?:call|baat|sampark)|इस नंबर (?:पर|पे)|is number (?:pe|par)|(?:call|कॉल)\\s+(?:karo|kijiye|karein|करें|करो|कीजिए)|संपर्क करें|अधिकारी से (?:बात|संपर्क)"),
         Rule("url_short", 0.45, "\\b(?:bit\\.ly|tinyurl\\.com|cutt\\.ly|rb\\.gy|is\\.gd|t\\.ly|ow\\.ly|shorturl\\.at|tiny\\.cc|rebrand\\.ly|s\\.id|v\\.gd)/"),
@@ -92,14 +111,40 @@ object RuleScorer {
     private fun maskSensitive(s: String): String =
         mask(s).let { if (it.length > MAX_TRIGGER) it.take(MAX_TRIGGER - 1) + "…" else it }
 
-    private fun matches(text: String): List<Pair<Rule, String>> {
-        val noShare = NO_SHARE.replace(text, " ")
-        val notice = noShare != text
+    /** Someone is asked to hand the code over ("mujhe batao", "tell me", "send it to our agent"). */
+    private val ASK = UnicodeRegex.of(TextNormalizer.foldScript(
+        "\\b(?:mujhe|hume|humein|hamein|mere ko|tell me|send me|give me|share with me|our (?:agent|executive|officer))\\b|मुझे|हमें"))
+    /** The app's own instruction: give the OTP to the delivery partner / driver at the door. Not an ask from a stranger. */
+    private val HANDOVER_OTP = UnicodeRegex.of(
+        "(?:with|to)\\s+(?:the\\s+|your\\s+)?(?:delivery\\s+(?:partner|agent|executive|boy|person|associate)|driver|captain|rider|courier\\s+(?:partner|agent))|" +
+            "(?:delivery\\s+(?:partner|boy|agent)|driver|captain|rider)\\s+ko\\b|डिलीवरी\\s+(?:पार्टनर|बॉय)|ड्राइवर\\s+को")
+    private val FAMILY_OK = UnicodeRegex.of(TextNormalizer.foldScript(
+        "zaru?rat nahi|zaroorat nahi|no need|मत भेजना|ज़रूरत नहीं|\\b(?:mummy|papa|maa|bhai|didi|bhaiya|mom|dad)\\s+ko\\s+.{0,15}?(?:transfer|bhej)"))
+    /** Public-awareness messages name the police and say "never share OTP": they are advice, not an authority's threat. */
+    private val AWARENESS = UnicodeRegex.of("advisory|awareness|beware|report (?:any )?(?:fraud|cyber ?crime)|cybercrime\\.gov\\.in|\\b1930\\b")
+    private val RECHARGE = UnicodeRegex.of("\\brecharg\\w*|रिचार्ज")
+    private val ID_KYC = UnicodeRegex.of("kyc|aadhaa?r|केवाईसी|आधार")
+    /** A bank confirming a block the user asked for, or a SIM "recharge to keep it active" reminder. */
+    private val OWN_BLOCK = UnicodeRegex.of("as per your request|at your request|on your request|requested by you|आपके अनुरोध")
+
+    private fun matches(raw: String): List<Pair<Rule, String>> {
+        val text = TextNormalizer.normalize(raw)
+        // A notice cancels the OTP rules only when nobody is asked for the code; its span becomes six filler words so the
+        // otp_share word window cannot reach across it ("OTP aaya, kisi ko mat batana, sirf mujhe batao" is an ask).
+        val asked = ASK.containsMatchIn(text)
+        val noShare = if (asked) text else NO_SHARE.replace(text, " x x x x x x ")
+        val handover = HANDOVER_OTP.containsMatchIn(text) && !asked
+        val notice = noShare != text || handover
         val matched = mutableListOf<Pair<Rule, String>>()
         for (r in rules) {
             val isOtp = r.tag == "otp_share" || r.tag == "otp"
+            if (isOtp && handover) continue
             // A do-not-share notice with no ask is a genuine OTP delivery: the bare "otp" mention is cancelled too.
             if (r.tag == "otp" && notice && matched.none { it.first.tag == "otp_share" }) continue
+            if (r.tag == "family_emerg" && FAMILY_OK.containsMatchIn(text)) continue
+            if (r.tag == "authority" && AWARENESS.containsMatchIn(text)) continue
+            if (r.tag == "account_block" && (OWN_BLOCK.containsMatchIn(text) || (RECHARGE.containsMatchIn(text) && !ID_KYC.containsMatchIn(text)))) continue
+            if (r.tag == "sim_kyc" && RECHARGE.containsMatchIn(text) && !ID_KYC.containsMatchIn(text)) continue
             val m = r.regex.find(if (isOtp) noShare else text) ?: continue
             matched += r to maskSensitive(m.value.trim())
         }
@@ -138,7 +183,7 @@ object RuleScorer {
         "digital_arrest" in t -> ScamType.DIGITAL_ARREST
         "courier_hold" in t || "parcel" in t && ("authority" in t || "contraband" in t || "arrest" in t) -> ScamType.COURIER_CUSTOMS
         "sextortion" in t -> ScamType.SEXTORTION
-        "family_emerg" in t -> ScamType.FAMILY_EMERGENCY
+        "family_emerg" in t || "new_number_money" in t || "hacked_friend" in t -> ScamType.FAMILY_EMERGENCY
         "sim_kyc" in t && "arrest" !in t && "contraband" !in t -> ScamType.SIM_SWAP
         "elec_cut" in t -> ScamType.ELECTRICITY_BILL
         "upi_collect" in t -> ScamType.UPI_COLLECT

@@ -8,10 +8,16 @@ import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.LocaleSpan
+import java.util.Locale
 import android.view.View
 import android.widget.RemoteViews
 import com.hackasol.scamshield.core.AlertNotificationMapper
+import com.hackasol.scamshield.core.AlertPlan
 import com.hackasol.scamshield.core.AlertPolicy
+import com.hackasol.scamshield.core.Surface
 import com.hackasol.scamshield.core.L10n
 import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.NotificationFields
@@ -42,6 +48,11 @@ object MainScheduler : Scheduler {
     override fun postDelayed(delayMs: Long, r: Runnable) { handler.postDelayed(r, delayMs) }
 }
 
+/** [s] with a hi-IN LocaleSpan when it contains Devanagari; plain otherwise. */
+internal fun localeTagged(s: String): CharSequence =
+    if (s.none { it in '\u0900'..'\u097F' }) s
+    else SpannableString(s).apply { setSpan(LocaleSpan(Locale.forLanguageTag("hi-IN")), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE) }
+
 /** Builds the real Notification from a spec. Main thread only. */
 class AndroidNotificationPoster(private val ctx: Context) : NotificationPoster {
     private val nm = ctx.getSystemService(NotificationManager::class.java)
@@ -51,11 +62,14 @@ class AndroidNotificationPoster(private val ctx: Context) : NotificationPoster {
         if (channels.add(spec.channelId)) nm.createNotificationChannel(NotificationChannel(spec.channelId,
             L10n.channelName(spec.priorityHigh, AppSettings.lang),
             if (spec.priorityHigh) NotificationManager.IMPORTANCE_HIGH else NotificationManager.IMPORTANCE_LOW))
+        // Tag Hindi text as Hindi: TalkBack then reads it with a Hindi voice instead of spelling Devanagari with an English one.
+        val title = localeTagged(spec.title)
+        val text = localeTagged(spec.text)
         val b = Notification.Builder(ctx, spec.channelId)
             .setSmallIcon(R.drawable.ic_stat_shield)
-            .setContentTitle(spec.title)
-            .setContentText(spec.text)
-            .setStyle(Notification.BigTextStyle().bigText(spec.text))
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(Notification.BigTextStyle().bigText(text))
             .setCategory(if (spec.messageCategory) Notification.CATEGORY_MESSAGE else Notification.CATEGORY_STATUS)
             .setOnlyAlertOnce(spec.onlyAlertOnce)
             .setAutoCancel(true)
@@ -65,10 +79,10 @@ class AndroidNotificationPoster(private val ctx: Context) : NotificationPoster {
             // so it matches the phone's style, e.g. OxygenOS). Plain text stays set for wearables / accessibility.
             val body = spec.kicker?.let { k -> spec.text.removePrefix("$k · ") } ?: spec.text
             val rv = RemoteViews(ctx.packageName, R.layout.notif_alert).apply {
-                setTextViewText(R.id.notif_title, spec.title)
-                setTextViewText(R.id.notif_text, body)
+                setTextViewText(R.id.notif_title, title)   // locale-tagged, same as the plain fields
+                setTextViewText(R.id.notif_text, localeTagged(body))
                 if (spec.kicker.isNullOrBlank()) setViewVisibility(R.id.notif_kicker, View.GONE)
-                else setTextViewText(R.id.notif_kicker, spec.kicker)
+                else setTextViewText(R.id.notif_kicker, localeTagged(spec.kicker))
             }
             b.setStyle(Notification.DecoratedCustomViewStyle())
                 .setCustomContentView(rv)
@@ -107,19 +121,26 @@ class AlertDispatcher(
     private val lang: () -> String = { AppSettings.lang },
     /** Added to every notification id; Demo Lab uses it so a demo alert never replaces a real one. */
     private val idOffset: Int = 0,
+    /** False when the user switched the in-call overlay off: the bubble is then not drawn. */
+    private val overlayOn: () -> Boolean = { true },
 ) {
     constructor(ctx: Context, overlay: BubbleSink?, titlePrefix: String = "", idOffset: Int = 0) :
-        this(overlay, AndroidNotificationPoster(ctx), titlePrefix, idOffset = idOffset)
+        this(overlay, AndroidNotificationPoster(ctx), titlePrefix, idOffset = idOffset, overlayOn = { AppSettings.overlayEnabled })
 
     /** [signalKind]: set for in-call signals (InCallSignals.KIND_*); a payment-app signal only draws a card in a high-risk call. */
     fun dispatch(v: Verdict, shown: Label, callLevel: Label, callRisk: Double, signalKind: String? = null) {
         val sv = v.copy(label = shown)
         // Preliminary (rules-only, LLM pending) verdicts get a chip at most: the plan never notifies them, a final verdict follows.
-        val plan = AlertPolicy.plan(sv, signalKind, callLevel)
+        val planned = AlertPolicy.plan(sv, signalKind, callLevel)
+        // No overlay to draw on (accessibility service off, or overlay switched off): a live SCAM must still reach the user,
+        // so it becomes a heads-up notification instead of the card's silent record; a live SUSPICIOUS a silent one.
+        val noOverlay = overlay == null || !overlayOn()
+        val plan = if (planned.bubble && noOverlay && !sv.preliminary)
+            AlertPlan.of(if (shown == Label.SCAM) Surface.HEADS_UP else Surface.SILENT_NOTIF) else planned
         AlertPath.d("dispatch label=$shown source=${v.source} bubble=${plan.bubble} notify=${plan.notify} headsUp=${plan.headsUp} generation=$generation")
         if (plan.bubble) overlay?.showVerdict(v, shown, callLevel, callRisk, signalKind, titlePrefix)
         if (!plan.notify) return
-        val f = AlertNotificationMapper.fields(plan, sv, v.scamType, lang())?.let { it.copy(title = titlePrefix + it.title, notificationId = it.notificationId + idOffset) } ?: return
+        val f = AlertNotificationMapper.fields(plan, sv, v.scamType, lang(), signalKind)?.let { it.copy(title = titlePrefix + it.title, notificationId = it.notificationId + idOffset) } ?: return
         if (!plan.headsUp) { poster.post(f); return }
         // A newer heads-up posts the pending older one first (never drops it), so the newest ends up on top in the shade.
         flushPending()

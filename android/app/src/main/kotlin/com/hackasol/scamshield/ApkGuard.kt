@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import com.hackasol.scamshield.core.AlertNotificationMapper
 import com.hackasol.scamshield.core.ApkRisk
 import com.hackasol.scamshield.core.ApkRiskLevel
 import com.hackasol.scamshield.core.ApkRiskResult
@@ -16,7 +17,7 @@ import java.io.File
 
 /** Reads an .apk's requested permissions (never installs it) and posts a heads-up warning. Blocking: call off the main thread. */
 object ApkGuard {
-    private const val CHANNEL_ID = "scam_alerts"   // same channel as AlertDispatcher; creating it again is a no-op
+    private const val CHANNEL_ID = AlertNotificationMapper.CHANNEL_ID_ALERTS   // same channel as AlertDispatcher
     private const val NOTIF_ID = 7002              // distinct from the dispatcher's 7001 so neither replaces the other
 
     /** [uri] is a content:// or file:// Uri (or a bare path) of an .apk. Null if it cannot be parsed. */

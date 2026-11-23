@@ -8,6 +8,7 @@ import '../l10n/strings_learn.dart';
 import '../lessons/lesson_model.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
+import '../widgets/a11y.dart';
 import '../widgets/premium.dart';
 import '../widgets/shell_bar.dart';
 
@@ -115,10 +116,19 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(Sp.l),
-                        child: GestureDetector(
-                          key: const Key('fc_card'),
+                        // TalkBack: the visible face as the label, "double-tap to flip" as the hint.
+                        child: Semantics(
+                          key: const Key('fc_card_sem'),
+                          button: true,
+                          label: _flipped ? _deck[_i].back : _deck[_i].front,
+                          onTapHint: _l('fc_flip_do'),
                           onTap: () => setState(() => _flipped = !_flipped),
-                          child: _flipCard(th, p, _deck[_i]),
+                          excludeSemantics: true,
+                          child: GestureDetector(
+                            key: const Key('fc_card'),
+                            onTap: () => setState(() => _flipped = !_flipped),
+                            child: _flipCard(th, p, _deck[_i]),
+                          ),
                         ),
                       ),
                     ),
@@ -162,7 +172,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
   Widget _flipCard(ThemeData th, Pal p, StudyCard c) {
     return TweenAnimationBuilder<double>(
       tween: Tween(end: _flipped ? 1 : 0),
-      duration: const Duration(milliseconds: 420),
+      duration: motion(context, const Duration(milliseconds: 420)),
       curve: Curves.easeInOutCubic,
       builder: (context, t, _) {
         final back = t > 0.5;

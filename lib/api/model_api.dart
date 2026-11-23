@@ -164,12 +164,13 @@ class ModelState {
 }
 
 class ModelApi {
-  const ModelApi({this.ch = const MethodChannel('scamshield/api')});
+  const ModelApi({this.ch = const MethodChannel('scamshield/api'), this.downloadTimeout = const Duration(seconds: 45)});
   final MethodChannel ch;
+  final Duration downloadTimeout;
 
-  Future<T?> _call<T>(String m, [Object? a]) async {
+  Future<T?> _call<T>(String m, [Object? a, Duration timeout = const Duration(seconds: 3)]) async {
     try {
-      return await ch.invokeMethod<T>(m, a).timeout(const Duration(seconds: 3), onTimeout: () => null);
+      return await ch.invokeMethod<T>(m, a).timeout(timeout, onTimeout: () => null);
     } on MissingPluginException {
       return null;
     } on PlatformException {
@@ -188,8 +189,16 @@ class ModelApi {
     return m == null ? const ModelState() : ModelState.fromMap(m);
   }
 
-  Future<Map<Object?, Object?>> download(ModelSpec m) async =>
-      await _call<Map<Object?, Object?>>('downloadModel', m.toArgs()) ?? {'status': 'ERROR', 'message': 'Not available'};
+  /// Starting a download first checks the link over the network (a HEAD request through the release redirect), which
+  /// takes well over 3 s on a slow connection. No reply within [downloadTimeout] while the native side is alive means the
+  /// call is still in flight, not failed: progress events follow, so it reads as PENDING instead of a red "Not available"
+  /// that invites a second tap (which restarts the download).
+  Future<Map<Object?, Object?>> download(ModelSpec m) async {
+    final r = await _call<Map<Object?, Object?>>('downloadModel', m.toArgs(), downloadTimeout);
+    if (r != null) return r;
+    final nativeAlive = await _call<Object?>('modelStatus') != null;
+    return nativeAlive ? {'status': 'PENDING', 'modelId': m.id} : {'status': 'ERROR', 'message': 'Not available'};
+  }
 
   /// Switches to an installed model (by file name) and reloads it.
   Future<ModelState> select(ModelSpec m) async {

@@ -22,13 +22,14 @@ object L10n {
     }
 
     fun notifTitle(label: Label, lang: String): String? = when (label) {
-        Label.SCAM -> pick(lang, "Scam warning", "स्कैम की चेतावनी (SCAM)")
-        Label.SUSPICIOUS -> pick(lang, "Suspicious", "संदिग्ध (SUSPICIOUS)")
+        // One script per string: TalkBack reads a mixed "(SCAM)" with the wrong voice.
+        Label.SCAM -> pick(lang, "Scam warning", "ठगी की चेतावनी")
+        Label.SUSPICIOUS -> pick(lang, "Suspicious", "संदिग्ध संदेश")
         Label.SAFE -> null
     }
 
     fun advice(label: Label, lang: String): String =
-        if (label == Label.SCAM) pick(lang, "Do not share OTP/PIN/money", "OTP/PIN/पैसे न दें")
+        if (label == Label.SCAM) pick(lang, "Do not share OTP, PIN or money", "OTP, PIN या पैसे न दें")
         else pick(lang, "Do not share personal information", "निजी जानकारी न दें")
 
     fun reportAction(lang: String): String = pick(lang, "Report", "रिपोर्ट करें (Report)")
@@ -266,8 +267,14 @@ object L10n {
     fun heard(lang: String) = pick(lang, "Heard: ", "सुना: ")
     fun engine(lang: String) = pick(lang, "Engine: ", "इंजन: ")
     fun overallCall(label: Label, riskPct: Int, lang: String) =
-        pick(lang, "Overall call: ${label.name} risk $riskPct%", "कुल कॉल: ${label.name} जोखिम $riskPct%")
+        pick(lang, "Overall call: ${labelWord(label, lang)}, risk $riskPct%", "कुल कॉल: ${labelWord(label, lang)}, जोखिम $riskPct%")
     fun call1930(lang: String) = pick(lang, "Call 1930", "1930 पर कॉल करें")
+    /** In-call signal card: the question that leads the advice. */
+    fun areYouSure(lang: String) = pick(lang, "Are you sure? This is a common scam.", "क्या आप पक्का हैं? यह आम ठगी है।")
+    /** Second button on an in-call signal card: the user confirms they know what they are doing. */
+    fun imSure(lang: String) = pick(lang, "I'm sure", "मुझे पता है")
+    /** First button when an app opened during the call: go to the Home screen. */
+    fun leaveApp(lang: String) = pick(lang, "Leave this app", "यह ऐप छोड़ें")
     fun dismiss(lang: String) = pick(lang, "Dismiss", "बंद करें")
 
     // Payment-moment guard (hne first draft: [VERIFY] with a native speaker).
@@ -314,10 +321,10 @@ object L10n {
         else -> pick(lang, "Be careful and hang up if unsure.", "सावधान रहें, शक हो तो कॉल काट दें।")
     }
 
-    fun captionTitle(lang: String) = pick(lang, "🛡️ Turn on Live Caption for protection", "🛡️ Turn on Live Caption for protection")
+    fun captionTitle(lang: String) = pick(lang, "🛡️ Turn on Live Caption for protection", "🛡️ सुरक्षा के लिए Live Caption चालू करें")
     fun captionLine(lang: String) =
         pick(lang, "ScamShield reads call captions to warn you about scams", "कॉल सुरक्षा के लिए Live Caption चालू करें")
     fun captionHint(lang: String) =
-        pick(lang, "Tap below, then press the captions button in the volume panel.", "Tap below, then press the captions button in the volume panel.")
-    fun openVolumePanel(lang: String) = pick(lang, "Open volume panel", "Open volume panel")
+        pick(lang, "Tap below, then press the captions button in the volume panel.", "नीचे दबाएँ, फिर आवाज़ वाले पैनल में कैप्शन का बटन दबाएँ।")
+    fun openVolumePanel(lang: String) = pick(lang, "Open volume panel", "आवाज़ पैनल खोलें")
 }

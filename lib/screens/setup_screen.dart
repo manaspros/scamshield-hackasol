@@ -304,7 +304,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
           Text(title, style: th.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: c)),
           const SizedBox(height: 2),
           Text(sub, style: th.textTheme.bodySmall?.copyWith(color: p.muted, fontSize: 15)),
-          Text(_t('count', {'n': done}), key: const Key('setup_count'), style: th.textTheme.bodySmall?.copyWith(color: p.muted, fontSize: 13)),
+          Text(_t('count', {'n': done}), key: const Key('setup_count'), style: th.textTheme.bodySmall?.copyWith(color: p.muted)),
         ]);
         // Large text: ring above the words so the words keep the full width.
         return _bigText
@@ -392,11 +392,12 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
                               padding: EdgeInsets.only(bottom: i == s.how ? 0 : Sp.s + 2),
                               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                 Container(
-                                  width: 24,
-                                  height: 24,
+                                  // Grows with the text instead of a fixed 24 px circle.
+                                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                                  padding: const EdgeInsets.all(2),
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(color: p.accent, shape: BoxShape.circle),
-                                  child: Text('$i', style: th.textTheme.labelSmall?.copyWith(color: p.onAccent, fontWeight: FontWeight.w800, fontSize: 13)),
+                                  child: Text('$i', style: th.textTheme.labelSmall?.copyWith(color: p.onAccent, fontWeight: FontWeight.w800, height: 1)),
                                 ),
                                 const SizedBox(width: Sp.s + 2),
                                 Expanded(child: Text(_t('how_${s.id}_$i'), style: th.textTheme.bodyMedium?.copyWith(fontSize: 15, height: 1.35))),
@@ -432,10 +433,18 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   Widget _pill(ThemeData th, String text, Color c, {required bool done}) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(color: c.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(Rad.pill)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          if (done) ...[Icon(Icons.check_rounded, size: 14, color: c), const SizedBox(width: 2)],
-          Text(text, style: th.textTheme.labelSmall?.copyWith(color: c, fontWeight: FontWeight.w800, fontSize: 13)),
-        ]),
+        // Text.rich, not a Row: at 16 sp and large scales the label wraps inside the pill instead of overflowing.
+        child: Text.rich(
+          TextSpan(children: [
+            if (done)
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: Padding(padding: const EdgeInsets.only(right: 2), child: Icon(Icons.check_rounded, size: 14, color: c)),
+              ),
+            TextSpan(text: text),
+          ]),
+          style: th.textTheme.labelSmall?.copyWith(color: c, fontWeight: FontWeight.w800),
+        ),
       );
 
   bool get _bigText => MediaQuery.textScalerOf(context).scale(1) > 1.3;

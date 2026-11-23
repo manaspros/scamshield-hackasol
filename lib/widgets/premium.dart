@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/tokens.dart';
+import 'a11y.dart';
 import 'press_scale.dart';
 
 /// Rounded floating card used across the redesign (Home, Profile, Learn).
@@ -214,7 +215,7 @@ class RingProgress extends StatelessWidget {
         SizedBox.expand(
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: value.clamp(0, 1)),
-            duration: const Duration(milliseconds: 700),
+            duration: motion(context, const Duration(milliseconds: 700)),
             curve: Curves.easeOutCubic,
             builder: (_, v, _) => CircularProgressIndicator(
               value: v,

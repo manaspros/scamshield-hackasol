@@ -105,7 +105,7 @@ class LanguageButton extends StatelessWidget {
       ],
       builder: (context, open, toggle) => Semantics(
         button: true,
-        label: 'Language: ${cur.$3}',
+        label: shellT(lang, 'lang_sem').replaceAll('{0}', cur.$2),
         excludeSemantics: true,
         child: InkWell(
           key: const Key('btn_lang'),
@@ -120,18 +120,13 @@ class LanguageButton extends StatelessWidget {
                 children: [
                   TranslateGlyph(color: open ? p.accent : p.ink),
                   const SizedBox(width: 3),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 40),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        cur.$4,
-                        style: th.textTheme.titleSmall?.copyWith(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: open ? p.accent : p.ink,
-                        ),
-                      ),
+                  // At most 3 characters and the bar is clamped at 1.2x, so it keeps the user's size (no FittedBox).
+                  Text(
+                    cur.$4,
+                    style: th.textTheme.titleSmall?.copyWith(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: open ? p.accent : p.ink,
                     ),
                   ),
                 ],
@@ -180,7 +175,7 @@ class ReportButton extends StatelessWidget {
     final st = Theme.of(context).extension<StatusColors>() ?? StatusColors.light;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final lang = AppLanguage.of(context);
-    // Capped so the bar never overflows on a narrow phone at large text; the label shrinks to fit instead.
+    // Capped so the bar never overflows on a narrow phone at large text; the label wraps instead of shrinking.
     final maxW = MediaQuery.sizeOf(context).width * 0.34;
     return Padding(
       padding: const EdgeInsets.only(left: Sp.xs),
@@ -202,7 +197,7 @@ class ReportButton extends StatelessWidget {
             ),
             onPressed: onTap ?? () => openReport(context),
             icon: const Icon(Icons.call_rounded, size: 18),
-            label: FittedBox(fit: BoxFit.scaleDown, child: Text(shellT(lang, 'report_btn'))),
+            label: Text(shellT(lang, 'report_btn'), textAlign: TextAlign.center, softWrap: true),
           ),
         ),
       ),
