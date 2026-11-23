@@ -27,13 +27,14 @@ class DemoScenariosTest {
 
     @Test fun T8_1_mistakenTransferA_fakeCreditFlagged() {
         val r = run("mistaken_a")
-        // The SMS alone looks harmless; the follow-up call is what the context layer catches.
-        assertEquals(Label.SAFE, r.steps[0].fused.label)
+        // A bank-style credit SMS from a mobile number is called out on its own; the follow-up call is then tied to it.
+        assertEquals(Label.SUSPICIOUS, r.steps[0].fused.label)
+        assertEquals(ContextRules.SPOOFED_BANK_SMS_TEXT, r.steps[0].fused.reason)
         val call = r.steps[1]
         assertEquals(listOf(FlagKind.FAKE_CREDIT), call.actualFlags)
         assertEquals(Label.SCAM, call.fused.label)   // fake credit + return request: SCAM, so the heads-up alert fires
         assertNotNull(call.alert)
-        assertEquals(ContextRules.MISTAKEN_A_TEXT, call.fused.reason)
+        assertEquals(ContextRules.SPOOFED_CREDIT_RETURN_TEXT, call.fused.reason)
         assertEquals(ScamType.MISTAKEN_TRANSFER, call.fused.scamType)
         assertEquals(listOf("FAKE_CREDIT"), call.fused.raisedBy)
         assertNull(call.gemma)

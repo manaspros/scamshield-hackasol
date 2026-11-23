@@ -66,8 +66,8 @@ object GraphContext {
             addAll(ContextRules.newUpiPay(message, tk, graph))   // newUpiPay only uses its sender for the trust lookup
             addAll(ContextRules.debitScare(message, s, graph, nowMs))
         }
-        // Mistaken-transfer first: when it raises, its reason leads the alert (the weak claim flags follow).
-        return ContextRules.mistakenTransfer(message, graph, nowMs) + extra + flags
+        // Mistaken-transfer first, then a fake bank alert: when they raise, their reason leads the alert (the weak claim flags follow).
+        return ContextRules.mistakenTransfer(message, graph, nowMs) + ContextRules.spoofedBankSms(message, s) + extra + flags
     }
 
     private val TRUSTED_DROPS = setOf(FlagKind.NO_MATCHING_EVENT, FlagKind.NON_DLT_SENDER, FlagKind.NEW_UPI_PAY, FlagKind.LINK_NOT_ALLOWLISTED)

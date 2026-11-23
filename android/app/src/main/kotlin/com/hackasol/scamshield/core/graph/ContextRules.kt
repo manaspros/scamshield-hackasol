@@ -23,7 +23,22 @@ object ContextRules {
     // [VERIFY] delivery-call phrasing.
     private val DELIVERY_CALL = UnicodeRegex.of("\\b(?:delivery|deliver|parcel|courier|package)\\b|डिलीवरी|पार्सल")
     private val MISTAKE = UnicodeRegex.of("by mistake|mistakenly|wrong(?:ly)?\\s+(?:number|account|upi|person)|galti se|गलती से")
-    private val RETURN_ASK = UnicodeRegex.of("\\b(?:return|refund|send back|give back|transfer back|wapas)\\b|वापस|लौटा")
+    private val RETURN_ASK = UnicodeRegex.of(
+        "\\b(?:return|refund|wapas)\\b|\\b(?:send|give|pay|transfer)\\s+(?:it\\s+|that\\s+|them\\s+|my\\s+money\\s+|the\\s+(?:money|amount)\\s+)?back\\b|वापस|लौटा",
+    )
+    // "I have sent you the 1K" / "maine bhej diye": a money-sent claim without the words "by mistake".
+    private val SENT_CLAIM = UnicodeRegex.of(
+        "\\b(?:sent|transferred|paid|credited)\\s+(?:you|u|to\\s+you|to\\s+your|into\\s+your)\\b|\\bbhej\\s+(?:diye|diya|di|dia)\\b|भेज\\s+(?:दिए|दिया|दी)",
+    )
+    // [VERIFY] bank alerts name the account; a bank brand or an account word marks the bank-alert shape.
+    private val ACCOUNT = UnicodeRegex.of("\\b(?:a/c|acct|account|avl\\.?\\s*bal|available balance)\\b|खाते|खाता|\\bkhate\\b|\\bkhata\\b")
+    private val MONEY_EVENTS = setOf(EventType.CREDIT, EventType.DEBIT, EventType.REFUND)
+
+    // [VERIFY] TRAI: banks send transaction alerts only from registered DLT headers, never a 10-digit number.
+    const val SPOOFED_BANK_SMS_TEXT = "This looks like a bank alert, but it came from a normal mobile number. " +
+        "Banks send alerts only from registered sender IDs (like AX-HDFCBK). Check your bank app; this money may not be real."
+    const val SPOOFED_CREDIT_RETURN_TEXT = "The earlier \"money credited\" SMS came from a normal mobile number, not your bank. " +
+        "No money arrived. Do not send anything back."
 
     const val MISTAKEN_A_AMOUNT_TEXT = "A credit arrived, but not of ₹"
     /** A recorded credit counts as the claimed one when the amounts are within this many rupees. */
@@ -35,18 +50,42 @@ object ContextRules {
 
     private fun rupees(a: Double): String = if (a == Math.floor(a)) a.toLong().toString() else a.toString()
 
+    /** A money alert (credit / debit / refund with an amount) naming a bank or an account: what a bank SMS looks like. */
+    fun isBankAlertShape(text: String): Boolean {
+        if (ClaimParsers.eventTypes(text).none { it in MONEY_EVENTS } || ClaimParsers.amountRupees(text) == null) return false
+        val brand = ClaimParsers.brandFromText(text)
+        return (brand != null && Brands.isBank(brand)) || ACCOUNT.containsMatchIn(text)
+    }
+
+    /** A bank-style money alert from a sender that is not a DLT header (a 10-digit number or a saved contact). Blank sender: no verdict. */
+    fun spoofedBankSms(text: String, sender: String): List<ContextFlag> {
+        val s = sender.trim()
+        if (s.isEmpty() || ClaimVsContext.isDltHeader(s) || !isBankAlertShape(text)) return emptyList()
+        return listOf(ContextFlag(FlagKind.SPOOFED_BANK_SMS, SPOOFED_BANK_SMS_TEXT))
+    }
+
     /**
-     * "I sent money by mistake, return it": A = no recent CREDIT event, or only credits of a different amount (fake credit),
+     * "I sent you money (by mistake), return it". First: a fake credit SMS from a mobile number seen in the window, and no
+     * real credit of that amount -> FAKE_CREDIT naming that SMS (this also catches a plain "I sent you 1K, send it back").
+     * Otherwise only with "by mistake": A = no recent CREDIT event, or only credits of a different amount (fake credit),
      * B = a real CREDIT event of the claimed amount (warn). A null amount on either side counts as a match.
      */
     fun mistakenTransfer(text: String, graph: KnowledgeGraph, nowMs: Long): List<ContextFlag> {
-        if (!MISTAKE.containsMatchIn(text) || !RETURN_ASK.containsMatchIn(text)) return emptyList()
-        val credits = graph.recentEvents(EventType.CREDIT, nowMs - CREDIT_WINDOW_MS)
+        if (!RETURN_ASK.containsMatchIn(text)) return emptyList()
+        val mistake = MISTAKE.containsMatchIn(text)
+        if (!mistake && !SENT_CLAIM.containsMatchIn(text)) return emptyList()
+        val since = nowMs - CREDIT_WINDOW_MS
         val claimed = ClaimParsers.amountRupees(text)
+        fun sameAmount(a: Double?) = claimed == null || a == null || Math.abs(a - claimed) <= AMOUNT_TOLERANCE
+        val credits = graph.recentEvents(EventType.CREDIT, since)
+        if (credits.none { sameAmount(it.amountRupees) } && graph.recentSpoofedCredits(since).any { sameAmount(it.amountRupees) }) {
+            return listOf(ContextFlag(FlagKind.FAKE_CREDIT, SPOOFED_CREDIT_RETURN_TEXT))
+        }
+        if (!mistake) return emptyList()
         return when {
             credits.isEmpty() ->
                 listOf(ContextFlag(FlagKind.FAKE_CREDIT, if (graph.isEmpty) MISTAKEN_A_COLD_TEXT else MISTAKEN_A_TEXT))
-            credits.any { claimed == null || it.amountRupees == null || Math.abs(it.amountRupees - claimed) <= AMOUNT_TOLERANCE } ->
+            credits.any { sameAmount(it.amountRupees) } ->
                 listOf(ContextFlag(FlagKind.RETURN_VIA_BANK_ONLY, MISTAKEN_B_TEXT))
             else ->
                 listOf(ContextFlag(FlagKind.FAKE_CREDIT, "$MISTAKEN_A_AMOUNT_TEXT${rupees(claimed!!)}. This SMS is not from your bank."))

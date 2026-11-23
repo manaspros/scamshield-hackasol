@@ -40,6 +40,7 @@ object FusionWeights {
         FlagKind.NEW_UPI_PAY -> 0.4
         FlagKind.DEBIT_SCARE -> 0.5
         FlagKind.REPORTED_ENTITY -> 0.8
+        FlagKind.SPOOFED_BANK_SMS -> 0.7
     }
 }
 

@@ -180,7 +180,9 @@ object L10n {
                 "लिंक ${it.groupValues[1]} पर जाता है, किसी .bank.in या .gov.in साइट पर नहीं।"
             } ?: r
             FlagKind.FAKE_CREDIT ->
-                if (r == ContextRules.MISTAKEN_A_COLD_TEXT)
+                if (r == ContextRules.SPOOFED_CREDIT_RETURN_TEXT)
+                    "पहले आया \"पैसे जमा हुए\" SMS आम मोबाइल नंबर से था, आपके बैंक से नहीं। कोई पैसा नहीं आया। कुछ भी वापस न भेजें।"
+                else if (r == ContextRules.MISTAKEN_A_COLD_TEXT)
                     "ScamShield इंस्टॉल होने के बाद कोई क्रेडिट अलर्ट दर्ज नहीं है। कुछ भी लौटाने से पहले अपना बैंक ऐप देखें।"
                 else if (r.startsWith(ContextRules.MISTAKEN_A_AMOUNT_TEXT))
                     "क्रेडिट आया, लेकिन ₹${r.removePrefix(ContextRules.MISTAKEN_A_AMOUNT_TEXT).substringBefore('.')} का नहीं। यह SMS आपके बैंक से नहीं है।"
@@ -197,6 +199,8 @@ object L10n {
                 if (r == ContextRules.DEBIT_SCARE_COLD_TEXT) "ScamShield इंस्टॉल होने के बाद का कोई रिकॉर्ड नहीं है, इसलिए इस डेबिट की पुष्टि नहीं हो सकती।"
                 else "आपके बैंक का कोई डेबिट अलर्ट दर्ज नहीं है। इस संदेश के नंबरों पर कॉल न करें; अपना बैंक ऐप देखें।"
             FlagKind.REPORTED_ENTITY -> "आपने इस सेंडर, नंबर या UPI आईडी को पहले ठगी बताया था।"
+            FlagKind.SPOOFED_BANK_SMS ->
+                "यह बैंक अलर्ट जैसा दिखता है, लेकिन आम मोबाइल नंबर से आया है। बैंक अलर्ट सिर्फ़ पंजीकृत सेंडर आईडी (जैसे AX-HDFCBK) से भेजते हैं। अपना बैंक ऐप देखें; यह पैसा असली नहीं हो सकता।"
         }
     }
 
