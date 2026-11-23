@@ -42,6 +42,12 @@ class DemoApi {
 
   Future<bool> modelReady() async => await _call('demo.modelReady') == true;
 
+  /// Whether call protection (the accessibility service) is running, so the bubble can show. null = unknown.
+  Future<bool?> bubbleReady() async {
+    final r = await _call('demo.bubbleReady');
+    return r is bool ? r : null;
+  }
+
   Future<Map<String, Object?>?> run(String id, {required bool gemma, required bool coldStart}) async {
     final r = await _call('demo.run', {'id': id, 'engine': gemma ? 'gemma' : 'rules', 'coldStart': coldStart});
     return r is Map ? _m(r) : null;
@@ -70,6 +76,7 @@ class DemoStrings {
     'about': 'असली जैसी कहानियाँ चलाकर देखें कि ऐप क्या समझता है: संदर्भ ग्राफ़, नियम, Gemma और अंतिम चेतावनी। '
         'जैसे: खाते से पैसे कटने का SMS आया, फिर कॉल आई "पैसे लौटा दो"। ऐप को याद है कि वह SMS बैंक का नहीं, किसी इंसान का लिखा था।',
     'demoNote': 'डेमो सूचनाएँ [DEMO] से शुरू होती हैं। ये असली नहीं हैं।',
+    'bubbleHint': 'चेतावनी बबल देखने के लिए कॉल सुरक्षा चालू करें',
     'gemmaOn': 'Gemma चालू',
     'noModel': 'मॉडल तैयार नहीं है, इसलिए सिर्फ़ नियम चलेंगे।',
     'cold': 'Cold start (खाली ग्राफ़)',
@@ -134,6 +141,7 @@ class DemoStrings {
     'about': 'असली कस कहिनी चला के देखव कि ऐप का समझथे: संदर्भ ग्राफ़, नियम, Gemma अउ आखिरी चेतावनी। '
         'जइसे: खाता ले पइसा कटे के SMS आइस, फेर फोन आइस "पइसा लहुटा दे"। ऐप ल सुरता हे कि वो SMS बैंक के नइ, कोनो मनखे के लिखे रिहिस।',
     'demoNote': 'डेमो सूचना [DEMO] ले सुरू होथे। ये असली नइ हें।',
+    'bubbleHint': 'चेतावनी बबल देखे बर कॉल सुरक्षा चालू करव',
     'gemmaOn': 'Gemma चालू',
     'noModel': 'मॉडल तियार नइ हे, एकरे सेती सिरिफ नियम चलही।',
     'cold': 'Cold start (खाली ग्राफ़)',
@@ -198,6 +206,7 @@ class DemoStrings {
     'about': 'Run realistic stories and see what the app understands: the context graph, rules, Gemma and the final alert. '
         'Example: an SMS says money was debited, then a call asks you to give it back. The app remembers that SMS was typed by a person, not sent by a bank.',
     'demoNote': 'Demo alerts start with [DEMO]. They are not real.',
+    'bubbleHint': 'Turn on call protection to see the warning bubble',
     'gemmaOn': 'Gemma on',
     'noModel': 'The model is not ready, so only rules will run.',
     'cold': 'Cold start (empty graph)',
@@ -358,6 +367,7 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
   String? _lastGlobal;
   List<Map<String, Object?>>? _scenarios;
   bool _loading = true, _modelReady = false, _gemma = true, _cold = false, _skip = false;
+  bool _bubbleOff = false; // call protection is off: Demo Lab alerts are notification-only
   String? _busyId; // '*' while Run all is going
   String? _current; // scenario being run right now
   int _runTotal = 0, _runDone = 0;
@@ -402,8 +412,10 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
     setState(() => _loading = true);
     final list = await widget.api.scenarios();
     final ready = await widget.api.modelReady();
+    final bubble = await widget.api.bubbleReady();
     if (!mounted) return;
     setState(() {
+      _bubbleOff = bubble == false;
       _scenarios = list;
       _modelReady = ready;
       _gemma = ready;
@@ -544,6 +556,15 @@ class _DemoLabScreenState extends State<DemoLabScreen> {
             const SizedBox(width: Sp.s),
             Expanded(child: Text(s['demoNote'], style: t.textTheme.bodyMedium)),
           ]),
+          if (_bubbleOff)
+            Padding(
+              padding: const EdgeInsets.only(top: Sp.s),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Icon(Icons.chat_bubble_outline, size: 24, color: t.colorScheme.onSurfaceVariant),
+                const SizedBox(width: Sp.s),
+                Expanded(child: Text(s['bubbleHint'], style: t.textTheme.bodyMedium)),
+              ]),
+            ),
         ]),
       );
 

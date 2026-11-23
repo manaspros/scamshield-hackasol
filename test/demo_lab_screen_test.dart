@@ -139,4 +139,23 @@ void main() {
     expect(find.descendant(of: find.byKey(const Key('demo_step_badge_2')), matching: find.text('PASS')), findsOneWidget);
     expect(t.takeException(), isNull);
   });
+
+  for (final on in [false, true]) {
+    testWidgets('DEMO_bubbleHint_${on ? 'hiddenWhenServiceRunning' : 'shownWhenServiceMissing'}', (t) async {
+      t.view.physicalSize = const Size(360, 740);
+      t.view.devicePixelRatio = 1.0;
+      addTearDown(t.view.reset);
+      FakeChannel('scamshield/demo', (c) async => switch (c.method) {
+            'demo.scenarios' => [
+                {'id': 's1', 'icon': 'sms', 'titleHi': 'क', 'titleEn': 'A', 'storyHi': 'क', 'storyEn': 'A', 'steps': 1}
+              ],
+            'demo.bubbleReady' => on,
+            _ => null,
+          }).install();
+      await t.pumpWidget(MaterialApp(theme: themes['light']!(), home: const Scaffold(body: DemoLabScreen(initialLang: 'en'))));
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 100));
+      expect(find.text('Turn on call protection to see the warning bubble'), on ? findsNothing : findsOneWidget);
+    });
+  }
 }

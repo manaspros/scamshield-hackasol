@@ -11,12 +11,17 @@ import com.hackasol.scamshield.core.AlertPolicy
 import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.Verdict
 
+/** The bubble the dispatcher draws; a seam so tests (and Demo Lab) need no AccessibilityService. */
+interface BubbleSink {
+    fun showVerdict(v: Verdict, shown: Label, callLevel: Label, callRisk: Double, signalKind: String? = null, titlePrefix: String = "")
+}
+
 /**
  * Executes AlertPolicy: bubble through the existing OverlayController, heads-up notification with a
  * Report action. Main thread only (OverlayController requirement). Policy runs on the SHOWN label
  * (call-level tracker may differ from the raw verdict).
  */
-class AlertDispatcher(private val ctx: Context, private val overlay: OverlayController?, private val titlePrefix: String = "") {
+class AlertDispatcher(private val ctx: Context, private val overlay: BubbleSink?, private val titlePrefix: String = "") {
     private val nm = ctx.getSystemService(NotificationManager::class.java)
     private var channelReady = false
 
@@ -24,8 +29,7 @@ class AlertDispatcher(private val ctx: Context, private val overlay: OverlayCont
     fun dispatch(v: Verdict, shown: Label, callLevel: Label, callRisk: Double, signalKind: String? = null) {
         val sv = v.copy(label = shown)
         val plan = AlertPolicy.plan(sv, signalKind, callLevel)
-        if (plan.bubble) overlay?.showVerdict(v, shown, callLevel, callRisk, signalKind)
-        // Preliminary (rules-only, LLM pending) verdicts never notify: a final one follows.
+        if (plan.bubble) overlay?.showVerdict(v, shown, callLevel, callRisk, signalKind, titlePrefix)          // Preliminary (rules-only, LLM pending) verdicts never notify: a final one follows.
         if (!plan.notify || v.preliminary) return
         val f = AlertNotificationMapper.fields(plan, sv, v.scamType, AppSettings.lang) ?: return
         ensureChannel(f.channelId)
@@ -55,5 +59,17 @@ class AlertDispatcher(private val ctx: Context, private val overlay: OverlayCont
         channelReady = true
     }
 
-    private companion object { const val NOTIFICATION_ID = 7001 }   // fixed: a newer alert replaces the older one
+    companion object {
+        private const val NOTIFICATION_ID = 7001   // fixed: a newer alert replaces the older one
+
+        /**
+         * Bubble half of [dispatch] on its own, for Demo Lab. Returns true only if AlertPolicy wants a bubble AND a sink is
+         * present.
+         */
+        fun showBubble(sink: BubbleSink?, v: Verdict, shown: Label, callLevel: Label, callRisk: Double, titlePrefix: String): Boolean {
+            if (sink == null || !AlertPolicy.plan(v.copy(label = shown), null, callLevel).bubble) return false
+            sink.showVerdict(v, shown, callLevel, callRisk, null, titlePrefix)
+            return true
+        }
+    }
 }

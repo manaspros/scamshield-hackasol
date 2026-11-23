@@ -293,6 +293,9 @@ class CaptionAccessibilityService : AccessibilityService() {
         ))
     }
 
+    /** Demo Lab draws its bubble through the running service's overlay (null before onServiceConnected). */
+    fun bubbleSink(): BubbleSink? = if (::overlay.isInitialized) overlay else null
+
     /** Called from the Flutter "Test overlay" button. */
     fun demoOverlay() = main.post { safe("demo") { demoOverlayNow() } }
 

@@ -3,6 +3,8 @@ package com.hackasol.scamshield
 import android.app.Activity
 import android.util.Log
 import com.hackasol.scamshield.core.InMemoryVerdictLog
+import com.hackasol.scamshield.core.Label
+import com.hackasol.scamshield.core.Verdict
 import com.hackasol.scamshield.core.VerdictLog
 import com.hackasol.scamshield.core.demo.DemoClassify
 import com.hackasol.scamshield.core.demo.DemoRunner
@@ -32,12 +34,24 @@ object DemoChannel {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main +
         CoroutineExceptionHandler { _, t -> Log.e(TAG, "uncaught", t) })
     private val runLock = Mutex()
+    private const val DEMO_PREFIX = "[DEMO] "
+
+    /** The running service's bubble, read now (never cached), with any failure swallowed so a dying service can't fail a demo run. */
+    private fun liveSink(): BubbleSink? {
+        val s = CaptionAccessibilityService.instance?.bubbleSink() ?: return null
+        return object : BubbleSink {
+            override fun showVerdict(v: Verdict, shown: Label, callLevel: Label, callRisk: Double, signalKind: String?, titlePrefix: String) {
+                try { s.showVerdict(v, shown, callLevel, callRisk, signalKind, titlePrefix) } catch (t: Throwable) { Log.w(TAG, "bubble failed", t) }
+            }
+        }
+    }
 
     /** The demo namespace is only this per-run state, so reset just drops it. */
     @Volatile private var lastLog: VerdictLog? = null
 
     fun register(activity: Activity, messenger: BinaryMessenger) {
-        val dispatcher by lazy { AlertDispatcher(activity.applicationContext, null, "[DEMO] ") }
+        // Built per run: the accessibility service may start (or die) after this channel was registered.
+        val dispatcher = { AlertDispatcher(activity.applicationContext, liveSink(), DEMO_PREFIX) }
         MethodChannel(messenger, "scamshield/demo").setMethodCallHandler { call, result ->
             when (call.method) {
                 "demo.scenarios" -> result.success(DemoScenarios.ALL.map { it.toChannelMap() })
@@ -45,7 +59,8 @@ object DemoChannel {
                     GemmaClassifier.ensureLoaded(activity)   // idempotent; picks up a model downloaded after launch
                     result.success(GemmaClassifier.status == GemmaClassifier.Status.READY)
                 }
-                "demo.run" -> run(activity, call, result) { dispatcher }
+                "demo.run" -> run(activity, call, result, dispatcher)
+                "demo.bubbleReady" -> result.success(CaptionAccessibilityService.instance?.bubbleSink() != null)
                 "demo.reset" -> { lastLog = null; result.success(null) }
                 else -> result.notImplemented()
             }
@@ -72,7 +87,12 @@ object DemoChannel {
                 val res = runLock.withLock { withContext(Dispatchers.Default) { DemoRunner(graph, log, classify).run(sc, cold, note) } }
                 lastLog = log
                 // One notification id is reused by AlertDispatcher, so only the last alert would stay visible anyway.
-                res.steps.lastOrNull { it.alert != null }?.let { dispatcher().dispatch(it.verdict, it.shown, it.shown, it.verdict.risk) }
+                val alertStep = res.steps.lastOrNull { it.alert != null }
+                alertStep?.let { dispatcher().dispatch(it.verdict, it.shown, it.shown, it.verdict.risk) }
+                // A live suspicious step has a bubble but no notification, so it can differ from alertStep.
+                res.steps.lastOrNull { it.bubble }?.takeIf { it !== alertStep }?.let {
+                    AlertDispatcher.showBubble(liveSink(), it.verdict, it.shown, it.shown, it.verdict.risk, DEMO_PREFIX)
+                }
                 result.success(res.toMap())
             } catch (t: Throwable) {
                 Log.e(TAG, "demo.run failed", t)

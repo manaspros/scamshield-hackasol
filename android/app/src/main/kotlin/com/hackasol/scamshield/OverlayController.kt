@@ -24,7 +24,7 @@ import com.hackasol.scamshield.core.Verdict
  * Floating verdict bubble drawn as TYPE_ACCESSIBILITY_OVERLAY (no "draw over apps" permission
  * needed). Collapsed = one line "This statement is SCAM · 87%"; tap to expand. Main thread only.
  */
-class OverlayController(private val service: AccessibilityService) {
+class OverlayController(private val service: AccessibilityService) : BubbleSink {
     private val wm = service.getSystemService(WindowManager::class.java)
     private val handler = Handler(Looper.getMainLooper())
     private var root: LinearLayout? = null
@@ -97,7 +97,7 @@ class OverlayController(private val service: AccessibilityService) {
     }
 
     /** [signalKind] non-null = an in-call signal: the texts come from the language layer, not from the verdict. */
-    fun showVerdict(v: Verdict, shown: Label, callLevel: Label, callRisk: Double, signalKind: String? = null) {
+    override fun showVerdict(v: Verdict, shown: Label, callLevel: Label, callRisk: Double, signalKind: String?, titlePrefix: String) {
         if (!AppSettings.overlayEnabled) return
         val view = ensureView()
         (view.background as GradientDrawable).setColor(color(shown))
@@ -105,12 +105,12 @@ class OverlayController(private val service: AccessibilityService) {
         val pct = (v.confidence * 100).toInt()
         val lang = AppSettings.lang
         if (signalKind != null) {
-            title.text = "$icon ${L10n.signalTitle(signalKind, lang)}"
+            title.text = "$titlePrefix$icon ${L10n.signalTitle(signalKind, lang)}"
             hindi.text = L10n.signalAdvice(signalKind, lang)
             quote.text = L10n.signalLine(signalKind, v.triggers.firstOrNull().orEmpty(), lang)
             detail.text = ""
         } else {
-            title.text = "$icon ${L10n.overlayTitle(shown, pct, lang)}" + if (v.preliminary) " …" else ""
+            title.text = "$titlePrefix$icon ${L10n.overlayTitle(shown, pct, lang)}" + if (v.preliminary) " …" else ""
             hindi.text = L10n.overlayLine(shown, lang)
             quote.text = "“${v.text}”"
             detail.text = buildString {
