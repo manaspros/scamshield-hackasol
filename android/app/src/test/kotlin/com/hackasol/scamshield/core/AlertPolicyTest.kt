@@ -110,9 +110,9 @@ class AlertPolicyTest {
         assertEquals(0L, AlertPolicy.headsUpDelayMs(Label.SCAM, Source.SIGNAL))
     }
 
-    @Test fun R3_ALERT_paymentAppIsSilentNotifUnlessCallAlreadyScam() {
+    @Test fun R3_ALERT_paymentAppIsChipUnlessCallAlreadyScam() {
         val k = InCallSignals.KIND_PAYMENT_APP
-        for (cl in listOf(Label.SAFE, Label.SUSPICIOUS)) assertEquals(Surface.SILENT_NOTIF, surface(Label.SUSPICIOUS, Source.SIGNAL, cl, k))
+        for (cl in listOf(Label.SAFE, Label.SUSPICIOUS)) assertEquals(Surface.CHIP, surface(Label.SUSPICIOUS, Source.SIGNAL, cl, k))
         assertEquals(Surface.CARD, surface(Label.SUSPICIOUS, Source.SIGNAL, Label.SCAM, k))
     }
 

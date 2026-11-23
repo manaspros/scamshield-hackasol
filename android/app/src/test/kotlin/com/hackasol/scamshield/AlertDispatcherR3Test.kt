@@ -157,12 +157,12 @@ class AlertDispatcherR3Test {
         assertTrue("only live sources get a chip", sink.calls.size == 4)
     }
 
-    @Test fun R3_ALERT_paymentAppSilentUnlessCallScam() {
+    @Test fun R3_ALERT_paymentAppChipUnlessCallScam() {
         val d = dispatcher()
         d.dispatch(v(Label.SUSPICIOUS, Source.SIGNAL), Label.SUSPICIOUS, Label.SUSPICIOUS, 0.5, InCallSignals.KIND_PAYMENT_APP)
-        assertTrue(sink.calls.isEmpty()); assertEquals(AlertNotificationMapper.CHANNEL_ID_SILENT, posted.single().channelId)
+        assertEquals(1, sink.calls.size); assertTrue(posted.isEmpty())
         d.dispatch(v(Label.SUSPICIOUS, Source.SIGNAL), Label.SUSPICIOUS, Label.SCAM, 0.9, InCallSignals.KIND_PAYMENT_APP)
-        assertEquals(1, sink.calls.size)
+        assertEquals(2, sink.calls.size)
     }
 
     @Test fun R3_ALERT_safeDoesNothing() {

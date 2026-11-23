@@ -9,7 +9,9 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import com.hackasol.scamshield.core.AlertNotificationMapper
+import com.hackasol.scamshield.core.AlertPlan
 import com.hackasol.scamshield.core.AlertPolicy
+import com.hackasol.scamshield.core.Surface
 import com.hackasol.scamshield.core.L10n
 import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.NotificationFields
@@ -89,19 +91,26 @@ class AlertDispatcher(
     private val lang: () -> String = { AppSettings.lang },
     /** Added to every notification id; Demo Lab uses it so a demo alert never replaces a real one. */
     private val idOffset: Int = 0,
+    /** False when the user switched the in-call overlay off: the bubble is then not drawn. */
+    private val overlayOn: () -> Boolean = { true },
 ) {
     constructor(ctx: Context, overlay: BubbleSink?, titlePrefix: String = "", idOffset: Int = 0) :
-        this(overlay, AndroidNotificationPoster(ctx), titlePrefix, idOffset = idOffset)
+        this(overlay, AndroidNotificationPoster(ctx), titlePrefix, idOffset = idOffset, overlayOn = { AppSettings.overlayEnabled })
 
     /** [signalKind]: set for in-call signals (InCallSignals.KIND_*); a payment-app signal only draws a card in a high-risk call. */
     fun dispatch(v: Verdict, shown: Label, callLevel: Label, callRisk: Double, signalKind: String? = null) {
         val sv = v.copy(label = shown)
         // Preliminary (rules-only, LLM pending) verdicts get a chip at most: the plan never notifies them, a final verdict follows.
-        val plan = AlertPolicy.plan(sv, signalKind, callLevel)
+        val planned = AlertPolicy.plan(sv, signalKind, callLevel)
+        // No overlay to draw on (accessibility service off, or overlay switched off): a live SCAM must still reach the user,
+        // so it becomes a heads-up notification instead of the card's silent record; a live SUSPICIOUS a silent one.
+        val noOverlay = overlay == null || !overlayOn()
+        val plan = if (planned.bubble && noOverlay && !sv.preliminary)
+            AlertPlan.of(if (shown == Label.SCAM) Surface.HEADS_UP else Surface.SILENT_NOTIF) else planned
         AlertPath.d("dispatch label=$shown source=${v.source} bubble=${plan.bubble} notify=${plan.notify} headsUp=${plan.headsUp} generation=$generation")
         if (plan.bubble) overlay?.showVerdict(v, shown, callLevel, callRisk, signalKind, titlePrefix)
         if (!plan.notify) return
-        val f = AlertNotificationMapper.fields(plan, sv, v.scamType, lang())?.let { it.copy(title = titlePrefix + it.title, notificationId = it.notificationId + idOffset) } ?: return
+        val f = AlertNotificationMapper.fields(plan, sv, v.scamType, lang(), signalKind)?.let { it.copy(title = titlePrefix + it.title, notificationId = it.notificationId + idOffset) } ?: return
         if (!plan.headsUp) { poster.post(f); return }
         // A newer heads-up posts the pending older one first (never drops it), so the newest ends up on top in the shade.
         flushPending()

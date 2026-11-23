@@ -55,8 +55,9 @@ object AlertPolicy {
     fun plan(v: Verdict, source: Source = v.source): AlertPlan = decide(v.label, source, preliminary = v.preliminary)
 
     /**
-     * Same plan, but a payment-app signal is a silent notification until the whole call is already high risk
-     * ([callLevel] SCAM): opening PhonePe on a call is often innocent, so it must not pop a card on its own.
+     * Same plan, but a payment-app signal is a chip (a visible "Careful", no card, no sound) until the whole call is already
+     * high risk ([callLevel] SCAM): opening PhonePe on a call is often innocent, so it must not pop a card on its own, but a
+     * silent notification is never seen mid-call.
      */
     fun plan(v: Verdict, signalKind: String?, callLevel: Label): AlertPlan =
         decide(v.label, v.source, callLevel, signalKind, v.preliminary)
@@ -76,7 +77,7 @@ object AlertPolicy {
         // Rules-only verdicts: chip at most (a final verdict follows), never a card or a notification.
         if (preliminary) return AlertPlan.of(if (live) Surface.CHIP else Surface.NONE)
         if (signalKind == InCallSignals.KIND_PAYMENT_APP)
-            return AlertPlan.of(if (callLevel == Label.SCAM) Surface.CARD else Surface.SILENT_NOTIF)
+            return AlertPlan.of(if (callLevel == Label.SCAM) Surface.CARD else Surface.CHIP)
         return AlertPlan.of(when {
             !live -> if (label == Label.SCAM) Surface.HEADS_UP else Surface.SILENT_NOTIF
             label == Label.SCAM -> Surface.CARD

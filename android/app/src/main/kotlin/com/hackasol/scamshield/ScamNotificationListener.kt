@@ -10,6 +10,9 @@ import android.util.Log
 import com.hackasol.scamshield.core.ApkRisk
 import com.hackasol.scamshield.core.ClassifyRequest
 import com.hackasol.scamshield.core.GemmaPrompt
+import com.hackasol.scamshield.core.InCallSignals
+import com.hackasol.scamshield.core.ListenerCallSignals
+import com.hackasol.scamshield.core.ScreenShareMatcher
 import com.hackasol.scamshield.core.CallContext
 import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.Trust
@@ -126,6 +129,7 @@ class ScamNotificationListener : NotificationListenerService() {
     // AlertDispatcher needs an OverlayController (accessibility-service only), but non-CAPTION
     // sources never bubble, so the dispatcher is built with overlay = null.
     private val dispatcher by lazy { AlertDispatcher(this, null) }
+    private val callSignals = ListenerCallSignals()
     // Lazy: first built inside the notification coroutine, so the graph DB load stays off the main thread.
     private val wiring by lazy {
         ListenerWiring(
@@ -158,6 +162,16 @@ class ScamNotificationListener : NotificationListenerService() {
         if (CallContext.isCallNotification(info.category)) {
             CallContext.onCallNotification(info.title, info.text, System.currentTimeMillis(), s.key)
             return@safe
+        }
+        // Ongoing notifications only for screen sharing ("You're sharing your screen" is ongoing); an OTP never is.
+        if (info.pkg != packageName && (!info.ongoing || ScreenShareMatcher.notificationMatch("${info.title} ${info.text}") != null)) safe("callSignals") {
+            AppSettings.init(this)   // idempotent; the listener can get a notification before onListenerConnected's init ran
+            val now = System.currentTimeMillis()
+            callSignals.onNotification("${info.title} ${info.text}", CallContext.inCall(now), CallContext.callGeneration,
+                CaptionAccessibilityService.instance != null, AppSettings.inCallSignals)?.let { sig ->
+                AlertPath.d("listener in-call signal kind=${sig.kind}")
+                main.post { safe("signalDispatch") { dispatcher.dispatch(InCallSignals.toVerdict(sig), sig.label, sig.label, sig.confidence, sig.kind) } }
+            }
         }
         if (info.pkg != packageName && !info.ongoing) ApkRisk.apkNameIn(info.title, info.text)?.let { name ->
             scope.launch { safe("apkGuard") { ApkGuard.warnChatApk(this@ScamNotificationListener, name) } }

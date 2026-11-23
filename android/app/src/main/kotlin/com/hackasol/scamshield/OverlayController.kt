@@ -21,6 +21,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.hackasol.scamshield.core.AlertOverlayState
 import com.hackasol.scamshield.core.AlertPolicy
+import com.hackasol.scamshield.core.InCallSignals
 import com.hackasol.scamshield.core.L10n
 import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.OverlayMode
@@ -37,7 +38,9 @@ import java.util.Locale
 class OverlayController(private val service: AccessibilityService) : BubbleSink {
     private companion object {
         // Card height budget at default font scale: 8 + 8 padding + title 1 line (~24) + why 1 line (~24) + buttons 48 = ~112 dp (cap ~120).
-        const val WHY_MAX_LINES = 1       // title is also 1 line; both ellipsize
+        // Advice must never be cut mid-sentence ("Hang up. Never let a caller…"): 3 lines, title 2.
+        const val WHY_MAX_LINES = 3
+        const val TITLE_MAX_LINES = 2
         const val CARD_MAX_WIDTH_DP = 320 // WIDTH cap (also at most 80% of the screen), not a height
     }
 
@@ -87,7 +90,7 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
             setOnClickListener { apply(state.tap()) }
         }
-        title = TextView(ctx).apply { setTextColor(Color.WHITE); textSize = 16f; setTypeface(typeface, Typeface.BOLD); maxLines = 1; ellipsize = android.text.TextUtils.TruncateAt.END }
+        title = TextView(ctx).apply { setTextColor(Color.WHITE); textSize = 16f; setTypeface(typeface, Typeface.BOLD); maxLines = TITLE_MAX_LINES; ellipsize = android.text.TextUtils.TruncateAt.END }
         why = TextView(ctx).apply { setTextColor(Color.WHITE); textSize = 16f; maxLines = WHY_MAX_LINES; ellipsize = android.text.TextUtils.TruncateAt.END }
         fun btn() = Button(ctx).apply {
             isAllCaps = false; textSize = 14f; maxLines = 1; minHeight = dp(48); minimumHeight = dp(48); setPadding(dp(8), 0, dp(8), 0)
@@ -160,7 +163,9 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
         }
         if (step.render && !AppSettings.overlayEnabled) { closeOrDismiss(); return }   // switched off mid-call: hide instead of re-rendering
         if (step.render) render(step.mode)
-        if (step.armCardTimer) {
+        // A critical in-call signal ("AnyDesk opened", OTP, screen share) waits for an answer instead of folding away.
+        val sticky = prompt == null && signalKind in InCallSignals.CRITICAL_KINDS
+        if (step.armCardTimer && !sticky) {
             cardTimer?.let(handler::removeCallbacks)
             cardTimer = Runnable { if (prompt != null) closeOrDismiss() else apply(state.timerCardExpired()) }.also { handler.postDelayed(it, AlertPolicy.CARD_MS) }
         }
@@ -191,10 +196,15 @@ class OverlayController(private val service: AccessibilityService) : BubbleSink 
             val kind = signalKind
             val icon = L10n.labelIcon(shown)
             title.text = prefix + icon + " " + (if (kind != null) L10n.signalTitle(kind, lang) else L10n.cardTitle(shown, lang))
-            why.text = if (kind != null) L10n.signalAdvice(kind, lang) else L10n.cardWhy(shown, lang)
-            primaryBtn.text = L10n.call1930(lang); primaryBtn.setOnClickListener { dial("1930") }
+            why.text = if (kind != null) L10n.areYouSure(lang) + " " + L10n.signalAdvice(kind, lang) else L10n.cardWhy(shown, lang)
+            if (kind in InCallSignals.LEAVE_APP_KINDS) {
+                primaryBtn.text = L10n.leaveApp(lang)
+                primaryBtn.setOnClickListener { service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME); closeOrDismiss() }
+            } else {
+                primaryBtn.text = L10n.call1930(lang); primaryBtn.setOnClickListener { dial("1930") }
+            }
         }
-        dismissBtn.text = L10n.dismiss(lang)
+        dismissBtn.text = if (prompt == null && signalKind != null) L10n.imSure(lang) else L10n.dismiss(lang)
         card.contentDescription = title.text.toString() + ". " + why.text
         card.visibility = if (mode == OverlayMode.CARD) View.VISIBLE else View.GONE
         chip.visibility = if (mode == OverlayMode.CARD) View.GONE else View.VISIBLE

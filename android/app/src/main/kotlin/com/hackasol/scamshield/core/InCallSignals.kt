@@ -12,6 +12,13 @@ object InCallSignals {
     const val KIND_PAYMENT_APP = "payment_app_during_call"
     const val KIND_SCREEN_SHARE = "screen_share_during_call"
     const val KIND_APP_INSTALLED = "app_installed_during_call"
+    const val OTP_TRIGGER = "OTP"
+
+    /** Signals that ask "Are you sure?" and keep the card open until the user answers (no 10 s auto-collapse). */
+    val CRITICAL_KINDS = setOf(KIND_OTP, KIND_REMOTE_APP, KIND_SCREEN_SHARE, KIND_APP_INSTALLED)
+
+    /** Signals where leaving the app on screen (Home) is the useful first step. */
+    val LEAVE_APP_KINDS = setOf(KIND_REMOTE_APP, KIND_APP_INSTALLED, KIND_PAYMENT_APP)
 
     data class Signal(val kind: String, val label: Label, val confidence: Double, val reason: String, val trigger: String)
 
@@ -59,9 +66,11 @@ object InCallSignals {
 
     /** An OTP notification first, else a screen-share / cast notification. */
     fun fromNotification(text: String): Signal? {
-        OTP_RE.find(text)?.let {
+        if (OTP_RE.containsMatchIn(text)) {
+            // The trigger is a fixed word, never the match: the match can hold the code itself, and alerts show the trigger
+            // (notification shade, live feed) where a caller watching a shared screen would read it.
             return Signal(KIND_OTP, Label.SCAM, 0.93,
-                "OTP arrived during a call — never read it out to the caller", it.value.trim())
+                "OTP arrived during a call — never read it out to the caller", OTP_TRIGGER)
         }
         return ScreenShareMatcher.notificationMatch(text)?.let { screenShare(it) }
     }
@@ -134,5 +143,20 @@ class SignalGate(private val freshMs: Long = 60_000) {
     @Synchronized fun callStartSignal(activePkg: String?, nowMs: Long): InCallSignals.Signal? {
         val recent = lastPkg?.takeIf { nowMs - lastPkgMs <= freshMs }
         return accept(listOfNotNull(activePkg, recent).firstNotNullOfOrNull { InCallSignals.fromForegroundApp(it) })
+    }
+}
+
+/**
+ * In-call signals from the notification listener alone, for when the accessibility service is not running (not granted,
+ * or killed): an OTP or a screen-share notification while the dialer's call notification is up. The accessibility path
+ * handles them when it runs, so this stays silent then (no double alert). One alert per kind per call ([callGeneration]).
+ */
+class ListenerCallSignals(private val gate: SignalGate = SignalGate()) {
+    private var generation = -1L
+
+    fun onNotification(text: String, inCall: Boolean, callGeneration: Long, accessibilityRunning: Boolean, enabled: Boolean): InCallSignals.Signal? {
+        if (!enabled || !inCall || accessibilityRunning) return null
+        synchronized(this) { if (callGeneration != generation) { generation = callGeneration; gate.startCall() } }
+        return gate.accept(InCallSignals.fromNotification(text))
     }
 }

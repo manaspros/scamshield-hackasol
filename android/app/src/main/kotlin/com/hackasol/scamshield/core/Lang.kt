@@ -268,6 +268,12 @@ object L10n {
     fun overallCall(label: Label, riskPct: Int, lang: String) =
         pick(lang, "Overall call: ${label.name} risk $riskPct%", "कुल कॉल: ${label.name} जोखिम $riskPct%")
     fun call1930(lang: String) = pick(lang, "Call 1930", "1930 पर कॉल करें")
+    /** In-call signal card: the question that leads the advice. */
+    fun areYouSure(lang: String) = pick(lang, "Are you sure? This is a common scam.", "क्या आप पक्का हैं? यह आम ठगी है।")
+    /** Second button on an in-call signal card: the user confirms they know what they are doing. */
+    fun imSure(lang: String) = pick(lang, "I'm sure", "मुझे पता है")
+    /** First button when an app opened during the call: go to the Home screen. */
+    fun leaveApp(lang: String) = pick(lang, "Leave this app", "यह ऐप छोड़ें")
     fun dismiss(lang: String) = pick(lang, "Dismiss", "बंद करें")
 
     // Payment-moment guard (hne first draft: [VERIFY] with a native speaker).

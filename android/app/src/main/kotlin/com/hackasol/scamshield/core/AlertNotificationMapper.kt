@@ -34,12 +34,14 @@ object AlertNotificationMapper {
     private const val MAX_TRIGGER = 40
 
     /** Null when the plan does not notify (SAFE, or a live SUSPICIOUS that gets a chip only). */
-    fun fields(plan: AlertPlan, v: Verdict, scamType: ScamType? = null, lang: String = "hi"): NotificationFields? {
+    fun fields(plan: AlertPlan, v: Verdict, scamType: ScamType? = null, lang: String = "hi", signalKind: String? = null): NotificationFields? {
         if (!plan.notify) return null
-        val title = L10n.notifTitle(v.label, lang) ?: return null
-        val advice = L10n.advice(v.label, lang)
-        val trigger = v.triggers.firstOrNull()?.trim()?.takeIf { it.isNotEmpty() }?.take(MAX_TRIGGER)?.let { "\"$it\"" }
-        val text = listOfNotNull(L10n.scamType(scamType, lang), trigger, advice).joinToString(" · ")
+        val title = (if (signalKind != null) L10n.signalTitle(signalKind, lang) else L10n.notifTitle(v.label, lang)) ?: return null
+        val text = if (signalKind != null) L10n.areYouSure(lang) + " " + L10n.signalAdvice(signalKind, lang) else {
+            val advice = L10n.advice(v.label, lang)
+            val trigger = v.triggers.firstOrNull()?.trim()?.takeIf { it.isNotEmpty() }?.take(MAX_TRIGGER)?.let { "\"$it\"" }
+            listOfNotNull(L10n.scamType(scamType, lang), trigger, advice).joinToString(" · ")
+        }
         val report = ActionSpec(L10n.reportAction(lang), ROUTE_REPORT)
         // Report action is unconditional whenever we notify (T1.7 requirement). Only the heads-up adds Details.
         return if (plan.headsUp) NotificationFields(CHANNEL_ID_ALERTS, title, text, priorityHigh = true,
