@@ -35,6 +35,8 @@ object DemoChannel {
         CoroutineExceptionHandler { _, t -> Log.e(TAG, "uncaught", t) })
     private val runLock = Mutex()
     private const val DEMO_PREFIX = "[DEMO] "
+    /** Demo alerts post as 7101 / 7103, never 7001 / 7003, so a demo cannot replace a real alert in the shade. */
+    private const val DEMO_ID_OFFSET = 100
 
     /** The running service's bubble, read now (never cached), with any failure swallowed so a dying service can't fail a demo run. */
     private fun liveSink(): BubbleSink? {
@@ -51,7 +53,7 @@ object DemoChannel {
 
     fun register(activity: Activity, messenger: BinaryMessenger) {
         // Built per run: the accessibility service may start (or die) after this channel was registered.
-        val dispatcher = { AlertDispatcher(activity.applicationContext, liveSink(), DEMO_PREFIX) }
+        val dispatcher = { AlertDispatcher(activity.applicationContext, liveSink(), DEMO_PREFIX, DEMO_ID_OFFSET) }
         MethodChannel(messenger, "scamshield/demo").setMethodCallHandler { call, result ->
             when (call.method) {
                 "demo.scenarios" -> result.success(DemoScenarios.ALL.map { it.toChannelMap() })
