@@ -122,6 +122,14 @@ class HomeApi {
     return m?.cast<Object?, Object?>();
   }
 
+  /// Clears everything learned on the phone; [alerts] also clears Past alerts. False on any failure.
+  Future<bool> deleteData({required bool alerts}) async =>
+      (await _call<Map<Object?, Object?>>(handoff, 'graph.delete', {'alerts': alerts}))?['ok'] == true;
+
+  /// Remembers the sender of the alert at [tsMs] as safe or scam. False: no stored sender (or failure).
+  Future<bool> markFeedback(int tsMs, {required bool safe}) async =>
+      await _call<bool>(handoff, 'feedback.mark', {'tsMs': tsMs, 'verdict': safe ? 'safe' : 'scam'}) ?? false;
+
   /// Builds the evidence ZIP (one event by [id], else the last 24 h). Null if the native side failed.
   Future<EvidenceResult?> makeEvidence({int? id}) async {
     final m = await _call<Map<Object?, Object?>>(handoff, 'evidence.make', {'id': id});

@@ -153,6 +153,23 @@ class AlertDetail extends StatelessWidget {
         icon: const Icon(Icons.inventory_2, size: 28),
         label: Text(t('al_make'), textAlign: TextAlign.center),
       ),
+      const SizedBox(height: Sp.m),
+      for (final safe in const [true, false])
+        Padding(
+          padding: const EdgeInsets.only(bottom: Sp.s),
+          child: OutlinedButton(
+            key: Key(safe ? 'alert_mark_safe' : 'alert_mark_scam'),
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
+            onPressed: () async {
+              final ok = await api.markFeedback(alert.tsMs, safe: safe);
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(t(!ok ? 'fb_none' : safe ? 'fb_safe_ok' : 'fb_scam_ok'))));
+            },
+            child: Text(t(safe ? 'fb_safe' : 'fb_scam'), textAlign: TextAlign.center),
+          ),
+        ),
+      Text(t('fb_note'), style: th.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
     ]);
   }
 }

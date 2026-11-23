@@ -51,7 +51,11 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
     final personal = (g['personalSenders'] as num?)?.toInt() ?? 0, personalMsgs = (g['personalMessages'] as num?)?.toInt() ?? 0;
     final numbers = (g['numbers'] as num?)?.toInt() ?? 0, upi = (g['upiIds'] as num?)?.toInt() ?? 0;
     if (g['empty'] == true && brands.isEmpty && senders.isEmpty && personal == 0) {
-      return Center(child: StateMessage(icon: Icons.hub_outlined, title: t('kn_empty_t'), subtitle: t('kn_empty_s')));
+      return ListView(padding: const EdgeInsets.all(Sp.l), children: [
+        StateMessage(icon: Icons.hub_outlined, title: t('kn_empty_t'), subtitle: t('kn_empty_s')),
+        const SizedBox(height: Sp.xl),
+        _deleteButton(t, cs),
+      ]);
     }
 
     String ago(Object? ms) => agoIn(lang, (ms as num?)?.toInt() ?? 0);
@@ -113,6 +117,57 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
         ]),
       Text(t('kn_learned', {'n': g['ingested'] ?? 0}),
           textAlign: TextAlign.center, style: th.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+      const SizedBox(height: Sp.xl),
+      _deleteButton(t, cs),
     ]);
+  }
+
+  Widget _deleteButton(String Function(String, [Map<String, Object?>]) t, ColorScheme cs) => OutlinedButton.icon(
+        key: const Key('kn_delete'),
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(kTouch),
+          foregroundColor: cs.error,
+          side: BorderSide(color: cs.error),
+        ),
+        onPressed: () => _confirmDelete(t),
+        icon: const Icon(Icons.delete_outline),
+        label: Text(t('kn_del'), textAlign: TextAlign.center),
+      );
+
+  Future<void> _confirmDelete(String Function(String, [Map<String, Object?>]) t) async {
+    var alerts = false;
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          title: Text(t('kn_del_t')),
+          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(t('kn_del_b')),
+            CheckboxListTile(
+              key: const Key('kn_del_alerts'),
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              value: alerts,
+              onChanged: (v) => setD(() => alerts = v ?? false),
+              title: Text(t('kn_del_alerts')),
+            ),
+          ]),
+          actions: [
+            TextButton(key: const Key('kn_del_cancel'), onPressed: () => Navigator.pop(ctx, false), child: Text(t('kn_cancel'))),
+            TextButton(
+              key: const Key('kn_del_confirm'),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(ctx).colorScheme.error),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(t('kn_del_ok')),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (yes != true) return;
+    final ok = await widget.api.deleteData(alerts: alerts);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(ok ? 'kn_deleted' : 'kn_del_err'))));
+    if (ok) await _load();
   }
 }
