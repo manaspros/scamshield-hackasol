@@ -175,6 +175,7 @@ void main() {
     test('largest hosted model that fits; unhosted ones are never recommended', () {
       expect(recommendModelId(kFallbackCatalog, dev6), 'gemma3-1b-int4');
       expect(recommendModelId(kFallbackCatalog, const DeviceInfo(totalRamMb: 12000, freeStorageMb: 50000)), 'gemma3-1b-int4');
+      expect(recommendModelId(kFallbackCatalog, const DeviceInfo(totalRamMb: 3500, freeStorageMb: 50000)), 'gemma3-270m');
       final hosted = [for (final m in kFallbackCatalog) ModelSpec(id: m.id, name: m.name, file: m.file, sizeMb: m.sizeMb, minRamMb: m.minRamMb, tier: m.tier, url: 'u')];
       expect(recommendModelId(hosted, const DeviceInfo(totalRamMb: 12000, freeStorageMb: 50000)), 'gemma3n-e2b');
       expect(recommendModelId(hosted, dev6), 'gemma3-1b-int4');
