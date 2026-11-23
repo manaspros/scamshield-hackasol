@@ -7,9 +7,23 @@ import '../theme/tokens.dart';
 /// Mirrors the on-call overlay bubble: "This statement is SCAM · 87%".
 /// Tinted surface + solid icon/label, so meaning never rests on colour alone.
 class VerdictCard extends StatelessWidget {
-  const VerdictCard({super.key, required this.verdict, this.compact = false});
+  const VerdictCard({
+    super.key,
+    required this.verdict,
+    this.compact = false,
+    this.adviceTitle,
+    this.advice = const [],
+    this.footer,
+  });
   final Verdict verdict;
   final bool compact;
+
+  /// Optional "what to do now" block: a calm heading and 1-2 short imperative lines.
+  final String? adviceTitle;
+  final List<String> advice;
+
+  /// Optional slot under the advice, e.g. a helpline row or a Report button.
+  final Widget? footer;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +72,20 @@ class VerdictCard extends StatelessWidget {
                 ),
             ]),
           ),
+        if (advice.isNotEmpty) ...[
+          const SizedBox(height: Sp.m),
+          if (adviceTitle != null) Text(adviceTitle!, style: tt.titleMedium),
+          for (final line in advice)
+            Padding(
+              padding: const EdgeInsets.only(top: Sp.s),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Icon(Icons.task_alt, size: 28, color: solid),
+                const SizedBox(width: Sp.s),
+                Expanded(child: Text(line, style: tt.titleMedium)),
+              ]),
+            ),
+        ],
+        if (footer != null) ...[const SizedBox(height: Sp.m), footer!],
         const SizedBox(height: Sp.s),
         Text('${v.engine} · ${v.latencyMs} ms · ${v.source}', style: muted),
       ]),

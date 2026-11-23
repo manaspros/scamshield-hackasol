@@ -7,7 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/lessons/lesson_model.dart';
+import 'package:scamshield/lessons/quiz_engine.dart';
 import 'package:scamshield/models/verdict.dart';
+import 'package:scamshield/screens/lessons_screen.dart';
+import 'package:scamshield/screens/live_feed_screen.dart';
+import 'package:scamshield/screens/quiz_screen.dart';
+import 'package:scamshield/screens/setup_screen.dart';
 import 'package:scamshield/theme/app_theme.dart';
 import 'package:scamshield/widgets/action_tile.dart';
 import 'package:scamshield/widgets/charts/bar_chart.dart';
@@ -25,23 +31,33 @@ Future<void> _font(String family, String path) async {
   await loader.load();
 }
 
+Future<bool> _loadFonts(WidgetTester tester) async {
+  final flutterBin = Platform.environment['FLUTTER_ROOT'];
+  final sdk = flutterBin ?? File(Platform.resolvedExecutable).parent.parent.parent.parent.path;
+  final fonts = '$sdk/bin/cache/artifacts/material_fonts';
+  try {
+    Directory(_out).createSync(recursive: true);
+    await tester.runAsync(() async {
+      await _font('Roboto', '$fonts/Roboto-Regular.ttf');
+      await _font('Roboto', '$fonts/Roboto-Medium.ttf');
+      await _font('Roboto', '$fonts/Roboto-Bold.ttf');
+      await _font('MaterialIcons', '$fonts/MaterialIcons-Regular.otf');
+      await _font('Deva', '/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc');
+    });
+    return true;
+  } catch (_) {
+    return false; // fonts or dir unavailable: skip
+  }
+}
+
+class _DiskBundle extends CachingAssetBundle {
+  @override
+  Future<ByteData> load(String key) async => ByteData.sublistView(Uint8List.fromList(File(key).readAsBytesSync()));
+}
+
 void main() {
   testWidgets('shots: render design system light + dark', (tester) async {
-    final flutterBin = Platform.environment['FLUTTER_ROOT'];
-    final sdk = flutterBin ?? File(Platform.resolvedExecutable).parent.parent.parent.parent.path;
-    final fonts = '$sdk/bin/cache/artifacts/material_fonts';
-    try {
-      Directory(_out).createSync(recursive: true);
-      await tester.runAsync(() async {
-        await _font('Roboto', '$fonts/Roboto-Regular.ttf');
-        await _font('Roboto', '$fonts/Roboto-Medium.ttf');
-        await _font('Roboto', '$fonts/Roboto-Bold.ttf');
-        await _font('MaterialIcons', '$fonts/MaterialIcons-Regular.otf');
-        await _font('Deva', '/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc');
-      });
-    } catch (_) {
-      return; // fonts or dir unavailable: skip
-    }
+    if (!await _loadFonts(tester)) return;
 
     const verdicts = [
       Verdict(
@@ -129,6 +145,93 @@ void main() {
         final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
         File('$_out/design_${dark ? 'dark' : 'light'}.png').writeAsBytesSync(bytes!.buffer.asUint8List());
       });
+    }
+  });
+
+  testWidgets('shots: restyled screens light + dark', (tester) async {
+    if (!await _loadFonts(tester)) return;
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/events'), (_) async => null);
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), (c) async => switch (c.method) {
+          'serviceStatus' => {'enabled': true, 'connected': true},
+          'modelStatus' => {'status': 'READY', 'message': '', 'path': '/data/model.task', 'sizeMb': 555},
+          'downloadStatus' => {'status': 'IDLE'},
+          'micPermission' => true,
+          'perm.notificationsGranted' => false,
+          'perm.notificationAccessGranted' => true,
+          _ => null,
+        });
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/events'), null);
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), null);
+    });
+    final lessons = loadLessonsFromJson(File('assets/lessons/hi.json').readAsStringSync());
+    final store = InMemoryQuizStore();
+    await store.saveBest({'otp': 100});
+    final engine = QuizEngine(lessons, store);
+    await engine.load();
+
+    for (final dark in [false, true]) {
+      final base = dark ? AppTheme.dark() : AppTheme.light();
+      TextStyle? f(TextStyle? s) => s?.copyWith(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']);
+      final theme = base.copyWith(
+          textTheme: base.textTheme.apply(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']),
+          appBarTheme: base.appBarTheme.copyWith(titleTextStyle: f(base.appBarTheme.titleTextStyle)),
+          chipTheme: base.chipTheme.copyWith(labelStyle: f(base.chipTheme.labelStyle)));
+      tester.view.physicalSize = const Size(720, 1600);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.reset);
+
+      final screens = <String, Widget>{
+        'lessons': LessonsScreen(store: store, bundle: _DiskBundle()),
+        'quiz': QuizScreen(lesson: lessons.first, engine: engine, lang: 'hi'),
+        'setup': const SetupScreen(),
+        'live_feed': const LiveFeedScreen(),
+      };
+      for (final e in screens.entries) {
+        final key = GlobalKey();
+        await tester.pumpWidget(MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: theme,
+          home: RepaintBoundary(key: key, child: Scaffold(appBar: AppBar(title: Text(e.key)), body: e.value)),
+        ));
+        await tester.pumpAndSettle();
+        if (e.key == 'quiz') {
+          await tester.tap(find.byKey(const Key('cards_next')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('cards_next')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('cards_next')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('option_1')));
+          await tester.pumpAndSettle();
+        }
+        if (e.key == 'live_feed') {
+          messenger.handlePlatformMessage(
+              'scamshield/events',
+              const StandardMethodCodec().encodeSuccessEnvelope({
+                'type': 'verdict',
+                'text': 'ओटीपी बताइए',
+                'label': 'SCAM',
+                'confidence': 0.87,
+                'reason': 'कॉल करने वाला ओटीपी माँग रहा है',
+                'triggers': ['ओटीपी बताइए'],
+                'engine': 'gemma+rules',
+                'latencyMs': 1420,
+                'source': 'caption',
+                'callRisk': 0.8,
+                'callLevel': 'SCAM',
+              }),
+              (_) {});
+          await tester.pumpAndSettle();
+        }
+        await tester.runAsync(() async {
+          final b = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+          final img = await b.toImage(pixelRatio: 1);
+          final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+          File('$_out/screen_${e.key}_${dark ? 'dark' : 'light'}.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+        });
+      }
     }
   });
 }

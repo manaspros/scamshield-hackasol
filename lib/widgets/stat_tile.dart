@@ -5,10 +5,13 @@ import '../theme/tokens.dart';
 
 /// Big number with a caption, e.g. "87%" / "सही जवाब".
 class StatTile extends StatelessWidget {
-  const StatTile({super.key, required this.value, required this.caption, this.icon});
+  const StatTile({super.key, required this.value, required this.caption, this.icon, this.valueKey});
   final String value;
   final String caption;
   final IconData? icon;
+
+  /// Key for the value [Text], so tests can read the number.
+  final Key? valueKey;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +35,7 @@ class StatTile extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(value, style: AppText.display.copyWith(fontSize: 48, color: cs.onSurface)),
+            child: Text(value, key: valueKey, style: AppText.display.copyWith(fontSize: 48, color: cs.onSurface)),
           ),
           const SizedBox(height: Sp.xs),
           Text(caption, style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),

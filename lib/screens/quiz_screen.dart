@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../lessons/lesson_model.dart';
 import '../lessons/quiz_engine.dart';
+import '../models/verdict.dart';
+import '../theme/app_theme.dart';
+import '../theme/tokens.dart';
+import '../widgets/stat_tile.dart';
 
 /// UI strings per language. `hne` is a draft pending native-speaker sign-off (T3.6).
 class LessonStrings {
@@ -26,6 +30,12 @@ class LessonStrings {
     'toList': 'सूची पर लौटें',
     'thisTime': 'इस बार',
     'question': 'सवाल',
+    'loading': 'पाठ लोड हो रहे हैं…',
+    'error': 'पाठ नहीं खुल सके। फिर कोशिश करें।',
+    'retry': 'फिर कोशिश करें',
+    'empty': 'अभी कोई पाठ नहीं है',
+    'emptyHint': 'नए पाठ आने पर यहाँ दिखेंगे',
+    'pick': 'सही जवाब चुनें',
   });
   static const hne = LessonStrings({
     'title': 'सीखव',
@@ -44,6 +54,12 @@ class LessonStrings {
     'toList': 'सूची म लहुटव',
     'thisTime': 'ए पइत',
     'question': 'सवाल',
+    'loading': 'पाठ लोड होवत हे…',
+    'error': 'पाठ नइ खुल सकिस। फेर कोशिश करव।',
+    'retry': 'फेर कोशिश करव',
+    'empty': 'अभी कोनो पाठ नइहे',
+    'emptyHint': 'नवा पाठ आही त इहाँ दिखही',
+    'pick': 'सही जवाब चुनव',
   });
   static const en = LessonStrings({
     'title': 'Learn',
@@ -62,6 +78,12 @@ class LessonStrings {
     'toList': 'Back to lessons',
     'thisTime': 'This time',
     'question': 'Question',
+    'loading': 'Loading lessons…',
+    'error': 'Could not open the lessons. Try again.',
+    'retry': 'Try again',
+    'empty': 'No lessons yet',
+    'emptyHint': 'New lessons will appear here',
+    'pick': 'Pick the right answer',
   });
 
   static LessonStrings of(String lang) => switch (lang) {
@@ -158,8 +180,7 @@ class _QuizScreenState extends State<QuizScreen> {
   }) {
     final style =
         (outlined ? OutlinedButton.styleFrom : FilledButton.styleFrom)(
-          minimumSize: const Size.fromHeight(64),
-          textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          minimumSize: const Size.fromHeight(kTouch),
         );
     return outlined
         ? OutlinedButton(
@@ -190,30 +211,18 @@ class _QuizScreenState extends State<QuizScreen> {
             itemBuilder: (_, i) {
               final c = _lesson.cards[i];
               return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(Sp.l),
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(Sp.xl),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.shield,
-                          size: 48,
-                          color: theme.colorScheme.primary,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          c.title,
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          c.body,
-                          style: const TextStyle(fontSize: 20, height: 1.4),
-                        ),
+                        Icon(Icons.shield, size: 56, color: theme.colorScheme.primary),
+                        const SizedBox(height: Sp.m),
+                        Text(c.title, style: theme.textTheme.headlineSmall),
+                        const SizedBox(height: Sp.m),
+                        Text(c.body, style: theme.textTheme.bodyLarge),
                       ],
                     ),
                   ),
@@ -229,7 +238,7 @@ class _QuizScreenState extends State<QuizScreen> {
               Container(
                 width: 12,
                 height: 12,
-                margin: const EdgeInsets.all(6),
+                margin: const EdgeInsets.all(Sp.s),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: i == _card
@@ -240,7 +249,7 @@ class _QuizScreenState extends State<QuizScreen> {
           ],
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+          padding: const EdgeInsets.fromLTRB(Sp.l, Sp.xs, Sp.l, Sp.l),
           child: _bigButton(
             last ? _s['startQuiz'] : _s['next'],
             () => last
@@ -258,93 +267,108 @@ class _QuizScreenState extends State<QuizScreen> {
 
   Widget _quiz(BuildContext context) {
     final theme = Theme.of(context);
+    final st = theme.extension<StatusColors>() ?? StatusColors.light;
     final q = _lesson.questions[_q];
     final answered = _picked != null;
     final right = answered && _picked == q.correctIndex;
-    final fb = right ? Colors.green.shade800 : theme.colorScheme.error;
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    final fbLabel = right ? RiskLabel.safe : RiskLabel.scam;
+    final fb = st.solid(fbLabel);
+    return Column(children: [
+      Expanded(
+        child: ListView(
+      padding: const EdgeInsets.all(Sp.l),
       children: [
-        Text(
-          '${_s['question']} ${_q + 1}/${_lesson.questions.length}',
-          style: theme.textTheme.titleMedium,
+        Row(
+          children: [
+            Icon(Icons.help_outline, size: 32, color: theme.colorScheme.primary),
+            const SizedBox(width: Sp.s),
+            Expanded(
+              child: Text(
+                '${_s['question']} ${_q + 1}/${_lesson.questions.length}',
+                style: theme.textTheme.titleMedium,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: Sp.s),
         Text(
           q.question,
           key: const Key('question_text'),
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: theme.textTheme.headlineSmall,
         ),
-        const SizedBox(height: 16),
-        for (var i = 0; i < q.options.length; i++) _option(context, q, i),
+        if (!answered)
+          Padding(
+            padding: const EdgeInsets.only(top: Sp.xs),
+            child: Text(_s['pick'],
+                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          ),
         if (answered) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: Sp.l),
           Container(
             key: const Key('feedback'),
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(Sp.l),
             decoration: BoxDecoration(
+              color: st.tintOver(fbLabel, theme.colorScheme.surface),
               border: Border.all(color: fb, width: 2),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(Rad.lg),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(
-                      right ? Icons.check_circle : Icons.cancel,
-                      color: fb,
-                      size: 32,
-                    ),
-                    const SizedBox(width: 8),
+                    Icon(right ? Icons.check_circle : Icons.cancel, color: fb, size: 40),
+                    const SizedBox(width: Sp.s),
                     Expanded(
                       child: Text(
                         right ? _s['right'] : _s['wrong'],
-                        style: TextStyle(
-                          color: fb,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: theme.textTheme.titleLarge?.copyWith(color: fb),
                       ),
                     ),
                   ],
                 ),
                 if (!right) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: Sp.s),
                   Text(
                     '${_s['answerWas']} ${q.options[q.correctIndex]}',
-                    style: const TextStyle(fontSize: 18),
+                    style: theme.textTheme.bodyLarge,
                   ),
                 ],
-                const SizedBox(height: 6),
-                Text(q.explanation, style: const TextStyle(fontSize: 18)),
+                const SizedBox(height: Sp.s),
+                Text(q.explanation, style: theme.textTheme.bodyLarge),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          _bigButton(
+        ],
+        const SizedBox(height: Sp.l),
+        for (var i = 0; i < q.options.length; i++) _option(context, q, i),
+      ],
+        ),
+      ),
+      if (answered)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(Sp.l, Sp.s, Sp.l, Sp.l),
+          child: _bigButton(
             _q + 1 < _lesson.questions.length ? _s['nextQ'] : _s['finish'],
             _advance,
             key: const Key('quiz_next'),
           ),
-        ],
-      ],
-    );
+        ),
+    ]);
   }
 
   Widget _option(BuildContext context, QuizQuestion q, int i) {
     final theme = Theme.of(context);
+    final st = theme.extension<StatusColors>() ?? StatusColors.light;
     final answered = _picked != null;
     final isRight = i == q.correctIndex;
     final isPicked = i == _picked;
     final color = !answered
         ? theme.colorScheme.primary
         : isRight
-        ? Colors.green.shade800
+        ? st.safe
         : isPicked
-        ? theme.colorScheme.error
+        ? st.scam
         : theme.colorScheme.outline;
     final icon = !answered
         ? Icons.radio_button_unchecked
@@ -354,18 +378,18 @@ class _QuizScreenState extends State<QuizScreen> {
         ? Icons.cancel
         : Icons.radio_button_unchecked;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: Sp.m),
       child: OutlinedButton(
         key: Key('option_$i'),
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size.fromHeight(64),
+          minimumSize: const Size.fromHeight(kTouch),
           alignment: Alignment.centerLeft,
           foregroundColor: color,
           side: BorderSide(
             color: color,
             width: answered && (isRight || isPicked) ? 3 : 1.5,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: Sp.l, vertical: Sp.m),
         ),
         onPressed: answered
             ? null
@@ -375,10 +399,10 @@ class _QuizScreenState extends State<QuizScreen> {
               }),
         child: Row(
           children: [
-            Icon(icon, size: 28),
-            const SizedBox(width: 12),
+            Icon(icon, size: 32),
+            const SizedBox(width: Sp.m),
             Expanded(
-              child: Text(q.options[i], style: const TextStyle(fontSize: 20)),
+              child: Text(q.options[i]),
             ),
           ],
         ),
@@ -387,42 +411,25 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Widget _resultView(BuildContext context) {
-    final theme = Theme.of(context);
     final r = _result!;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(Sp.l),
       children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                Text(
-                  '${_s['thisTime']}: ${r.correct}/${r.total}',
-                  style: theme.textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _s['score'],
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium,
-                ),
-                Text(
-                  '${widget.engine.score}',
-                  key: const Key('result_score'),
-                  style: theme.textTheme.displayLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                Text('/ 100', style: theme.textTheme.titleMedium),
-              ],
-            ),
-          ),
+        StatTile(
+          value: '${r.correct}/${r.total}',
+          caption: _s['thisTime'],
+          icon: Icons.check_circle,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Sp.m),
+        StatTile(
+          value: '${widget.engine.score}',
+          valueKey: const Key('result_score'),
+          caption: '${_s['score']} (/ 100)',
+          icon: Icons.shield,
+        ),
+        const SizedBox(height: Sp.l),
         _bigButton(_s['again'], _restart, key: const Key('result_again')),
-        const SizedBox(height: 12),
+        const SizedBox(height: Sp.m),
         _bigButton(
           _s['toList'],
           () => Navigator.of(context).pop(),

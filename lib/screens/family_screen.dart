@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart' show StatusColors;
+import '../theme/text_styles.dart';
 import '../theme/tokens.dart';
-import '../widgets/action_tile.dart';
 import '../widgets/section_header.dart';
+import '../widgets/state_message.dart';
 
 /// Family code: pair two phones with a shared secret, then compare a rotating
 /// 6-digit code against what a caller claims. Codes are computed natively.
@@ -49,6 +50,8 @@ const _s = <String, Map<String, String>>{
     'noMsg': 'फ़ोन काट दें। अपने परिवार के सदस्य को उनके जाने-पहचाने नंबर पर फ़ोन करें।',
     'unpair': 'जोड़ी हटाएँ',
     'err': 'कोड नहीं मिल सका। फिर कोशिश करें।',
+    'retry': 'फिर कोशिश करें',
+    'loading': 'कोड जाँचा जा रहा है…',
   },
   'hne': {
     'title': 'परिवार के कोड',
@@ -69,6 +72,8 @@ const _s = <String, Map<String, String>>{
     'noMsg': 'फ़ोन काट देव। अपन परिवार वाले ल ओकर जाने-पहिचाने नंबर म फ़ोन करव।',
     'unpair': 'जोड़ी हटावव',
     'err': 'कोड नइ मिलिस। फेर कोशिश करव।',
+    'retry': 'फेर कोशिश करव',
+    'loading': 'कोड जाँचत हे…',
   },
   'en': {
     'title': 'Family code',
@@ -89,6 +94,8 @@ const _s = <String, Map<String, String>>{
     'noMsg': 'Hang up. Call your family member on their known number.',
     'unpair': 'Remove pairing',
     'err': 'Could not get the code. Try again.',
+    'retry': 'Try again',
+    'loading': 'Checking the code…',
   },
 };
 
@@ -186,21 +193,23 @@ class _FamilyScreenState extends State<FamilyScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(Sp.l),
       children: [
-        Wrap(spacing: 8, runSpacing: 4, children: [
+        Wrap(spacing: Sp.s, runSpacing: Sp.s, children: [
           for (final (code, label) in const [('hi', 'हिन्दी'), ('hne', 'छत्तीसगढ़ी'), ('en', 'English')])
             ChoiceChip(
               key: Key('lang_$code'),
-              label: Text(label, style: const TextStyle(fontSize: 16)),
+              label: Text(label),
               selected: _lang == code,
               onSelected: (_) => setState(() => _lang = code),
             ),
         ]),
-        const SizedBox(height: 12),
-        SectionHeader(title: t('title'), icon: Icons.family_restroom, subtitle: t('intro')),
+        const SizedBox(height: Sp.m),
+        // Intro only on the first screens; later stages need the room for the code.
+        if (_stage == _Stage.loading || _stage == _Stage.choose)
+          SectionHeader(title: t('title'), icon: Icons.family_restroom, subtitle: t('intro')),
         ...switch (_stage) {
-          _Stage.loading => [const Center(child: CircularProgressIndicator())],
+          _Stage.loading => [StateMessage(loading: true, title: t('loading'))],
           _Stage.choose => _choose(theme),
           _Stage.showSecret => _showSecret(theme),
           _Stage.enterSecret => _enterSecret(theme),
@@ -212,62 +221,58 @@ class _FamilyScreenState extends State<FamilyScreen> {
 
   Widget _big(Key key, IconData icon, String label, VoidCallback onTap, {Color? bg, Color? fg}) =>
       Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: FilledButton(
+        padding: const EdgeInsets.only(bottom: Sp.m),
+        child: FilledButton.icon(
           key: key,
           onPressed: onTap,
           style: FilledButton.styleFrom(
-            backgroundColor: bg,
-            foregroundColor: fg,
-            shape: const StadiumBorder(),
-            minimumSize: const Size.fromHeight(72),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          ),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(icon, size: 32),
-            const SizedBox(width: 12),
-            Flexible(child: Text(label, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600))),
-          ]),
+              backgroundColor: bg, foregroundColor: fg, minimumSize: const Size.fromHeight(kTouch)),
+          icon: Icon(icon, size: 32),
+          label: Text(label, textAlign: TextAlign.center),
         ),
       );
 
   List<Widget> _choose(ThemeData theme) => [
-        if (_failed) Text(t('err'), style: TextStyle(color: theme.colorScheme.error, fontWeight: FontWeight.w600)),
-        Padding(
-          padding: const EdgeInsets.only(bottom: Sp.m),
-          child: ActionTile(key: const Key('family_show'), icon: Icons.visibility, label: t('show'), onTap: _showMine),
+        if (_failed)
+          StateMessage(icon: Icons.error_outline, title: t('err'), actionLabel: t('retry'), onAction: _showMine),
+        // One primary action; entering a code by hand is the secondary path.
+        _big(const Key('family_show'), Icons.visibility, t('show'), _showMine),
+        OutlinedButton.icon(
+          key: const Key('family_enter'),
+          style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
+          onPressed: () => setState(() => _stage = _Stage.enterSecret),
+          icon: const Icon(Icons.keyboard, size: 32),
+          label: Text(t('enter'), textAlign: TextAlign.center),
         ),
-        ActionTile(
-            key: const Key('family_enter'),
-            icon: Icons.keyboard,
-            label: t('enter'),
-            onTap: () => setState(() => _stage = _Stage.enterSecret)),
       ];
 
   List<Widget> _showSecret(ThemeData theme) {
     final groups = [for (var i = 0; i < _secret.length; i += 4) _secret.substring(i, (i + 4).clamp(0, _secret.length))];
     return [
       Text(t('secretTitle'), style: theme.textTheme.titleLarge),
-      const SizedBox(height: 12),
+      const SizedBox(height: Sp.m),
       Card(
         color: theme.colorScheme.surfaceContainerHighest,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(Sp.l),
           child: Wrap(
             alignment: WrapAlignment.center,
-            spacing: 16,
-            runSpacing: 8,
+            spacing: Sp.l,
+            runSpacing: Sp.s,
             children: [
               for (final g in groups)
+                // Each group sits in its own Row: same test key x4 must not be siblings.
+                Row(mainAxisSize: MainAxisSize.min, children: [
                 Text(g,
                     key: const Key('family_secret_group'),
                     style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700, letterSpacing: 0, fontFeatures: const [FontFeature.tabularFigures()])),
+                        fontFeatures: const [FontFeature.tabularFigures()])),
+                ]),
             ],
           ),
         ),
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: Sp.m),
       _big(const Key('family_done'), Icons.check_circle, t('done'), _startCode),
     ];
   }
@@ -280,22 +285,28 @@ class _FamilyScreenState extends State<FamilyScreen> {
           textCapitalization: TextCapitalization.characters,
           autocorrect: false,
           enableSuggestions: false,
-          style: const TextStyle(fontSize: 24, letterSpacing: 0, fontFeatures: [FontFeature.tabularFigures()]),
+          style: theme.textTheme.headlineSmall?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
           decoration: InputDecoration(
             labelText: t('field'),
             errorText: _fieldError,
             errorMaxLines: 3,
-            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(11))),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Sp.m),
         _big(const Key('family_save'), Icons.save, t('save'), _save),
       ];
 
   List<Widget> _codeView(ThemeData theme) {
     if (_failed) {
-      return [Text(t('err'), style: TextStyle(color: theme.colorScheme.error, fontSize: 20, fontWeight: FontWeight.w600)),
-        _big(const Key('family_unpair'), Icons.link_off, t('unpair'), _unpair)];
+      return [
+        StateMessage(icon: Icons.error_outline, title: t('err'), actionLabel: t('retry'), onAction: _fetch),
+        TextButton.icon(
+          key: const Key('family_unpair'),
+          onPressed: _unpair,
+          icon: const Icon(Icons.link_off),
+          label: Text(t('unpair'), textAlign: TextAlign.center),
+        ),
+      ];
     }
     final spaced = _code.length == 6 ? '${_code.substring(0, 3)} ${_code.substring(3)}' : _code;
     final st = theme.extension<StatusColors>()!;
@@ -303,7 +314,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
     final no = st.scam;
     return [
       Text(t('now'), style: theme.textTheme.titleMedium),
-      const SizedBox(height: 8),
+      const SizedBox(height: Sp.s),
       Center(
         child: SizedBox(
           width: 280,
@@ -319,13 +330,13 @@ class _FamilyScreenState extends State<FamilyScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.symmetric(horizontal: Sp.xxl),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(spaced,
                       key: const Key('family_code'),
-                      style: const TextStyle(fontSize: 56, fontWeight: FontWeight.w700, letterSpacing: 0, fontFeatures: [FontFeature.tabularFigures()])),
+                      style: AppText.display.copyWith(fontSize: 56, color: theme.colorScheme.onSurface, fontFeatures: const [FontFeature.tabularFigures()])),
                 ),
                 FittedBox(
                   fit: BoxFit.scaleDown,
@@ -338,9 +349,9 @@ class _FamilyScreenState extends State<FamilyScreen> {
           ]),
         ),
       ),
-      const SizedBox(height: 16),
-      Text(t('ask'), textAlign: TextAlign.center, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
-      const SizedBox(height: 12),
+      const SizedBox(height: Sp.l),
+      Text(t('ask'), textAlign: TextAlign.center, style: theme.textTheme.headlineSmall),
+      const SizedBox(height: Sp.m),
       _big(const Key('family_yes'), Icons.check_circle, t('yes'), () => setState(() => _match = true),
           bg: yes, fg: theme.colorScheme.surface),
       _big(const Key('family_no'), Icons.cancel, t('no'), () => setState(() => _match = false),
@@ -349,25 +360,25 @@ class _FamilyScreenState extends State<FamilyScreen> {
         _banner(const Key('family_yes_msg'), Icons.check_circle, t('yesMsg'), yes, theme),
       if (_match == false)
         _banner(const Key('family_no_warning'), Icons.warning_amber_rounded, t('noMsg'), no, theme),
-      const SizedBox(height: 8),
+      const SizedBox(height: Sp.s),
       TextButton.icon(
         key: const Key('family_unpair'),
         onPressed: _unpair,
         icon: const Icon(Icons.link_off),
-        label: Text(t('unpair'), style: const TextStyle(fontSize: 16)),
+        label: Text(t('unpair'), textAlign: TextAlign.center),
       ),
     ];
   }
 
   Widget _banner(Key key, IconData icon, String msg, Color c, ThemeData theme) => Container(
         key: key,
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Color.alphaBlend(c.withValues(alpha: theme.extension<StatusColors>()!.tintAlpha), theme.colorScheme.surface), border: Border.all(color: c, width: 3), borderRadius: BorderRadius.circular(18)),
+        margin: const EdgeInsets.only(bottom: Sp.s),
+        padding: const EdgeInsets.all(Sp.l),
+        decoration: BoxDecoration(color: Color.alphaBlend(c.withValues(alpha: theme.extension<StatusColors>()!.tintAlpha), theme.colorScheme.surface), border: Border.all(color: c, width: 3), borderRadius: BorderRadius.circular(Rad.lg)),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Icon(icon, color: c, size: 36),
-          const SizedBox(width: 10),
-          Expanded(child: Text(msg, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: c))),
+          const SizedBox(width: Sp.m),
+          Expanded(child: Text(msg, style: theme.textTheme.titleMedium?.copyWith(color: c))),
         ]),
       );
 }
