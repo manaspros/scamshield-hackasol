@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T3.11 [sonnet] Navigation: tabs Setup/Check/Live/Learn/Help (Help: Report, Family, Settings), persistent 'ठगे गए? 1930' entry -> Report, nav/app bar text clamped to 1.2, route=report deep link (UX audit #1, #9) — 2026-11-23 — flutter test test/nav_test.dart test/qa/qa_nav_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T2.6 [sonnet] Vosk offline STT (com.alphacephei:vosk-android 0.3.75, JNA 5.18.1 transitive), vosk-model-small-hi-0.22 downloaded on device via ModelDownloader (zip traversal guard), SttResultParser — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*SttResultParserTest*' && flutter build apk --debug --android-skip-build-dependency-validation && flutter build apk --release --split-per-abi --android-skip-build-dependency-validation (arm64 51.1 MiB)
 - T2.1 [sonnet] Try API shows scam-type chip + triggers (source 'manual' -> PASTE); transparent ShareReceiver for ACTION_SEND text/plain (source=SHARE) -> TextApi -> AlertDispatcher — 2026-11-23 — flutter test test/try_api_screen_test.dart && ./gradlew ... --tests '*ShareIntentMapperTest*' && flutter build apk --debug --android-skip-build-dependency-validation
 - QA privacy fix [sonnet] all digits (ASCII + Devanagari) in rule triggers masked, so separator-split OTPs (482-913, 482 913, ४८२-९१३) no longer leak; cold graph drops NON_DLT_SENDER/LINK_NOT_ALLOWLISTED from raises — 2026-11-23 — ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest (all green incl. QAPendingE2ePrivacyTest); golden + heldout export unchanged
@@ -54,6 +55,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
 ## Decisions
+- 2026-11-23: T3.11 committed ahead of T2.7 at QA priority (Report/Lessons were unreachable; QA's qa_nav_test a60c299 depends on it). Recording tile + 'recording' deep link come with T2.7. Full flutter test had 4 order-dependent failures in test/design/screens_scale_test.dart setup_screen cases (pass alone; another session's uncommitted setup_screen.dart edit), not caused by main.dart.
 - 2026-11-23: DEP6 pinned com.alphacephei:vosk-android:0.3.75 (published 2025-12-08, >7 days); model https://alphacephei.com/vosk/models/vosk-model-small-hi-0.22.zip (~42 MB, downloaded on device, never in git); no checksum pinned (shortcut).
 - 2026-11-23: T2.1 keeps the legacy source 'manual' (Kotlin maps it to PASTE) so existing QA tests stay valid. The share path classifies inside a translucent activity; a slow Gemma run blocks touches for a few seconds, and leaving early cancels the check (prototype).
 - 2026-11-23: Privacy invariant: rule triggers never contain digits (every \p{Nd} run masked), even short ones like "5 minutes". On an empty graph, the weak flags NON_DLT_SENDER and LINK_NOT_ALLOWLISTED never raise; FAKE_CREDIT ("galti se paise bhej diye", the classic mistaken-transfer opener) still raises SAFE->SUSPICIOUS on a cold graph, by design.

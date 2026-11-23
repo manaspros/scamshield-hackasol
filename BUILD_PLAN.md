@@ -159,7 +159,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [ ] T3.10 [sonnet] [UI] Settings: district picker + "Export anonymised counts" (share-sheet file)
   - **Files**: `lib/screens/settings_screen.dart`, `K/TrendChannel.kt`  **Depends on**: T3.8, T1.4
   - **Done when**: `APP` succeeds; `FT(settings_screen_test.dart)` passes `T3_10_exportCallsChannel`
-- [ ] T3.11 [sonnet] [UI] Navigation wiring: entries for Report, Lessons, Recording, Try API/QR; `route=report` deep link
+- [x] T3.11 [sonnet] [UI] Navigation wiring: entries for Report, Lessons, Recording, Try API/QR; `route=report` deep link
   - **Files**: `lib/main.dart` (or the app's nav file)  **Depends on**: T3.2, T3.5, T2.7, T3.10
   - **Done when**: `APP` succeeds; `flutter test` exits 0
 
