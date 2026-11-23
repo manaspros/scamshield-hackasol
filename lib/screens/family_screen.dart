@@ -4,6 +4,7 @@ import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../lessons/prefs_store.dart' show PrefsStrings;
 import '../theme/app_theme.dart' show StatusColors;
 import '../theme/text_styles.dart';
 import '../theme/tokens.dart';
@@ -15,10 +16,12 @@ class FamilyScreen extends StatefulWidget {
   const FamilyScreen({
     super.key,
     this.channel = const MethodChannel('scamshield/family'),
-    this.initialLang = 'hi',
+    this.initialLang,
   });
   final MethodChannel channel;
-  final String initialLang;
+
+  /// Null = use the first-run language choice, else Hindi.
+  final String? initialLang;
   @override
   State<FamilyScreen> createState() => _FamilyScreenState();
 }
@@ -55,6 +58,8 @@ const _s = <String, Map<String, String>>{
     'err': 'कोड नहीं मिल सका। फिर कोशिश करें।',
     'retry': 'फिर कोशिश करें',
     'loading': 'कोड जाँचा जा रहा है…',
+    'how': 'परिवार के फ़ोन पर भी यही कोड आता है। कॉल पर कोई अपना होने का दावा करे तो कोड पूछें।',
+    'askCaller': 'फ़ोन करने वाले से यह कोड पूछें',
   },
   'hne': {
     'title': 'परिवार के कोड',
@@ -81,6 +86,8 @@ const _s = <String, Map<String, String>>{
     'err': 'कोड नइ मिलिस। फेर कोशिश करव।',
     'retry': 'फेर कोशिश करव',
     'loading': 'कोड जाँचत हे…',
+    'how': 'परिवार के फ़ोन म घलो इही कोड आथे। कॉल म कोनो अपन होय के दावा करय त कोड पूछव।',
+    'askCaller': 'फ़ोन करइया ले ए कोड पूछव',
   },
   'en': {
     'title': 'Family code',
@@ -107,11 +114,14 @@ const _s = <String, Map<String, String>>{
     'err': 'Could not get the code. Try again.',
     'retry': 'Try again',
     'loading': 'Checking the code…',
+    'how': 'Your family member\'s phone shows the same code. If a caller claims to be family, ask for it.',
+    'askCaller': 'Ask the caller for this code',
   },
 };
 
 class _FamilyScreenState extends State<FamilyScreen> {
-  late String _lang = widget.initialLang;
+  late String _lang = widget.initialLang ?? 'hi';
+  bool _picked = false; // a chip tap beats the stored choice
   _Stage _stage = _Stage.loading;
   String _secret = '';
   String _code = '';
@@ -127,7 +137,13 @@ class _FamilyScreenState extends State<FamilyScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialLang == null) _loadLang();
     _init();
+  }
+
+  Future<void> _loadLang() async {
+    final v = await PrefsStrings().get(PrefsStrings.langKey);
+    if (mounted && !_picked && const {'hi', 'hne', 'en'}.contains(v)) setState(() => _lang = v!);
   }
 
   @override
@@ -242,7 +258,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
               label: Text(label),
               selected: _lang == code,
               checkmarkColor: Theme.of(context).colorScheme.primary,
-              onSelected: (_) => setState(() => _lang = code),
+              onSelected: (_) => setState(() { _picked = true; _lang = code; }),
             ),
         ]),
         const SizedBox(height: Sp.m),
@@ -252,6 +268,11 @@ class _FamilyScreenState extends State<FamilyScreen> {
           Padding(
             padding: const EdgeInsets.only(bottom: Sp.m),
             child: Text(t('intro'), style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          ),
+        if (_stage == _Stage.choose)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Sp.l),
+            child: Text(t('how'), key: const Key('family_how'), style: theme.textTheme.bodyLarge),
           ),
         ...switch (_stage) {
           _Stage.loading => [StateMessage(loading: true, title: t('loading'))],
@@ -369,7 +390,8 @@ class _FamilyScreenState extends State<FamilyScreen> {
     final yes = st.safe;
     final no = st.scam;
     return [
-      Text(t('now'), style: theme.textTheme.titleMedium),
+      // Replaces the "code right now" label: the ring already shows it is live, and the room is needed at 2x.
+      Text(t('askCaller'), key: const Key('family_ask_caller'), style: theme.textTheme.titleMedium),
       const SizedBox(height: Sp.s),
       Center(
         child: SizedBox(

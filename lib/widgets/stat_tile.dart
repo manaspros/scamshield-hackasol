@@ -29,7 +29,7 @@ class StatTile extends StatelessWidget {
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
           if (icon != null) ...[
-            Icon(icon, size: 32, color: cs.onSurface),
+            Icon(icon, size: 32, color: cs.primary),
             const SizedBox(height: Sp.s),
           ],
           FittedBox(

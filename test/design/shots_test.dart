@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/lessons/lesson_model.dart';
+import 'package:scamshield/main.dart' show HomeShell;
 import 'package:scamshield/lessons/quiz_engine.dart';
 import 'package:scamshield/models/verdict.dart';
 import 'package:scamshield/screens/demo_lab_screen.dart';
@@ -227,6 +228,7 @@ void main() {
         'lessons': LessonsScreen(store: store, bundle: _DiskBundle()),
         'learn_zero': LessonsScreen(store: InMemoryQuizStore(), bundle: _DiskBundle()),
         'quiz': QuizScreen(lesson: lessons.first, engine: engine, lang: 'hi'),
+        'quiz_result': QuizScreen(lesson: lessons.first, engine: QuizEngine(lessons, InMemoryQuizStore()), lang: 'hi'),
         'setup': const SetupScreen(),
         'setup_firstrun': const SetupScreen(),
         'live_feed': const LiveFeedScreen(),
@@ -269,6 +271,19 @@ void main() {
           await tester.tap(find.byKey(const Key('option_1')));
           await tester.pumpAndSettle();
         }
+        if (e.key == 'quiz_result') {
+          for (var i = 0; i < 3; i++) {
+            await tester.tap(find.byKey(const Key('cards_next')));
+            await tester.pumpAndSettle();
+          }
+          for (final q in lessons.first.questions) {
+            await tester.tap(find.byKey(Key('option_${q.correctIndex}')));
+            await tester.pumpAndSettle();
+            await tester.ensureVisible(find.byKey(const Key('quiz_next')));
+            await tester.tap(find.byKey(const Key('quiz_next')));
+            await tester.pumpAndSettle();
+          }
+        }
         if (e.key.startsWith('live_feed') && e.key != 'live_feed_idle') {
           messenger.handlePlatformMessage(
               'scamshield/events',
@@ -297,6 +312,9 @@ void main() {
           File('$_out/ux_${name}_${dark ? 'dark' : 'light'}$suffix.png').writeAsBytesSync(bytes!.buffer.asUint8List());
           if (!dark && scale == 1.0 && const {'setup_firstrun', 'learn_zero', 'live_feed_idle', 'family'}.contains(name)) {
             File('$_out/polish_${name}_light.png').writeAsBytesSync(bytes.buffer.asUint8List());
+          }
+          if (!dark && scale == 1.0 && const {'lessons', 'quiz_result'}.contains(name)) {
+            File('$_out/polish_${name == 'lessons' ? 'learn_progress' : name}_light.png').writeAsBytesSync(bytes.buffer.asUint8List());
           }
         });
       }
@@ -722,5 +740,116 @@ void main() {
       });
       await tester.pumpWidget(const SizedBox());
     }
+  });
+
+  testWidgets('shots: polish report after choosing lost, live rows in Hindi, app bar header', (tester) async {
+    if (!await _loadFonts(tester)) return;
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/events'), (_) async => null);
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'), (_) async => null);
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'), (c) async => switch (c.method) {
+          'serviceStatus' => {'enabled': true, 'connected': true},
+          'modelStatus' => {'status': 'READY', 'message': '', 'path': '/data/model.task', 'sizeMb': 555},
+          'downloadStatus' => {'status': 'IDLE'},
+          _ => null,
+        });
+    messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), (c) async => switch (c.method) {
+          'golden.status' => {'started': false},
+          'report.pack' => {
+              'targets': [
+                {'phone': '1930', 'url': null},
+                {'phone': null, 'url': 'https://cybercrime.gov.in'},
+              ],
+              'evidence': <Object?>[],
+            },
+          _ => true,
+        });
+    addTearDown(() {
+      for (final c in ['events', 'prefs', 'api', 'handoff']) {
+        messenger.setMockMethodCallHandler(MethodChannel('scamshield/$c'), null);
+      }
+    });
+    final base = AppTheme.light();
+    TextStyle? f(TextStyle? s) => s?.copyWith(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']);
+    ButtonStyle b(ButtonStyle? s) => s!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)));
+    final theme = base.copyWith(
+        textTheme: base.textTheme.apply(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']),
+        appBarTheme: base.appBarTheme.copyWith(titleTextStyle: f(base.appBarTheme.titleTextStyle)),
+        chipTheme: base.chipTheme.copyWith(labelStyle: f(base.chipTheme.labelStyle)),
+        listTileTheme: base.listTileTheme.copyWith(
+            titleTextStyle: f(base.listTileTheme.titleTextStyle), subtitleTextStyle: f(base.listTileTheme.subtitleTextStyle)),
+        filledButtonTheme: FilledButtonThemeData(style: b(base.filledButtonTheme.style)),
+        outlinedButtonTheme: OutlinedButtonThemeData(style: b(base.outlinedButtonTheme.style)),
+        textButtonTheme: TextButtonThemeData(style: b(base.textButtonTheme.style)));
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+
+    GlobalKey? cur;
+    Future<void> shoot(Widget home, {double scale = 1.0}) async {
+      final key = cur = GlobalKey();
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        builder: (c, child) => RepaintBoundary(
+            key: key,
+            child: MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: child!)),
+        home: home,
+      ));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> save(String name) async {
+      await tester.runAsync(() async {
+        final bd = cur!.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        final img = await bd.toImage(pixelRatio: 1);
+        final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+        File('$_out/$name.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+      });
+    }
+
+    tester.view.physicalSize = const Size(720, 1600);
+    await shoot(Scaffold(appBar: AppBar(title: const Text('रिपोर्ट')), body: const ReportScreen()));
+    await tester.tap(find.byKey(const Key('path_lost')));
+    await tester.pumpAndSettle();
+    await save('polish_report_lost_light');
+
+    await shoot(Scaffold(appBar: AppBar(title: const Text('लाइव')), body: const LiveFeedScreen()));
+    for (final m in <Map<String, Object?>>[
+      {'type': 'service', 'connected': true},
+      {'type': 'call', 'active': true},
+      {'type': 'signal', 'kind': 'link', 'trigger': 'लिंक खोलें'},
+      {'type': 'call', 'active': false},
+    ]) {
+      messenger.handlePlatformMessage('scamshield/events', const StandardMethodCodec().encodeSuccessEnvelope(m), (_) {});
+    }
+    await tester.pumpAndSettle();
+    await save('polish_live_rows_light');
+
+    // Whole shell: the real header action in the real AppBar, at 1.0x and at system 2.0x (chrome clamps to 1.2x).
+    for (final scale in [1.0, 2.0]) {
+      final key = GlobalKey();
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        builder: (c, child) => RepaintBoundary(
+            key: key,
+            child: MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: child!)),
+        home: const HomeShell(),
+      ));
+      await tester.pumpAndSettle();
+      final r = tester.getRect(find.byKey(const Key('btn_report_1930')));
+      expect(r.height, greaterThanOrEqualTo(48));
+      expect(r.right, lessThanOrEqualTo(360));
+      expect(tester.takeException(), isNull, reason: 'header shell at $scale');
+      await tester.runAsync(() async {
+        final bd = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        final img = await bd.toImage(pixelRatio: 1);
+        final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+        File('$_out/polish_header_light${scale == 2.0 ? '_2x' : ''}.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+      });
+    }
+    await tester.pumpWidget(const SizedBox());
   });
 }

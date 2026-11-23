@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/lessons/lesson_model.dart';
 import 'package:scamshield/lessons/quiz_engine.dart';
 import 'package:scamshield/screens/demo_lab_screen.dart';
+import 'package:scamshield/screens/family_screen.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/quiz_screen.dart';
@@ -100,6 +101,63 @@ void main() {
       // Score 0: the compact one-line card, not the big StatTile.
       expect(find.text('पहला पाठ पूरा करें — आपका स्कोर यहाँ दिखेगा'), findsOneWidget);
       expect(t.takeException(), isNull);
+    });
+
+    testWidgets('lessons_progress_noOverflow_${e.key}_scale2', (t) async {
+      final store = InMemoryQuizStore();
+      await store.saveBest({'otp': 100});
+      await _show(t, e.value, LessonsScreen(store: store, bundle: _DiskBundle()));
+      expect(find.text('पाठ 1/8 पूरे'), findsOneWidget);
+      expect(t.widget<Text>(find.byKey(const Key('score_value'))).data, '13');
+      expect(t.takeException(), isNull);
+    });
+
+    testWidgets('quiz_result_earned_noOverflow_${e.key}_scale2', (t) async {
+      final lessons = loadLessonsFromJson(File('assets/lessons/hi.json').readAsStringSync());
+      final engine = QuizEngine(lessons, InMemoryQuizStore());
+      await engine.load();
+      await _show(t, e.value, QuizScreen(lesson: lessons.first, engine: engine, lang: 'hi'));
+      for (var i = 0; i < 3; i++) {
+        await t.tap(find.byKey(const Key('cards_next')));
+        await t.pumpAndSettle();
+      }
+      for (final q in lessons.first.questions) {
+        final opt = find.byKey(Key('option_${q.correctIndex}'));
+        await t.ensureVisible(opt);
+        await t.pumpAndSettle();
+        await t.tap(opt);
+        await t.pumpAndSettle();
+        await t.scrollUntilVisible(find.byKey(const Key('quiz_next')), 200);
+        await t.ensureVisible(find.byKey(const Key('quiz_next')));
+        await t.pumpAndSettle();
+        await t.tap(find.byKey(const Key('quiz_next')));
+        await t.pumpAndSettle();
+      }
+      expect(find.text('+13 अंक'), findsOneWidget);
+      expect(t.widget<Text>(find.byKey(const Key('result_score'))).data, '13');
+      expect(t.takeException(), isNull);
+    });
+
+    testWidgets('family_howItWorks_noOverflow_${e.key}_scale2', (t) async {
+      final m = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      const ch = MethodChannel('scamshield/family');
+      var paired = false;
+      m.setMockMethodCallHandler(ch, (c) async => switch (c.method) {
+            'family.status' => {'paired': paired},
+            'family.code' => {'code': '123456', 'remainingSec': 20},
+            _ => null,
+          });
+      addTearDown(() => m.setMockMethodCallHandler(ch, null));
+      await _show(t, e.value, const FamilyScreen(initialLang: 'hi'));
+      expect(find.byKey(const Key('family_how')), findsOneWidget);
+      expect(t.takeException(), isNull); // choose
+      paired = true;
+      await t.pumpWidget(const SizedBox());
+      await _show(t, e.value, const FamilyScreen(initialLang: 'hi'));
+      await t.scrollUntilVisible(find.byKey(const Key('family_ask_caller')), 100);
+      expect(find.text('फ़ोन करने वाले से यह कोड पूछें'), findsOneWidget);
+      expect(t.takeException(), isNull); // code
+      await t.pumpWidget(const SizedBox()); // stop the countdown timer
     });
 
     for (final lang in ['hi', 'en']) {
@@ -331,6 +389,52 @@ void main() {
       });
       await t.pumpAndSettle();
       expect(find.byType(VerdictCard), findsOneWidget); // events reached the screen
+      expect(t.takeException(), isNull);
+    });
+
+    testWidgets('live_feed_rows_hindiFirst_englishMuted_${e.key}_scale2', (t) async {
+      final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(const MethodChannel(_events), (_) async => null);
+      addTearDown(() => messenger.setMockMethodCallHandler(const MethodChannel(_events), null));
+      await _show(t, e.value, const LiveFeedScreen());
+      t.view.physicalSize = const Size(360, 3000); // rows are lazily built: keep all of them on screen
+      await t.pumpAndSettle();
+      _emit({'type': 'call', 'active': true});
+      _emit({'type': 'signal', 'kind': 'link', 'trigger': 'लिंक'});
+      _emit({'type': 'service', 'connected': false});
+      await t.pumpAndSettle();
+      expect(find.text('कॉल शुरू हुई'), findsOneWidget);
+      expect(find.text('Call started'), findsOneWidget);
+      expect(find.text('कॉल के दौरान संकेत: लिंक'), findsOneWidget);
+      expect(find.text('In-call signal: link (लिंक)'), findsOneWidget);
+      expect(find.text('सुरक्षा सेवा बंद हो गई'), findsOneWidget);
+      expect(find.text('Protection service stopped'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    });
+
+    testWidgets('report_chooseLost_scrollsDetailIntoView_${e.key}_scale2', (t) async {
+      final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), (c) async => switch (c.method) {
+            'golden.status' => {'started': false},
+            'report.pack' => {
+                'targets': [
+                  {'phone': '1930', 'url': null},
+                ],
+                'evidence': <Object?>[],
+              },
+            _ => true,
+          });
+      addTearDown(() => messenger.setMockMethodCallHandler(const MethodChannel('scamshield/handoff'), null));
+      await _show(t, e.value, const ReportScreen());
+      final scroll = t.state<ScrollableState>(find.byType(Scrollable).first).position;
+      await t.ensureVisible(find.byKey(const Key('path_lost'))); // off screen at 2.0x
+      await t.pumpAndSettle();
+      final before = scroll.pixels;
+      await t.tap(find.byKey(const Key('path_lost')));
+      await t.pumpAndSettle();
+      expect(scroll.pixels, greaterThan(before)); // the page moved: the detail is now the first thing seen
+      final top = t.getTopLeft(find.byKey(const Key('golden_start'))).dy;
+      expect(top, inInclusiveRange(0, 600)); // inside the 608dp scroll viewport
       expect(t.takeException(), isNull);
     });
 

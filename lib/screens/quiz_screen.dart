@@ -4,6 +4,7 @@ import '../lessons/lesson_model.dart';
 import '../lessons/quiz_engine.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
+import '../theme/text_styles.dart';
 import '../theme/tokens.dart';
 import '../widgets/stat_tile.dart';
 
@@ -36,6 +37,9 @@ class LessonStrings {
     'empty': 'अभी कोई पाठ नहीं है',
     'emptyHint': 'नए पाठ आने पर यहाँ दिखेंगे',
     'pick': 'सही जवाब चुनें',
+    'progress': 'पाठ {x}/{y} पूरे',
+    'scoreWord': 'स्कोर',
+    'pts': '+{n} अंक',
   });
   static const hne = LessonStrings({
     'title': 'सीखव',
@@ -60,6 +64,9 @@ class LessonStrings {
     'empty': 'अभी कोनो पाठ नइहे',
     'emptyHint': 'नवा पाठ आही त इहाँ दिखही',
     'pick': 'सही जवाब चुनव',
+    'progress': 'पाठ {x}/{y} पूरा',
+    'scoreWord': 'स्कोर',
+    'pts': '+{n} अंक',
   });
   static const en = LessonStrings({
     'title': 'Learn',
@@ -84,6 +91,9 @@ class LessonStrings {
     'empty': 'No lessons yet',
     'emptyHint': 'New lessons will appear here',
     'pick': 'Pick the right answer',
+    'progress': '{x}/{y} lessons done',
+    'scoreWord': 'Score',
+    'pts': '+{n} pts',
   });
 
   static LessonStrings of(String lang) => switch (lang) {
@@ -91,6 +101,72 @@ class LessonStrings {
     'en' => en,
     _ => hi,
   };
+}
+
+/// Lessons finished (X/Y) first, the average score as the secondary line. The score
+/// formula stays in [QuizEngine.score]; this only changes what is shown first.
+class ProgressCard extends StatelessWidget {
+  const ProgressCard({super.key, required this.engine, required this.strings, required this.scoreKey, this.earned = 0});
+  final QuizEngine engine;
+  final LessonStrings strings;
+
+  /// Key on the [Text] that holds just the score number.
+  final Key scoreKey;
+
+  /// Points gained by the attempt that was just finished; hidden when 0.
+  final int earned;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context);
+    final cs = t.colorScheme;
+    final total = engine.lessons.length;
+    final done = engine.lessons.where((l) => engine.bestFor(l.id) > 0).length;
+    final progress = strings['progress'].replaceAll('{x}', '$done').replaceAll('{y}', '$total');
+    final pts = strings['pts'].replaceAll('{n}', '$earned');
+    final sub = t.textTheme.titleMedium?.copyWith(color: cs.onSurfaceVariant);
+    return Semantics(
+      label: '$progress, ${strings['scoreWord']} ${engine.score}/100',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.all(Sp.xl),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(Rad.lg),
+          border: Border.all(color: cs.outline),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.shield, size: 32, color: cs.primary),
+          const SizedBox(height: Sp.s),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(progress, style: AppText.display.copyWith(fontSize: 40, color: cs.onSurface)),
+          ),
+          const SizedBox(height: Sp.m),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(Rad.pill),
+            child: LinearProgressIndicator(
+              value: total == 0 ? 0 : done / total,
+              minHeight: 8,
+              color: cs.primary,
+              backgroundColor: cs.surfaceContainerHighest,
+            ),
+          ),
+          const SizedBox(height: Sp.m),
+          Wrap(crossAxisAlignment: WrapCrossAlignment.end, children: [
+            Text('${strings['scoreWord']} ', style: sub),
+            Text('${engine.score}', key: scoreKey, style: sub),
+            Text('/100', style: sub),
+          ]),
+          if (earned > 0) ...[
+            const SizedBox(height: Sp.xs),
+            Text(pts, key: const Key('result_earned'), style: t.textTheme.titleLarge?.copyWith(color: cs.primary, fontWeight: FontWeight.w700)),
+          ],
+        ]),
+      ),
+    );
+  }
 }
 
 /// One lesson: 3 swipeable cards, then a one-question-at-a-time quiz, then the result.
@@ -118,6 +194,7 @@ class _QuizScreenState extends State<QuizScreen> {
   int? _picked;
   late List<int?> _answers;
   QuizResult? _result;
+  int _earned = 0;
 
   LessonStrings get _s => LessonStrings.of(widget.lang);
   Lesson get _lesson => widget.lesson;
@@ -150,9 +227,11 @@ class _QuizScreenState extends State<QuizScreen> {
       });
       return;
     }
+    final before = widget.engine.score;
     final r = await widget.engine.record(_lesson.id, _answers);
     if (mounted)
       setState(() {
+        _earned = widget.engine.score - before;
         _result = r;
         _phase = _Phase.result;
       });
@@ -423,11 +502,11 @@ class _QuizScreenState extends State<QuizScreen> {
           icon: Icons.check_circle,
         ),
         const SizedBox(height: Sp.m),
-        StatTile(
-          value: '${widget.engine.score}',
-          valueKey: const Key('result_score'),
-          caption: '${_s['score']} (/ 100)',
-          icon: Icons.shield,
+        ProgressCard(
+          engine: widget.engine,
+          strings: _s,
+          scoreKey: const Key('result_score'),
+          earned: _earned,
         ),
         const SizedBox(height: Sp.l),
         _bigButton(_s['again'], _restart, key: const Key('result_again')),

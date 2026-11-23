@@ -8,7 +8,6 @@ import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 import '../widgets/press_scale.dart';
 import '../widgets/state_message.dart';
-import '../widgets/stat_tile.dart';
 import 'quiz_screen.dart';
 
 /// Lessons list: 8 icon-first tiles, per-topic best, and the overall literacy score.
@@ -17,11 +16,13 @@ class LessonsScreen extends StatefulWidget {
     super.key,
     QuizStore? store,
     this.bundle,
-    this.initialLang = 'hi',
+    this.initialLang,
   }) : _store = store;
   final QuizStore? _store;
   final AssetBundle? bundle;
-  final String initialLang;
+
+  /// Null = use the first-run language choice, else Hindi.
+  final String? initialLang;
   @override
   State<LessonsScreen> createState() => _LessonsScreenState();
 }
@@ -39,7 +40,8 @@ const _icons = <String, IconData>{
 
 class _LessonsScreenState extends State<LessonsScreen> {
   late final QuizStore _store = widget._store ?? PrefsQuizStore();
-  late String _lang = widget.initialLang;
+  late String _lang = widget.initialLang ?? 'hi';
+  bool _picked = false; // a chip tap beats the stored choice
   QuizEngine? _engine;
   bool _failed = false;
 
@@ -47,6 +49,13 @@ class _LessonsScreenState extends State<LessonsScreen> {
   void initState() {
     super.initState();
     _load();
+    if (widget.initialLang == null) _loadLang();
+  }
+
+  // Not awaited before _load: an unanswered prefs channel must never block the lessons.
+  Future<void> _loadLang() async {
+    final v = await PrefsStrings().get(PrefsStrings.langKey);
+    if (mounted && !_picked && v != null && v != _lang && const {'hi', 'hne', 'en'}.contains(v)) _setLang(v);
   }
 
   Future<void> _load() async {
@@ -122,20 +131,18 @@ class _LessonsScreenState extends State<LessonsScreen> {
                       label: Text(label),
                       selected: _lang == code,
                       checkmarkColor: Theme.of(context).colorScheme.primary,
-                      onSelected: (_) => _setLang(code),
+                      onSelected: (_) {
+                        _picked = true;
+                        _setLang(code);
+                      },
                     ),
                 ],
               ),
               const SizedBox(height: Sp.m),
-              if ((e?.score ?? 0) == 0)
+              if (e == null || !e.lessons.any((l) => e.bestFor(l.id) > 0))
                 _emptyScore(context)
               else
-              StatTile(
-                value: '${e?.score ?? 0}',
-                valueKey: const Key('score_value'),
-                caption: '${s['score']} (/ 100)',
-                icon: Icons.shield,
-              ),
+                ProgressCard(engine: e, strings: s, scoreKey: const Key('score_value')),
               content,
             ],
           ),
