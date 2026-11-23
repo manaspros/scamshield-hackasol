@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_language.dart';
+import '../l10n/strings_shell.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 
-/// One-word Hindi headline per risk label (the long phrase is `label.hindi`, shown under it).
-String _hindiHeadline(RiskLabel l) => switch (l) {
-      RiskLabel.safe => 'सुरक्षित',
-      RiskLabel.suspicious => 'सावधान',
-      RiskLabel.scam => 'धोखाधड़ी!',
-    };
-
+/// One-word headline per risk label (the long phrase is `label.hindi`, shown under it).
 /// Verdict for a first-time reader. With `showDebug: false` (the live feed) it reads: Hindi
 /// headline, what to do now, the 1930 row, then reasons behind a collapsed "क्यों?". The default
 /// `showDebug: true` keeps the original developer layout: "This statement is SCAM · 87%",
@@ -24,7 +20,7 @@ class VerdictCard extends StatelessWidget {
     this.adviceTitle,
     this.advice = const [],
     this.footer,
-    this.whyLabel = 'क्यों:',
+    this.whyLabel,
     this.showDebug = true,
     this.initiallyExpanded = false,
   });
@@ -39,7 +35,8 @@ class VerdictCard extends StatelessWidget {
   final Widget? footer;
 
   /// Label before the reason; pass another language here if the caller has one.
-  final String whyLabel;
+  /// Overrides the localized 'Why:' prefix.
+  final String? whyLabel;
 
   /// true: English headline with %, inline reasons, engine/ms footer. false: the calm layout.
   final bool showDebug;
@@ -50,6 +47,7 @@ class VerdictCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = verdict;
+    final lang = AppLanguage.of(context);
     final t = Theme.of(context);
     final cs = t.colorScheme;
     final tt = t.textTheme;
@@ -57,12 +55,12 @@ class VerdictCard extends StatelessWidget {
     final solid = st.solid(v.label);
     final muted = tt.bodySmall?.copyWith(color: cs.onSurfaceVariant);
 
-    final headline = showDebug ? v.headline : _hindiHeadline(v.label);
+    final headline = showDebug ? v.headline : v.label.headlineIn(lang);
     final quote = compact
         ? null
         : Text('“${v.text}”',
             style: tt.bodyLarge?.copyWith(fontStyle: FontStyle.italic), maxLines: 3, overflow: TextOverflow.ellipsis);
-    final reason = Text(showDebug ? '$whyLabel ${v.reason}' : v.reason, style: tt.bodyLarge);
+    final reason = Text(showDebug ? '${whyLabel ?? shellT(lang, 'why_colon')} ${v.reason}' : v.reason, style: tt.bodyLarge);
     final chips = v.triggers.isEmpty
         ? null
         : Wrap(spacing: Sp.s, runSpacing: Sp.s, children: [
@@ -111,7 +109,7 @@ class VerdictCard extends StatelessWidget {
           ),
         ]),
         const SizedBox(height: Sp.xs),
-        Text(v.label.hindi, style: tt.titleMedium),
+        Text(v.label.textIn(lang), style: tt.titleMedium),
         if (showDebug) ...[
           if (quote != null) ...[const SizedBox(height: Sp.m), quote],
           const SizedBox(height: Sp.s),
@@ -136,7 +134,7 @@ class VerdictCard extends StatelessWidget {
               expandedCrossAxisAlignment: CrossAxisAlignment.start,
               shape: const Border(),
               collapsedShape: const Border(),
-              title: Text('क्यों?', style: tt.titleMedium),
+              title: Text(shellT(lang, 'why'), style: tt.titleMedium),
               children: [
                 if (quote != null) ...[quote, const SizedBox(height: Sp.s)],
                 reason,

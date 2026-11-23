@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'demo/demo_flag.dart';
+import 'l10n/app_language.dart';
+import 'l10n/strings_shell.dart';
 import 'screens/demo_lab_screen.dart';
 import 'screens/family_screen.dart';
 import 'screens/lessons_screen.dart';
@@ -24,12 +26,14 @@ class ScamShieldApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // LangScope sits above the Navigator so every pushed screen rebuilds when the language changes.
+      builder: (context, child) => LangScope(notifier: AppLanguage.current, child: child!),
       title: 'ScamShield',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
-      home: const HomeShell(),
+      home: const LanguageGate(child: HomeShell()),
     );
   }
 }
@@ -50,7 +54,7 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   static const _api = MethodChannel('scamshield/api');
-  static const _titles = ['सेटअप', 'जाँच', 'लाइव', 'सीखें', 'मदद'];
+  static const _tabKeys = ['tab_setup', 'tab_check', 'tab_live', 'tab_learn', 'tab_help'];
 
   int _tab = 0;
   final _visited = <int>{0}; // tabs are built on first visit, then kept alive
@@ -90,15 +94,16 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       _openReport();
     } else if (route == 'recording') {
       Navigator.of(context).popUntil((r) => r.isFirst);
-      _push('रिकॉर्डिंग', const RecordingScreen());
+      _push('recording_title', const RecordingScreen());
     }
   }
 
-  void _push(String title, Widget page) => Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => Scaffold(appBar: _bar(title), body: page),
+  // titleKey is a shellStrings key, resolved in the route so the title follows a live language change.
+  void _push(String titleKey, Widget page) => Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (ctx) => Scaffold(appBar: _bar(shellT(AppLanguage.of(ctx), titleKey)), body: page),
       ));
 
-  void _openReport() => _push('रिपोर्ट', const ReportScreen());
+  void _openReport() => _push('report_title', const ReportScreen());
 
   Widget _page(int i) => switch (i) {
         0 => const SetupScreen(),
@@ -110,8 +115,10 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final lang = AppLanguage.of(context);
+    String t(String k) => shellT(lang, k);
     return Scaffold(
-      appBar: _bar(_titles[_tab], actions: [
+      appBar: _bar(t(_tabKeys[_tab]), actions: [
         // Always visible: the fastest way to the 1930 report flow (the dial itself happens only in ReportScreen).
         Builder(builder: (context) {
           final st = Theme.of(context).extension<StatusColors>() ?? StatusColors.light;
@@ -127,15 +134,15 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
             ),
             icon: const Icon(Icons.support_agent, size: 24),
             label: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('मदद चाहिए?', style: TextStyle(height: 1.1)),
-              Text('ठगे गए? 1930', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: st.scam, height: 1.1)),
+              Text(t('help_me'), style: TextStyle(height: 1.1)),
+              Text(t('help_1930'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: st.scam, height: 1.1)),
             ]),
           );
         }),
         const SizedBox(width: Sp.s),
       ]),
       body: IndexedStack(index: _tab, children: [
-        for (var i = 0; i < _titles.length; i++) _visited.contains(i) ? _page(i) : const SizedBox.shrink(),
+        for (var i = 0; i < _tabKeys.length; i++) _visited.contains(i) ? _page(i) : const SizedBox.shrink(),
       ]),
       bottomNavigationBar: _clamped(NavigationBar(
         selectedIndex: _tab,
@@ -143,55 +150,57 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           _tab = i;
           _visited.add(i);
         }),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.checklist), label: 'सेटअप', tooltip: 'Setup'),
-          NavigationDestination(icon: Icon(Icons.fact_check_outlined), selectedIcon: Icon(Icons.fact_check), label: 'जाँच', tooltip: 'Check'),
-          NavigationDestination(icon: Icon(Icons.graphic_eq), label: 'लाइव', tooltip: 'Live'),
-          NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: 'सीखें', tooltip: 'Learn'),
-          NavigationDestination(icon: Icon(Icons.help_outline), selectedIcon: Icon(Icons.help), label: 'मदद', tooltip: 'Help'),
+        destinations: [
+          NavigationDestination(icon: const Icon(Icons.checklist), label: t('tab_setup'), tooltip: 'Setup'),
+          NavigationDestination(icon: const Icon(Icons.fact_check_outlined), selectedIcon: const Icon(Icons.fact_check), label: t('tab_check'), tooltip: 'Check'),
+          NavigationDestination(icon: const Icon(Icons.graphic_eq), label: t('tab_live'), tooltip: 'Live'),
+          NavigationDestination(icon: const Icon(Icons.school_outlined), selectedIcon: const Icon(Icons.school), label: t('tab_learn'), tooltip: 'Learn'),
+          NavigationDestination(icon: const Icon(Icons.help_outline), selectedIcon: const Icon(Icons.help), label: t('tab_help'), tooltip: 'Help'),
         ],
       )),
     );
   }
 }
 
-/// Help tab: one big icon-first tile per task without a bottom-bar slot. Hindi label, English caption.
+/// Help tab: one big icon-first tile per task without a bottom-bar slot. Primary label in the app language, the other script as caption.
 class _HelpHub extends StatelessWidget {
   const _HelpHub({required this.onOpen});
-  final void Function(String title, Widget page) onOpen;
+  final void Function(String titleKey, Widget page) onOpen;
 
   @override
   Widget build(BuildContext context) {
+    final lang = AppLanguage.of(context);
+    String t(String k) => shellT(lang, k);
     return ListView(
       padding: const EdgeInsets.fromLTRB(Sp.l, 0, Sp.l, Sp.xl),
       children: [
-        const SectionHeader(title: 'मदद', icon: Icons.help, subtitle: 'Help'),
+        SectionHeader(title: t('tab_help'), icon: Icons.help, subtitle: t('help_sub')),
         ActionTile(
           icon: Icons.flag,
-          label: 'रिपोर्ट करें',
-          caption: 'Report a scam (1930)',
-          onTap: () => onOpen('रिपोर्ट', const ReportScreen()),
+          label: t('report'),
+          caption: t('report_cap'),
+          onTap: () => onOpen('report_title', const ReportScreen()),
         ),
         const SizedBox(height: Sp.m),
         ActionTile(
           icon: Icons.family_restroom,
-          label: 'परिवार कोड',
-          caption: 'Family code',
-          onTap: () => onOpen('परिवार कोड', const FamilyScreen()),
+          label: t('family'),
+          caption: t('family_cap'),
+          onTap: () => onOpen('family', const FamilyScreen()),
         ),
         const SizedBox(height: Sp.m),
         ActionTile(
           icon: Icons.settings,
-          label: 'सेटिंग',
-          caption: 'Settings',
-          onTap: () => onOpen('सेटिंग', const SettingsScreen()),
+          label: t('settings'),
+          caption: t('settings_cap'),
+          onTap: () => onOpen('settings', const SettingsScreen()),
         ),
         const SizedBox(height: Sp.m),
         ActionTile(
           icon: Icons.mic,
-          label: 'कॉल रिकॉर्डिंग',
-          caption: 'Check a recorded call',
-          onTap: () => onOpen('रिकॉर्डिंग', const RecordingScreen()),
+          label: t('recording'),
+          caption: t('recording_cap'),
+          onTap: () => onOpen('recording_title', const RecordingScreen()),
         ),
         ValueListenableBuilder<bool>(
           valueListenable: DemoFlag.enabled,
@@ -201,9 +210,9 @@ class _HelpHub extends StatelessWidget {
                   child: ActionTile(
                     key: const Key('tile_demo_lab'),
                     icon: Icons.science,
-                    label: 'डेमो लैब',
-                    caption: 'Demo Lab',
-                    onTap: () => onOpen('डेमो लैब', const DemoLabScreen()),
+                    label: t('demo'),
+                    caption: t('demo_cap'),
+                    onTap: () => onOpen('demo', const DemoLabScreen()),
                   ),
                 )
               : const SizedBox.shrink(),

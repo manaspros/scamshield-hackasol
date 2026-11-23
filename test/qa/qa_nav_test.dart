@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/main.dart';
 import 'package:scamshield/screens/family_screen.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
@@ -101,6 +102,7 @@ Future<void> _back(WidgetTester t) async {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() => AppLanguage.debugSet('hi')); // these tests assert the Hindi shell
 
   for (final dark in [false, true]) {
     final mode = dark ? 'dark' : 'light';

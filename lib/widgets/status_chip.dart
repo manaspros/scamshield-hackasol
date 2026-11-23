@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_language.dart';
+import '../l10n/strings_shell.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
@@ -9,7 +11,7 @@ class StatusChip extends StatelessWidget {
   const StatusChip({super.key, required this.label, this.text});
   final RiskLabel label;
 
-  /// Overrides the default Hindi word.
+  /// Overrides the default word in the app language.
   final String? text;
 
   @override
@@ -27,7 +29,7 @@ class StatusChip extends StatelessWidget {
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(label.icon, size: 24, color: solid),
         const SizedBox(width: Sp.s),
-        Flexible(child: Text(text ?? label.hindi, style: t.textTheme.labelMedium?.copyWith(color: solid))),
+        Flexible(child: Text(text ?? label.textIn(AppLanguage.of(context)), style: t.textTheme.labelMedium?.copyWith(color: solid))),
       ]),
     );
   }
