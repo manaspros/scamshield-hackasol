@@ -39,6 +39,17 @@ class ScamTypeTest {
         assertEquals(Label.SAFE, RuleScorer.score("Beta khana kha liya?").label)
     }
 
+    @Test fun T1_2_lotteryFeeIsScamOther() {
+        val t = "Congratulations you won a lottery of 25 lakh, pay 5000 processing fee by UPI"
+        assertEquals(Label.SCAM, RuleScorer.score(t).label)
+        assertEquals(ScamType.OTHER, RuleScorer.scamType(t))
+    }
+
+    @Test fun T1_2_hindiKycTypedKyc() {
+        assertEquals(ScamType.KYC, RuleScorer.scamType("आपका KYC अपडेट नहीं है, OTP आएगा, खाता बंद हो जाएगा, लिंक पर क्लिक करें"))
+        assertEquals(ScamType.OTP, RuleScorer.scamType("Sir, please share the OTP you just received"))
+    }
+
     private class Case(
         val id: String, val input: String, val output: String,
         val context: List<String> = emptyList(), val contextLabel: String = GemmaPrompt.CALL_CONTEXT_LABEL,

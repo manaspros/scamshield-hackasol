@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- QA emulator fixes [sonnet] lottery/prize fee-for-release now SCAM typed OTHER (new prize_fee rule; loan's processing-fee match requires 'loan' nearby); Hindi KYC message typed KYC (scamType priority: OTP-share/PIN > KYC > bare OTP); Demo Lab lottery_fee scenario — 2026-11-23 — ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest (354/354); golden + heldout export unchanged
 - T7.1 [sonnet] ARCHITECTURE.md (<120 lines, Mermaid pipeline, sections cite FINAL_PLAN) — 2026-11-23 — wc -l ARCHITECTURE.md
 - T7.2 [sonnet] DEMO.md (Demo Lab backbone, every step names its task, [phone] marks, fallbacks, Q&A) — 2026-11-23 — grep -c "T[0-9]" DEMO.md
 - T8.1 [sonnet] Demo Lab (user request): 11 scenarios through the real pipeline on an isolated demo graph/log, 6-stage timeline with PASS/FAIL, Gemma vs rules-only switch, cold-start toggle, [DEMO] alerts; also wires call-side ContextRules (bankCall, delivery, mistakenTransfer) into production for CAPTION/RECORDING and shares one knowledge graph between listener and caption path — 2026-11-23 — ./gradlew ... --tests '*DemoScenariosTest*' && flutter test test/demo_lab_screen_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
@@ -63,6 +64,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
 ## Decisions
+- 2026-11-23: No LOTTERY ScamType (enum unchanged); prize-fee scams type OTHER (INVESTMENT doesn't fit). Known false-positive risk: a genuine prize-draw message with "pay" near the prize word scores SCAM.
 - 2026-11-23: T8.1 extracted core/Pipeline.kt (decide = fuse + raiseForContext; withCallContext for CAPTION/RECORDING) so TextApi and the Demo Lab run the same code; ClaimVsContext (no-matching-event) is NOT applied to calls because ordinary calls mention payment/order. Demo expectations: SAFE must stay SAFE, other labels mean at least that severe; mistaken transfer A/B reach SUSPICIOUS in rules-only mode (Gemma may go higher). demo_mode added to the prefs allowlist; [DEMO] title prefix; demo uses notification id 7001 like the dispatcher (a demo alert replaces a real one).
 - 2026-11-23: route=recording deep link verified wired (main.dart branch + MainActivity passes any route); test T3_11_deepLinkOpensRecording added.
 - 2026-11-23: DEP7 pinned com.google.android.gms:play-services-code-scanner:16.1.0 (published 2023-08-01, newest). Optional task T4.3 built at user request ("build ALL parts"). First scan may download the module (needs network once).

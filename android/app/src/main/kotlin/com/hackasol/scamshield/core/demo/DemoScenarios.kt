@@ -129,6 +129,16 @@ object DemoScenarios {
             ),
         ),
         DemoScenario(
+            "lottery_fee", "sms",
+            "लॉटरी जीतने का झांसा", "Lottery fee-for-prize",
+            "'आपने 25 लाख की लॉटरी जीती है, ₹5000 फीस UPI से भेजें'। असली इनाम के लिए पहले पैसे नहीं मांगे जाते।",
+            "'You won a 25 lakh lottery, pay a Rs 5000 fee by UPI'. A real prize never asks for money first.",
+            listOf(
+                sms("9800000070", "Congratulations! You won a lottery of 25 lakh. Pay 5000 processing fee by UPI to claim it.", Label.SCAM,
+                    setOf(FlagKind.NON_DLT_SENDER), FIRST),
+            ),
+        ),
+        DemoScenario(
             "digital_arrest", "gavel",
             "डिजिटल अरेस्ट कॉल (रिकॉर्डिंग)", "Digital arrest call (recording)",
             "रिकॉर्ड की गई कॉल के बयान एक-एक करके जांचे जाते हैं; जोखिम हर बयान के साथ बढ़ता है।",

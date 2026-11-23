@@ -14,6 +14,10 @@ object RuleScorer {
 
     private val SHARE = "(batao|bataiye|bataye|bata do|bata dijiye|share|bhejo|bhej do|tell|send|read out|bol do|बताइए|बताओ|बता दो|बता दीजिए|भेजो|भेज दो)"
 
+    // Fee-for-prize: a prize/lottery word and a fee/pay word within ~12 words, either order. No "you won" alone (too chatty).
+    private val PRIZE_W = "(?:lottery|lucky draw|\\bprize\\b|you(?:'ve| have) won|aapne jeeta|इनाम|लॉटरी|जीत|\\bkbc\\b)"
+    private val FEE_W = "(?:\\b(?:fees?|charges?|tax|pay|deposit|jama)\\b|शुल्क|भुगतान)"
+
     private val rules = listOf(
         Rule("otp_share", 0.90, "(otp|ओटीपी|o\\.t\\.p|verification code|code|कोड)\\W+(?:\\w+\\W+){0,5}$SHARE|\\b(?:share|tell|read out)\\W+(?:\\w+\\W+){0,3}(?:otp|ओटीपी|verification code)"),
         Rule("otp", 0.50, "\\botp\\b|ओटीपी|one[- ]time password"),
@@ -30,9 +34,11 @@ object RuleScorer {
         Rule("kyc", 0.40, "\\bkyc\\b|केवाईसी"),
         Rule("account_block", 0.55, "(account|khata|card|sim) (block|band|suspend|freeze|deactivate)|खाता (बंद|ब्लॉक)|सिम (बंद|ब्लॉक)"),
         Rule("prize", 0.50, "lottery|lucky draw|\\bprize\\b|you have won|aapne jeeta|इनाम|लॉटरी|\\bkbc\\b"),
+        Rule("prize_fee", 0.80, "$PRIZE_W\\W+(?:\\w+\\W+){0,12}$FEE_W|$FEE_W\\W+(?:\\w+\\W+){0,12}$PRIZE_W"),
         Rule("bank_claim", 0.30, "(bank|sbi|hdfc|icici|axis|rbi|paytm|phonepe) (se|from) (bol|baat|speaking|calling)|बैंक से बोल"),
         Rule("app_install", 0.55, "\\.apk\\b|app (download|install) (karo|kijiye|karein)|link (par|pe) click|लिंक पर क्लिक"),
-        Rule("loan", 0.40, "instant loan|pre-?approved loan|processing fee|लोन (मंजूर|अप्रूव)"),
+        // "processing fee" counts as loan evidence only next to loan wording, so a lottery fee is not typed LOAN_APP.
+        Rule("loan", 0.40, "instant loan|pre-?approved loan|\\bloan\\b.{0,80}processing fee|processing fee.{0,80}\\bloan\\b|लोन (मंजूर|अप्रूव)"),
         Rule("video_stay", 0.60, "video call (pe|par) (raho|rahiye|rahna)|camera (on|chalu) (rakho|rakhiye)"),
         Rule("urgency", 0.20, "\\b(turant|abhi ke abhi|immediately|urgent|right now)\\b|within \\d+ (minutes|hours)|तुरंत|अभी के अभी"),
     )
@@ -53,6 +59,7 @@ object RuleScorer {
         "kyc" to "KYC claim",
         "account_block" to "Threatens account/SIM block",
         "prize" to "Prize/lottery claim",
+        "prize_fee" to "Asks a fee to release a prize",
         "bank_claim" to "Claims to call from a bank",
         "app_install" to "Asks to install app/click link",
         "loan" to "Unsolicited loan offer",
@@ -125,8 +132,11 @@ object RuleScorer {
         "digital_arrest" in t -> ScamType.DIGITAL_ARREST
         "parcel" in t && ("authority" in t || "contraband" in t || "arrest" in t) -> ScamType.COURIER_CUSTOMS
         "arrest" in t || "authority" in t || "contraband" in t -> ScamType.DIGITAL_ARREST
-        "otp_share" in t || "otp" in t || "pin" in t -> ScamType.OTP
-        "kyc" in t || "account_block" in t || "bank_claim" in t -> ScamType.KYC
+        "otp_share" in t || "pin" in t -> ScamType.OTP
+        "kyc" in t -> ScamType.KYC            // KYC wording beats an incidental bare OTP mention; a real OTP ask is otp_share above
+        "otp" in t -> ScamType.OTP
+        "account_block" in t || "bank_claim" in t -> ScamType.KYC
+        "prize_fee" in t -> ScamType.OTHER    // no LOTTERY enum on purpose; INVESTMENT does not fit
         "loan" in t -> ScamType.LOAN_APP
         "parcel" in t -> ScamType.COURIER_CUSTOMS
         else -> ScamType.OTHER
