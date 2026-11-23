@@ -49,5 +49,7 @@ dependencies {
     implementation("com.google.mediapipe:tasks-genai:0.10.24")
     implementation("com.google.mlkit:text-recognition-devanagari:16.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    // Offline STT (DEP6). 0.3.75 published 2025-12-08; its pom pulls net.java.dev.jna:jna:5.18.1@aar transitively.
+    implementation("com.alphacephei:vosk-android:0.3.75")
     testImplementation("junit:junit:4.13.2")
 }

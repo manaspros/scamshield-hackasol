@@ -14,9 +14,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.hackasol.scamshield.core.ModelConfig
+import com.hackasol.scamshield.core.SttModelConfig
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.zip.ZipInputStream
 
 /**
  * In-app model download via Android's DownloadManager (background, resumable, notification,
@@ -34,6 +36,7 @@ object ModelDownloader {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO +
         kotlinx.coroutines.CoroutineExceptionHandler { _, t -> Log.e(TAG, "uncaught", t) })
     private var pollJob: Job? = null
+    private var voskJob: Job? = null
 
     private fun prefs(ctx: Context) = ctx.getSharedPreferences("scamshield", Context.MODE_PRIVATE)
     private fun dm(ctx: Context) = ctx.getSystemService(DownloadManager::class.java)
@@ -80,15 +83,16 @@ object ModelDownloader {
         c.disconnect()
         when {
             code in 200..299 -> null
-            code == 404 -> "Model not published yet on GitHub (404). Upload it to the v1 release first."
-            else -> "GitHub returned $code. Try again later."
+            code == 404 -> "Model not found (404). Check the model URL."
+            else -> "Server returned $code. Try again later."
         }
     } catch (e: Exception) {
         "No internet connection (${e.javaClass.simpleName})"
     }
 
-    fun status(ctx: Context): Map<String, Any?> {
-        val id = idOf(ctx)
+    fun status(ctx: Context): Map<String, Any?> = statusFor(ctx, idOf(ctx))
+
+    private fun statusFor(ctx: Context, id: Long): Map<String, Any?> {
         if (id < 0) return mapOf("status" to "IDLE")
         dm(ctx).query(DownloadManager.Query().setFilterById(id)).use { c ->
             if (c == null || !c.moveToFirst()) return mapOf("status" to "IDLE")
@@ -155,6 +159,109 @@ object ModelDownloader {
         setId(ctx, -1)
         pollJob?.cancel(); pollJob = null
         partFile(ctx).delete()
+    }
+
+    // ---- Vosk Hindi STT model: DownloadManager zip -> unzip to filesDir/vosk-hi (same flow as the Gemma model) ----
+
+    fun voskDir(ctx: Context) = File(ctx.filesDir, SttModelConfig.DIR_NAME)
+    /** The dir only appears after a full, successful unzip (extracted to a .tmp dir first, then renamed). */
+    fun voskReady(ctx: Context) = voskDir(ctx).isDirectory
+    private fun voskZip(ctx: Context) = File(modelsDir(ctx), "${SttModelConfig.ZIP_NAME}.download")
+    private fun voskId(ctx: Context) = prefs(ctx).getLong("voskDownloadId", -1L)
+    private fun setVoskId(ctx: Context, id: Long) = prefs(ctx).edit().putLong("voskDownloadId", id).apply()
+
+    /** Starts the Vosk model download. Progress/result events go to EventBus "sttDownload" (same payload as "download"). */
+    suspend fun startVosk(ctx: Context, wifiOnly: Boolean): Map<String, Any?> = withContext(Dispatchers.IO) {
+        val app = ctx.applicationContext
+        try {
+            cancelVosk(app)
+            val needed = SttModelConfig.ZIP_BYTES * 4 // zip + extracted copy + headroom
+            val free = StatFs(modelsDir(app).absolutePath).availableBytes
+            if (free < needed) return@withContext err("Not enough storage: need ~${needed / (1024 * 1024)} MB free, have ${free / (1024 * 1024)} MB")
+            reachability(SttModelConfig.URL)?.let { return@withContext err(it) }
+            voskZip(app).delete()
+            val req = DownloadManager.Request(Uri.parse(SttModelConfig.URL))
+                .setTitle("Speech model")
+                .setDescription("Offline Hindi speech recognition (~42 MB)")
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setDestinationInExternalFilesDir(app, null, "models/${SttModelConfig.ZIP_NAME}.download")
+                .setAllowedOverMetered(!wifiOnly)
+                .setAllowedOverRoaming(false)
+            setVoskId(app, dm(app).enqueue(req))
+            watchVosk(app)
+            statusFor(app, voskId(app))
+        } catch (t: Throwable) {
+            Log.e(TAG, "startVosk failed", t)
+            err("Could not start download: ${t.message}")
+        }
+    }
+
+    /** Polls the Vosk download and unzips on success. Safe to call repeatedly (e.g. on app start). */
+    fun watchVosk(ctx: Context) {
+        val app = ctx.applicationContext
+        if (voskId(app) < 0 || voskJob?.isActive == true) return
+        voskJob = scope.launch {
+            while (isActive) {
+                val s = try { statusFor(app, voskId(app)) } catch (t: Throwable) { Log.e(TAG, "vosk status", t); mapOf("status" to "IDLE") }
+                EventBus.emit("sttDownload", s)
+                when (s["status"]) {
+                    "SUCCESSFUL" -> { finishVosk(app); return@launch }
+                    "FAILED", "IDLE" -> { setVoskId(app, -1); voskZip(app).delete(); return@launch }
+                }
+                delay(1000)
+            }
+        }
+    }
+
+    private fun finishVosk(ctx: Context) {
+        val zip = voskZip(ctx)
+        val tmp = File(ctx.filesDir, "${SttModelConfig.DIR_NAME}.tmp")
+        setVoskId(ctx, -1)
+        try {
+            if (!zip.exists() || zip.length() < SttModelConfig.ZIP_BYTES / 2) throw IllegalStateException("Downloaded file is too small — wrong URL?")
+            unzip(zip, tmp)
+            voskDir(ctx).deleteRecursively()
+            if (!tmp.renameTo(voskDir(ctx))) throw IllegalStateException("Could not install model")
+            EventBus.emit("sttDownload", mapOf("status" to "INSTALLED", "message" to "Speech model ready"))
+        } catch (t: Throwable) {
+            Log.e(TAG, "finishVosk failed", t)
+            tmp.deleteRecursively()
+            EventBus.emit("sttDownload", mapOf("status" to "FAILED", "message" to "Speech model install failed: ${t.message}"))
+        } finally {
+            zip.delete()
+        }
+    }
+
+    fun cancelVosk(ctx: Context) {
+        val id = voskId(ctx)
+        if (id >= 0) dm(ctx).remove(id)
+        setVoskId(ctx, -1)
+        voskJob?.cancel(); voskJob = null
+        voskZip(ctx).delete()
+    }
+
+    /**
+     * Extracts [zip] into [target], dropping the archive's single top-level dir. Zip-slip guard: any
+     * entry whose canonical path is outside [target] aborts the install.
+     * shortcut: no decompressed-size cap (source is the pinned alphacephei URL), add one if the URL becomes user-supplied.
+     */
+    private fun unzip(zip: File, target: File) {
+        target.deleteRecursively()
+        target.mkdirs()
+        val root = target.canonicalFile
+        ZipInputStream(zip.inputStream().buffered()).use { zin ->
+            while (true) {
+                val e = zin.nextEntry ?: break
+                val rel = e.name.substringAfter('/', "")
+                if (rel.isEmpty()) continue
+                val out = File(root, rel).canonicalFile
+                if (!out.path.startsWith(root.path + File.separator)) throw SecurityException("zip entry escapes target: ${e.name}")
+                if (e.isDirectory) out.mkdirs() else {
+                    out.parentFile?.mkdirs()
+                    out.outputStream().use { zin.copyTo(it) }
+                }
+            }
+        }
     }
 
     private fun err(msg: String) = mapOf("status" to "ERROR", "message" to msg)

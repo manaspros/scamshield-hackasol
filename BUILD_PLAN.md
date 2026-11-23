@@ -118,7 +118,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T2.5 [sonnet] `AudioDecoder`: MediaExtractor/MediaCodec -> 16 kHz mono PCM16 chunks; pure `PcmResampler` for downmix/resample
   - **Files**: `K/AudioDecoder.kt`, `K/core/PcmResampler.kt`, `KT/core/PcmResamplerTest.kt`  **Depends on**: T0.5
   - **Done when**: `APP` succeeds; `KT(PcmResamplerTest)` passes `T2_5_downmixAndRate`
-- [ ] T2.6 [sonnet] [NEEDS-OK:DEP6] Vosk STT engine + Hindi model download via the existing `ModelDownloader` path; Vosk JSON -> `SttSegment`; keep-rules added
+- [x] T2.6 [sonnet] [NEEDS-OK:DEP6] Vosk STT engine + Hindi model download via the existing `ModelDownloader` path; Vosk JSON -> `SttSegment`; keep-rules added
   - **Files**: `android/app/build.gradle(.kts)`, `K/SttEngine.kt`, `K/ModelDownloader.kt`, `android/app/proguard-rules.pro`, `KT/core/SttResultParserTest.kt`  **Depends on**: T2.5, T1.15
   - **Done when**: `APP` and `REL` succeed; `KT(SttResultParserTest)` passes `T2_6_parsesVoskJson`
 - [ ] T2.7 [sonnet] [UI] Recording screen: pick file (SAF) or share `audio/*` -> decode -> STT -> pipeline; progress, per-statement timeline with verdicts, overall risk, trigger phrases, Report button
