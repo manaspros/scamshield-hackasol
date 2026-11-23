@@ -101,14 +101,33 @@ class LlmOutputParserTest {
 class CallRiskTrackerTest {
     private fun v(l: Label, c: Double) = Verdict("x", l, c, "", emptyList(), "t", 0, Source.CAPTION)
 
-    @Test fun singleModerateScamShownAsSuspicious() {
+    @Test fun weakLoneScamShownAsSuspiciousThenCompounds() {
         val t = CallRiskTracker()
-        assertEquals(Label.SUSPICIOUS, t.record(v(Label.SCAM, 0.8), 0))
-        assertEquals(Label.SCAM, t.record(v(Label.SCAM, 0.8), 1000))
+        assertEquals(Label.SUSPICIOUS, t.record(v(Label.SCAM, 0.4), 0))
+        assertEquals(Label.SCAM, t.record(v(Label.SCAM, 0.4), 1000))
     }
 
     @Test fun highConfidenceScamGoesRedImmediately() {
         assertEquals(Label.SCAM, CallRiskTracker().record(v(Label.SCAM, 0.95), 0))
+    }
+
+    @Test fun repeatedSuspiciousLinesCompoundToScam() {
+        val t = CallRiskTracker()
+        t.record(v(Label.SUSPICIOUS, 0.75), 0); assertEquals(Label.SUSPICIOUS, t.level())
+        t.record(v(Label.SUSPICIOUS, 0.75), 1); assertEquals(Label.SUSPICIOUS, t.level())
+        t.record(v(Label.SUSPICIOUS, 0.75), 2); assertEquals(Label.SCAM, t.level())
+    }
+
+    @Test fun riskGrowsMonotonicallyWithScamEvidence() {
+        val t = CallRiskTracker(); var last = 0.0
+        repeat(4) { t.record(v(Label.SUSPICIOUS, 0.6), it.toLong()); assertTrue(t.risk > last); last = t.risk }
+    }
+
+    @Test fun safeSmallTalkFirstDoesNotDelayDetection() {
+        val warm = CallRiskTracker(); repeat(20) { warm.record(v(Label.SAFE, 0.95), it.toLong()) }
+        warm.record(v(Label.SCAM, 0.9), 20)
+        val cold = CallRiskTracker(); cold.record(v(Label.SCAM, 0.9), 0)
+        assertEquals(cold.risk, warm.risk, 1e-9)
     }
 
     @Test fun riskExpires() {
@@ -116,6 +135,12 @@ class CallRiskTrackerTest {
         t.record(v(Label.SCAM, 0.95), 0)
         t.maybeExpire(5000)
         assertEquals(Label.SAFE, t.level())
+    }
+
+    @Test fun liveDefaultNeverExpiresOnSilence() {
+        val t = CallRiskTracker(); t.record(v(Label.SCAM, 0.95), 0)
+        t.maybeExpire(10 * 60_000L)
+        assertEquals(Label.SCAM, t.level())
     }
 }
 
