@@ -20,6 +20,7 @@ import '../widgets/premium.dart';
 import 'model_picker_screen.dart';
 import 'page_route.dart';
 import 'setup_screen.dart';
+import '../widgets/shield_logo.dart';
 
 /// Chhattisgarh districts, generated from data/districts.json.
 /// [VERIFY] list against the official source (same flag as the JSON).
@@ -280,7 +281,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Padding(
               padding: const EdgeInsets.all(Sp.m),
               child: Column(children: [
-                Icon(Icons.shield_rounded, color: p.accent, size: 28),
+                const ShieldLogo(size: 40, style: ShieldStyle.full),
                 const SizedBox(height: Sp.xs),
                 Text('ScamShield $kAppVersion', style: th.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
                 Text(_t('footer'), style: th.textTheme.bodySmall?.copyWith(color: p.muted, fontSize: 14)),

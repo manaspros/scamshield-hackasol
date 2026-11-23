@@ -9,9 +9,9 @@ import '../theme/app_theme.dart' show StatusColors;
 import '../theme/tokens.dart';
 import '../widgets/action_tile.dart';
 import '../widgets/section_header.dart';
+import '../widgets/shell_bar.dart' show openReport;
 import '../widgets/state_message.dart';
 import '../widgets/status_chip.dart';
-import 'report_screen.dart';
 
 /// Client for the native recording channel (K/RecordingChannel.kt).
 /// Method calls return false instead of throwing, so the screen shows an error, not a crash.
@@ -343,12 +343,8 @@ class _RecordingScreenState extends State<RecordingScreen> {
 
   String _label(RecordingStrings s, RiskLabel l) => s['l_${l.name}'];
 
-  void _openReport() => Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => Scaffold(
-          appBar: AppBar(title: Text(ReportStrings.of(_lang)['title'])),
-          body: ReportScreen(initialLang: _lang),
-        ),
-      ));
+  // Same top bar as everywhere (language + light/dark); the report follows the app-wide language.
+  void _openReport() => openReport(context);
 
   @override
   Widget build(BuildContext context) {

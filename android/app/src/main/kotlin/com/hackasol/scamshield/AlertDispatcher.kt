@@ -12,6 +12,8 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.LocaleSpan
 import java.util.Locale
+import android.view.View
+import android.widget.RemoteViews
 import com.hackasol.scamshield.core.AlertNotificationMapper
 import com.hackasol.scamshield.core.AlertPlan
 import com.hackasol.scamshield.core.AlertPolicy
@@ -71,6 +73,22 @@ class AndroidNotificationPoster(private val ctx: Context) : NotificationPoster {
             .setCategory(if (spec.messageCategory) Notification.CATEGORY_MESSAGE else Notification.CATEGORY_STATUS)
             .setOnlyAlertOnce(spec.onlyAlertOnce)
             .setAutoCancel(true)
+            .setColor(ctx.getColor(if (spec.priorityHigh) R.color.alert_scam else R.color.brand_blue))
+        if (spec.priorityHigh) {
+            // Scam heads-up: our own rounded body inside the system frame (header + action pills stay native,
+            // so it matches the phone's style, e.g. OxygenOS). Plain text stays set for wearables / accessibility.
+            val body = spec.kicker?.let { k -> spec.text.removePrefix("$k · ") } ?: spec.text
+            val rv = RemoteViews(ctx.packageName, R.layout.notif_alert).apply {
+                setTextViewText(R.id.notif_title, title)   // locale-tagged, same as the plain fields
+                setTextViewText(R.id.notif_text, localeTagged(body))
+                if (spec.kicker.isNullOrBlank()) setViewVisibility(R.id.notif_kicker, View.GONE)
+                else setTextViewText(R.id.notif_kicker, localeTagged(spec.kicker))
+            }
+            b.setStyle(Notification.DecoratedCustomViewStyle())
+                .setCustomContentView(rv)
+                .setCustomBigContentView(rv)
+                .setCustomHeadsUpContentView(rv)
+        }
         if (spec.timeoutMs > 0) b.setTimeoutAfter(spec.timeoutMs)
         spec.group?.let(b::setGroup)
         spec.actions.forEach { a ->

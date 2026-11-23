@@ -25,6 +25,7 @@ import java.io.File
  * Model lookup (first *.task found):
  *   1. filesDir/models/          (filled by the in-app "Import model" picker)
  *   2. getExternalFilesDir/models (adb push … /sdcard/Android/data/com.hackasol.scamshield/files/models/)
+ *   3. Downloads/ScamShield       (in-app downloads on Android 11+; kept when the app is uninstalled)
  */
 object GemmaClassifier {
     private const val TAG = "ScamShield/Gemma"
@@ -43,10 +44,15 @@ object GemmaClassifier {
 
     private fun prefs(ctx: Context) = ctx.getSharedPreferences("scamshield", Context.MODE_PRIVATE)
 
+    /** App storage first, then Downloads/ScamShield (Android 11+; readable while this install made the file). */
     fun modelDirs(ctx: Context): List<File> = listOfNotNull(
         File(ctx.filesDir, "models"),
         ctx.getExternalFilesDir(null)?.let { File(it, "models") },
+        ModelDownloader.sharedModelsDir(),
     )
+
+    private fun usable(ctx: Context, f: File) =
+        f.isFile && f.name.endsWith(".task") && f.canRead() && !ModelDownloader.isDownloading(ctx, f.name)
 
     private const val PREFERRED = "preferredModelFile"
 
@@ -58,7 +64,7 @@ object GemmaClassifier {
     fun findModel(ctx: Context): File? {
         val all = modelDirs(ctx)
             .flatMap { d -> d.listFiles()?.toList().orEmpty() }
-            .filter { it.isFile && it.name.endsWith(".task") }
+            .filter { usable(ctx, it) }
         val want = prefs(ctx).getString(PREFERRED, null)
         return all.firstOrNull { it.name == want } ?: all.maxByOrNull { it.lastModified() }
     }
@@ -66,13 +72,14 @@ object GemmaClassifier {
     /** File names of every .task model on this phone (Dart maps them to the live catalog). */
     fun installedFiles(ctx: Context): List<String> = modelDirs(ctx)
         .flatMap { d -> d.listFiles()?.toList().orEmpty() }
-        .filter { it.isFile && it.name.endsWith(".task") }
+        .filter { usable(ctx, it) }
         .map { it.name }
         .distinct()
 
     /** Catalog ids of the models present on this phone. */
     fun installedIds(ctx: Context): List<String> = modelDirs(ctx)
         .flatMap { d -> d.listFiles()?.toList().orEmpty() }
+        .filter { usable(ctx, it) }
         .mapNotNull { f -> ModelCatalog.byFile(f.name)?.id }
         .distinct()
 

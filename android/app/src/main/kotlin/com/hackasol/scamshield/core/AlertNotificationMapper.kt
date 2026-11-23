@@ -16,6 +16,8 @@ data class NotificationFields(
     val messageCategory: Boolean = false,
     /** Fixed per tier so a silent post can never replace a SCAM alert still in the shade. */
     val notificationId: Int = AlertNotificationMapper.ID_ALERTS,
+    /** Scam type in the user's language (the small red line on the heads-up card); also the first part of [text]. */
+    val kicker: String? = null,
 )
 
 /** Pure plan -> notification mapping (no Android types). */
@@ -37,16 +39,19 @@ object AlertNotificationMapper {
     fun fields(plan: AlertPlan, v: Verdict, scamType: ScamType? = null, lang: String = "hi", signalKind: String? = null): NotificationFields? {
         if (!plan.notify) return null
         val title = (if (signalKind != null) L10n.signalTitle(signalKind, lang) else L10n.notifTitle(v.label, lang)) ?: return null
+        // The scam type is the small red line on the heads-up card; an in-call signal has its own title instead.
+        val kicker = if (signalKind != null) null else L10n.scamType(scamType, lang)
         val text = if (signalKind != null) L10n.areYouSure(lang) + " " + L10n.signalAdvice(signalKind, lang) else {
             val advice = L10n.advice(v.label, lang)
             val trigger = v.triggers.firstOrNull()?.trim()?.takeIf { it.isNotEmpty() }?.take(MAX_TRIGGER)?.let { "\"$it\"" }
-            listOfNotNull(L10n.scamType(scamType, lang), trigger, advice).joinToString(" · ")
+            listOfNotNull(kicker, trigger, advice).joinToString(" · ")
         }
         val report = ActionSpec(L10n.reportAction(lang), ROUTE_REPORT)
         // Report action is unconditional whenever we notify (T1.7 requirement). Only the heads-up adds Details.
         return if (plan.headsUp) NotificationFields(CHANNEL_ID_ALERTS, title, text, priorityHigh = true,
             actions = listOf(report, ActionSpec(L10n.detailsAction(lang), ROUTE_DETAILS)),
-            timeoutMs = AlertPolicy.notificationTimeoutMs(plan), onlyAlertOnce = true, group = GROUP_KEY, messageCategory = true)
+            timeoutMs = AlertPolicy.notificationTimeoutMs(plan), onlyAlertOnce = true, group = GROUP_KEY, messageCategory = true,
+            kicker = kicker)
         else NotificationFields(CHANNEL_ID_SILENT, title, text, priorityHigh = false, actions = listOf(report),
             timeoutMs = AlertPolicy.notificationTimeoutMs(plan), notificationId = ID_SILENT)
     }

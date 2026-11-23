@@ -24,7 +24,7 @@ class ReportPackTest {
         assertEquals(Source.WHATSAPP, e.source)
         assertEquals(listOf("CBI", "digital arrest"), e.triggers)
         assertTrue(e.time.endsWith("IST"))
-        assertEquals(listOf("scammer_number", "amount", "utr", "screenshots"), pack.userFields.map { it.key })
+        assertEquals(listOf("scammer_number", "amount", "utr", "screenshots", "notes"), pack.userFields.map { it.key })
         assertTrue(pack.userFields.all { it.value.isEmpty() })
         assertTrue(pack.toJson().contains("\"digital arrest\""))
     }

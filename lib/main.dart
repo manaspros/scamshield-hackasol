@@ -19,6 +19,7 @@ import 'theme/theme_controller.dart';
 import 'theme/tokens.dart';
 import 'widgets/floating_nav.dart';
 import 'widgets/shell_bar.dart';
+import 'widgets/shield_logo.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -132,10 +133,10 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       appBar: shellBar(
         title: home
             // Keeps the user's text size (the bar is clamped at 1.2x); no FittedBox shrinking it.
-            ? Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.shield_rounded, color: palOf(context).accent, size: 28),
-                const SizedBox(width: Sp.s),
-                const Flexible(child: Text('ScamShield', overflow: TextOverflow.ellipsis)),
+            ? const Row(mainAxisSize: MainAxisSize.min, children: [
+                ShieldLogo(size: 28),
+                SizedBox(width: Sp.s),
+                Flexible(child: Text('ScamShield', overflow: TextOverflow.ellipsis)),
               ])
             : Text(t(_tabKeys[_tab]), overflow: TextOverflow.ellipsis),
       ),

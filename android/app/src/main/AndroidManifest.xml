@@ -9,6 +9,7 @@
     <application
         android:label="ScamShield"
         android:largeHeap="true"
+        android:hasFragileUserData="true"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -141,5 +142,12 @@
         <package android:name="com.teamviewer.teamviewer.market.mobile" />
         <package android:name="in.org.npci.upiapp" />
         <package android:name="net.one97.paytm" />
+        <!-- Report chat voice typing: find the phone's speech recogniser (Google) on Android 11+ -->
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+        </intent>
     </queries>
 </manifest>
