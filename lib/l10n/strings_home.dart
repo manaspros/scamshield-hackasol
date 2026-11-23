@@ -4,6 +4,12 @@ import 'app_language.dart';
 // hne wording is a first draft: [VERIFY] with a native Chhattisgarhi speaker. Missing hne falls back to hi.
 const homeStrings = Tri(
   hi: {
+    'ob_get_started': 'शुरू करें', 'ob_continue': 'आगे बढ़ें', 'ob_continue_anyway': 'फिर भी आगे बढ़ें',
+    'ob1_s': 'ScamShield कॉल और मैसेज में ठगी की चालें पहचानता है और समय पर आपको चेताता है।',
+    'ob2_s': 'करीब एक मिनट। बाद में कभी भी बदल सकते हैं।', 'ob4_s': 'ScamShield अब आपकी हिफ़ाज़त कर रहा है।',
+    'ob4_profile': 'पाठ अपने हिसाब से पाएँ: प्रोफ़ाइल में अपनी उम्र और काम जोड़ें।', 'ob_profile_title': 'प्रोफ़ाइल',
+    'ob_chip_otp': 'OTP माँगना रोका', 'ob_chip_kyc': 'नकली KYC पकड़ा', 'ob_chip_safe': 'माँ का कॉल सुरक्षित',
+    'ob_code': 'परिवार कोड', 'ob_you': 'आप', 'ob_family_on': 'परिवार जुड़ा', 'ob_family_later': 'परिवार: बाद में',
     'tip_0': 'बैंक कभी फ़ोन पर OTP नहीं माँगता। कोई माँगे तो फ़ोन काट दें।',
     'tip_1': 'पैसे पाने के लिए कभी UPI PIN नहीं डालना पड़ता। PIN सिर्फ़ पैसे भेजने के लिए है।',
     'tip_2': 'पुलिस या CBI वीडियो कॉल पर "डिजिटल अरेस्ट" नहीं करती। डरें नहीं, 1930 पर कॉल करें।',
@@ -73,6 +79,7 @@ const homeStrings = Tri(
     'set_setup': 'सेटअप और अनुमतियाँ', 'set_setup_s': 'देखें ScamShield को क्या चाहिए',
   },
   hne: {
+    'ob_get_started': 'सुरु करव', 'ob_continue': 'आगू बढ़व', 'ob_you': 'तुमन',
     'g_morning': 'राम राम', 'g_afternoon': 'राम राम', 'g_evening': 'राम राम',
     'recent': 'हाल के हमला', 'see_all': 'सब देखव', 'quick': 'झटकुन करव',
     'prot_ok': 'तुमन सुरक्षित हव', 'prot_off': 'धियान देव: {what} बंद हे',
@@ -89,6 +96,12 @@ const homeStrings = Tri(
     'fam_msg': 'मोला {type} वाले ठगी के संदेश/कॉल आइस ({time})। मैं कुछु नइ भेजेंव अउ कोनो PIN या OTP नइ बतायेंव। तुमन भी सावधान रहव।',
   },
   en: {
+    'ob_get_started': 'Get started', 'ob_continue': 'Continue', 'ob_continue_anyway': 'Continue anyway',
+    'ob1_s': 'ScamShield listens for scam tricks in your calls and messages, and warns you in time.',
+    'ob2_s': 'About a minute. You can change these anytime.', 'ob4_s': 'ScamShield is now watching out for you.',
+    'ob4_profile': 'Make lessons yours: add your age and work in Profile.', 'ob_profile_title': 'Profile',
+    'ob_chip_otp': 'OTP request blocked', 'ob_chip_kyc': 'Fake KYC caught', 'ob_chip_safe': "Mom's call is safe",
+    'ob_code': 'FAMILY CODE', 'ob_you': 'You', 'ob_family_on': 'Family paired', 'ob_family_later': 'Family: later',
     'tip_0': 'Your bank will never ask for an OTP on a call. If someone does, hang up.',
     'tip_1': 'You never enter a UPI PIN to receive money. A PIN only ever sends money.',
     'tip_2': 'Police and the CBI never do a "digital arrest" on a video call. Stay calm and call 1930.',
@@ -148,7 +161,7 @@ const homeStrings = Tri(
     'src_whatsapp': 'WhatsApp', 'src_notification': 'Notification', 'src_recording': 'Recording', 'src_signal': 'Call signal',
     't_now': 'Just now', 't_min': '{n} min ago', 't_hour': '{n} h ago', 't_day': '{n} d ago',
     'ob_skip': 'Skip', 'ob_next': 'Next', 'ob_back': 'Back', 'ob_step': 'Step {n} of {m}',
-    'ob1_t': 'ScamShield warns you before a scammer wins',
+    'ob1_t': 'Stop scammers before they win',
     'ob1_a': 'Listens for scam words in calls and messages', 'ob1_b': 'Warns you on screen straight away',
     'ob1_c': 'Works on this phone. Nothing is uploaded.',
     'ob2_t': 'Allow what it needs',

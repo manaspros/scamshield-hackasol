@@ -10,6 +10,8 @@ class ModelSpec {
     required this.minRamMb,
     required this.tier,
     this.url,
+    this.isNew = false,
+    this.note = const {},
   });
 
   factory ModelSpec.fromMap(Map<Object?, Object?> m) => ModelSpec(
@@ -20,18 +22,36 @@ class ModelSpec {
         sizeMb: (m['sizeMb'] as num?)?.toInt() ?? 0,
         minRamMb: (m['minRamMb'] as num?)?.toInt() ?? 0,
         tier: '${m['tier'] ?? 'balanced'}',
+        isNew: m['isNew'] == true,
+        note: {
+          for (final e in ((m['note'] as Map?) ?? const {}).entries)
+            if (e.value is String) '${e.key}': e.value as String,
+        },
       );
 
   final String id, name, file, tier;
   final String? url;
   final int sizeMb, minRamMb;
 
+  /// Shown with a NEW badge (set in models.json).
+  final bool isNew;
+
+  /// Optional one-line description per language from models.json (`{"en": "...", "hi": "..."}`).
+  final Map<String, String> note;
+
+  /// [note] in [lang], falling back to Hindi then English; null when models.json gave none.
+  String? noteIn(String lang) => note[lang] ?? (lang == 'hne' ? note['hi'] : null) ?? note['en'];
+
+  /// What native needs to download this model.
+  Map<String, Object?> toArgs() =>
+      {'modelId': id, 'name': name, 'file': file, 'url': url, 'sizeMb': sizeMb, 'minRamMb': minRamMb};
+
   bool get available => url != null;
 
   String get sizeLabel => sizeMb >= 1000 ? '${(sizeMb / 1000).toStringAsFixed(1)} GB' : '$sizeMb MB';
 }
 
-/// Same list as Kotlin `ModelCatalog.all`; used when the native side is missing (tests) or fails.
+/// Built-in list (same as Kotlin `ModelCatalog.all`): used until the online models.json has been read.
 const kFallbackCatalog = <ModelSpec>[
   ModelSpec(
       id: 'gemma3-270m',
@@ -113,17 +133,34 @@ class DeviceInfo {
 
 /// Model status as GemmaClassifier reports it.
 class ModelState {
-  const ModelState({this.status = 'NOT_FOUND', this.modelId, this.installed = const [], this.message = ''});
+  const ModelState({
+    this.status = 'NOT_FOUND',
+    this.modelId,
+    this.installed = const [],
+    this.message = '',
+    this.file,
+    this.files = const [],
+  });
   factory ModelState.fromMap(Map<Object?, Object?> m) => ModelState(
         status: '${m['status'] ?? 'NOT_FOUND'}',
         modelId: m['modelId'] as String?,
         installed: [for (final e in (m['installed'] as List?) ?? const []) '$e'],
         message: '${m['message'] ?? ''}',
+        file: m['file'] as String?,
+        files: [for (final e in (m['files'] as List?) ?? const []) '$e'],
       );
   final String status, message;
-  final String? modelId;
-  final List<String> installed;
+  final String? modelId, file;
+
+  /// Built-in ids present on the phone (native view) and every `.task` file name present.
+  final List<String> installed, files;
   bool get ready => status == 'READY';
+
+  /// The model in use, looked up in the live [catalog] by file name.
+  String? idIn(List<ModelSpec> catalog) =>
+      catalog.where((c) => c.file == file).map((c) => c.id).firstOrNull ?? modelId;
+
+  bool isInstalled(ModelSpec m) => files.contains(m.file) || installed.contains(m.id);
 }
 
 class ModelApi {
@@ -140,11 +177,6 @@ class ModelApi {
     }
   }
 
-  Future<List<ModelSpec>> catalog() async {
-    final raw = await _call<List<Object?>>('models.catalog');
-    if (raw == null || raw.isEmpty) return kFallbackCatalog;
-    return [for (final m in raw) ModelSpec.fromMap((m as Map).cast<Object?, Object?>())];
-  }
 
   Future<DeviceInfo> device() async {
     final m = await _call<Map<Object?, Object?>>('device.info');
@@ -156,11 +188,12 @@ class ModelApi {
     return m == null ? const ModelState() : ModelState.fromMap(m);
   }
 
-  Future<Map<Object?, Object?>> download(String id) async =>
-      await _call<Map<Object?, Object?>>('downloadModel', {'modelId': id}) ?? {'status': 'ERROR', 'message': 'Not available'};
+  Future<Map<Object?, Object?>> download(ModelSpec m) async =>
+      await _call<Map<Object?, Object?>>('downloadModel', m.toArgs()) ?? {'status': 'ERROR', 'message': 'Not available'};
 
-  Future<ModelState> select(String id) async {
-    final m = await _call<Map<Object?, Object?>>('models.select', {'id': id});
-    return m == null ? const ModelState() : ModelState.fromMap(m);
+  /// Switches to an installed model (by file name) and reloads it.
+  Future<ModelState> select(ModelSpec m) async {
+    final r = await _call<Map<Object?, Object?>>('models.select', {'id': m.id, 'file': m.file});
+    return r == null ? const ModelState() : ModelState.fromMap(r);
   }
 }

@@ -88,8 +88,9 @@ void main() {
       home: Scaffold(body: LessonsScreen(store: InMemoryQuizStore(), bundle: _DiskBundle())),
     ));
     await t.pumpAndSettle();
-    await t.scrollUntilVisible(find.byKey(const Key('lesson_electricity_bill')), 200);
-    expect(find.text('बिजली बिल धोखा'), findsOneWidget);
+    // The Learn tab also has a sideways lesson carousel: scroll the page itself.
+    await t.scrollUntilVisible(find.byKey(const Key('lesson_electricity_bill')), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.descendant(of: find.byKey(const Key('lesson_electricity_bill')), matching: find.text('बिजली बिल धोखा')), findsOneWidget);
     expect(t.takeException(), isNull);
   });
 }

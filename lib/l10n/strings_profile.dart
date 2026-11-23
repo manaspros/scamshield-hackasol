@@ -30,6 +30,10 @@ const profileStrings = Tri(
     'm_heavy_t': 'यह मॉडल भारी हो सकता है', 'm_heavy_b': 'इसे इस फ़ोन से ज़्यादा मेमोरी चाहिए। यह धीमा चल सकता है या ऐप बंद हो सकता है।',
     'm_try': 'फिर भी डाउनलोड करें', 'm_started': 'डाउनलोड शुरू हुआ', 'm_switched': 'मॉडल बदल गया', 'm_done': 'मॉडल तैयार है',
     'm_unknown': 'जानकारी नहीं मिली',
+    'm_link_ok': 'लिंक ठीक है', 'm_link_checking': 'लिंक जाँच रहे हैं…', 'm_link_bad': 'लिंक नहीं खुल रहा',
+    'm_link_offline': 'इंटरनेट नहीं, जाँच नहीं हो सकी', 'm_link_none': 'अभी उपलब्ध नहीं', 'm_new': 'नया',
+    'm_unavailable': 'उपलब्ध नहीं', 'm_builtin': 'बिल्ट-इन सूची', 'm_updated': '{t} अपडेट हुई',
+    'm_online_note': 'यह सूची इंटरनेट से आती है, इसलिए नए मॉडल बिना ऐप अपडेट किए यहाँ दिखेंगे। हर डाउनलोड लिंक अभी जाँचा जाता है।',
   },
   hne: {
     'details': 'निजी जानकारी', 'add': 'जोड़व', 'save': 'सेव करव', 'cancel': 'रद्द करव', 'delete': 'हटावव',
@@ -62,6 +66,10 @@ const profileStrings = Tri(
     'm_heavy_t': 'This model may be too heavy', 'm_heavy_b': 'It needs more memory than this phone has. It may run slowly or close the app.',
     'm_try': 'Download anyway', 'm_started': 'Download started', 'm_switched': 'Switched model', 'm_done': 'Model ready',
     'm_unknown': 'Unknown',
+    'm_link_ok': 'Link OK', 'm_link_checking': 'Checking link…', 'm_link_bad': 'Link not reachable',
+    'm_link_offline': "Offline, can't check the link", 'm_link_none': 'Not available yet', 'm_new': 'NEW',
+    'm_unavailable': 'Unavailable', 'm_builtin': 'Built-in list', 'm_updated': 'Updated {t}',
+    'm_online_note': 'This list comes from the internet, so new models show up here without updating the app. Each download link is checked live.',
   },
 );
 

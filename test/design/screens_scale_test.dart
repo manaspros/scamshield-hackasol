@@ -256,19 +256,24 @@ void main() {
         expect(t.takeException(), isNull);
         // The card appears only after the user taps the action that opens the Android screen.
         expect(find.byKey(const Key('setup_prepermission_card')), findsNothing);
+        await t.scrollUntilVisible(find.byKey(const Key('setup_primary')), 300, scrollable: find.byType(Scrollable).first);
+        await t.ensureVisible(find.byKey(const Key('setup_primary')));
+        await t.pumpAndSettle();
         await t.tap(find.byKey(const Key('setup_primary')));
         await t.pumpAndSettle();
-        await t.scrollUntilVisible(find.byKey(const Key('setup_prepermission_card')), 200);
+        await t.scrollUntilVisible(find.byKey(const Key('setup_prepermission_card')), -200, scrollable: find.byType(Scrollable).first);
         expect(find.byKey(const Key('setup_prepermission_card')), findsOneWidget);
         // back to the top (the AppBar owns the "सेटअप" title; the counter is the first line)
-        await t.scrollUntilVisible(find.text('0 / 4 ज़रूरी कदम पूरे'), -500, maxScrolls: 100);
+        await t.scrollUntilVisible(find.text('0 / 4 ज़रूरी कदम पूरे'), -500, maxScrolls: 100, scrollable: find.byType(Scrollable).first);
         if (firstRun) {
           // The language choice moved to the app-level gate and Settings: no picker on Setup.
           expect(find.byKey(const Key('lang_hne')), findsNothing);
           expect(find.byType(ChoiceChip), findsNothing);
         } else {
-          await t.scrollUntilVisible(find.byKey(const Key('setup_advanced')), 500, maxScrolls: 100);
-          await t.tap(find.byKey(const Key('setup_advanced')));
+          await t.scrollUntilVisible(find.byKey(const Key('setup_mic')), 500, maxScrolls: 100, scrollable: find.byType(Scrollable).first);
+          await t.ensureVisible(find.byKey(const Key('setup_mic')));
+          await t.pumpAndSettle();
+          await t.tap(find.byKey(const Key('setup_mic')));
           await t.pumpAndSettle();
           await t.drag(find.byType(ListView), const Offset(0, -6000));
           await t.pumpAndSettle();
@@ -329,6 +334,11 @@ void main() {
         addTearDown(() => t.pumpWidget(const SizedBox())); // registered after the mocks: runs before they go away
         await _show(t, e.value, const SettingsScreen());
         expect(t.takeException(), isNull);
+        await t.scrollUntilVisible(find.byKey(const Key('appVersion')), 300,
+            scrollable: find.byType(Scrollable).first, maxScrolls: 100);
+        expect(t.takeException(), isNull); // the whole main Settings page
+        await t.pumpWidget(const SizedBox());
+        await _show(t, e.value, const ShareCountsScreen());
         await t.scrollUntilVisible(find.byKey(const Key('exportButton')), 300,
             scrollable: find.byType(Scrollable).first, maxScrolls: 100);
         await t.pumpAndSettle();
@@ -340,7 +350,7 @@ void main() {
       });
     }
 
-    testWidgets('settings_screen_advanced_collapsedThenExpanded_noOverflow_${e.key}_scale2', (t) async {
+    testWidgets('settings_advancedPage_noOverflow_${e.key}_scale2', (t) async {
       final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
       messenger.setMockMethodCallHandler(const MethodChannel('scamshield/api'),
           (c) async => c.method == 'getSettings' ? <String, Object?>{'useLlm': true} : null);
@@ -350,20 +360,9 @@ void main() {
         messenger.setMockMethodCallHandler(const MethodChannel('scamshield/prefs'), null);
       });
       addTearDown(() => t.pumpWidget(const SizedBox())); // registered after the mocks: runs before they go away
-      await _show(t, e.value, const SettingsScreen());
-      final adv = find.byKey(const Key('settings_advanced'));
-      await t.scrollUntilVisible(adv, 300, scrollable: find.byType(Scrollable).first, maxScrolls: 100);
-      // Collapsed by default: developer controls are not in the tree.
-      expect(find.text('Use on-device Gemma'), findsNothing);
-      expect(find.byKey(const Key('demoModeSwitch')), findsNothing);
-      expect(t.takeException(), isNull);
-      await t.ensureVisible(adv);
-      await t.pumpAndSettle();
-      await t.tap(adv);
-      await t.pumpAndSettle();
-      await t.scrollUntilVisible(find.text('Use on-device Gemma'), 300,
+      await _show(t, e.value, const AdvancedSettingsScreen());
+      await t.scrollUntilVisible(find.byKey(const Key('demoModeSwitch')), 300,
           scrollable: find.byType(Scrollable).first, maxScrolls: 100);
-      expect(find.text('Use on-device Gemma'), findsOneWidget);
       expect(t.takeException(), isNull);
     });
 

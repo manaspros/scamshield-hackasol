@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'api/llm_api.dart';
+import 'api/model_catalog.dart';
 import 'demo/demo_flag.dart';
 import 'l10n/app_language.dart';
 import 'l10n/strings_shell.dart';
 import 'learn/learn_plan.dart';
 import 'profile/user_profile.dart';
+import 'screens/family_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/lessons_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -25,6 +27,7 @@ void main() {
   ProfileStore.load();
   LearnStore.load();
   LlmStatus.refresh();
+  ModelCatalogStore.loadCached().then((_) => ModelCatalogStore.refresh()); // online models.json, quietly
   runApp(const ScamShieldApp());
 }
 
