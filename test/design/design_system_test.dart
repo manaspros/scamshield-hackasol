@@ -120,6 +120,50 @@ void main() {
     }
   });
 
+  group('T_design VerdictCard masked triggers', () {
+    // RuleScorer caps triggers at 40 chars with a trailing ellipsis (938c6d6).
+    const masked = [
+      'UPI xxxxxx@okhdfcbank को ₹45,000 भेजें…',
+      '+91 98xxxxxx21 से कॉल आया, OTP माँगा…',
+      'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…',
+    ];
+    const verdict = Verdict(
+      text: 'आपके खाते से पैसे कट जाएंगे',
+      label: RiskLabel.scam,
+      confidence: 0.87,
+      reason: 'कॉल करने वाला ओटीपी माँग रहा है',
+      triggers: masked,
+      engine: 'rules',
+      latencyMs: 12,
+      source: 'caption',
+    );
+    for (final e in {'light': AppTheme.light(), 'dark': AppTheme.dark()}.entries) {
+      testWidgets('masked 40-char triggers wrap at 360dp scale 2.0 in ${e.key} theme', (tester) async {
+        tester.view.physicalSize = const Size(360, 800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(MaterialApp(
+          theme: e.value,
+          home: MediaQuery(
+            data: const MediaQueryData(size: Size(360, 800), textScaler: TextScaler.linear(2.0)),
+            child: const Scaffold(
+              body: SingleChildScrollView(padding: EdgeInsets.all(16), child: VerdictCard(verdict: verdict)),
+            ),
+          ),
+        ));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(tester.takeException(), isNull);
+        for (final trig in masked) {
+          expect(find.text(trig), findsOneWidget);
+          final size = DefaultTextStyle.of(tester.element(find.text(trig))).style.fontSize ?? 0;
+          expect(size, greaterThanOrEqualTo(16), reason: 'trigger text stays readable');
+          expect(tester.getSize(find.widgetWithText(Chip, trig)).width, lessThanOrEqualTo(360 - 2 * 16 - 2 * Sp.xl),
+              reason: 'chip stays inside the card');
+        }
+      });
+    }
+  });
+
   group('T_design WCAG AA contrast', () {
     for (final name in ['light', 'dark']) {
       final p = name == 'light' ? Pal.light : Pal.dark;

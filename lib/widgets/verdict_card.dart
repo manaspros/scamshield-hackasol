@@ -14,6 +14,7 @@ class VerdictCard extends StatelessWidget {
     this.adviceTitle,
     this.advice = const [],
     this.footer,
+    this.whyLabel = 'क्यों:',
   });
   final Verdict verdict;
   final bool compact;
@@ -24,6 +25,9 @@ class VerdictCard extends StatelessWidget {
 
   /// Optional slot under the advice, e.g. a helpline row or a Report button.
   final Widget? footer;
+
+  /// Label before the reason; pass another language here if the caller has one.
+  final String whyLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -59,14 +63,18 @@ class VerdictCard extends StatelessWidget {
               style: tt.bodyLarge?.copyWith(fontStyle: FontStyle.italic), maxLines: 3, overflow: TextOverflow.ellipsis),
         ],
         const SizedBox(height: Sp.s),
-        Text('Why: ${v.reason}', style: tt.bodyLarge),
+        Text('$whyLabel ${v.reason}', style: tt.bodyLarge),
         if (v.triggers.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: Sp.s),
             child: Wrap(spacing: Sp.s, runSpacing: Sp.s, children: [
               for (final trig in v.triggers.take(5))
                 Chip(
-                  label: Text(trig),
+                  // Long masked triggers wrap inside the chip instead of fading out.
+                  label: Text(trig, softWrap: true, maxLines: 3, overflow: TextOverflow.ellipsis),
+                  // A rounded rectangle, not a pill: a pill looks bubbly once the text wraps to 2-3 lines.
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(Rad.md), side: BorderSide(color: cs.outline)),
                   visualDensity: VisualDensity.compact,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),

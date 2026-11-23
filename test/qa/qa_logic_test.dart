@@ -288,6 +288,7 @@ void main() {
       emit({'type': 'call', 'active': true});
       emit({..._v('SCAM'), 'type': 'verdict', 'callRisk': 0.8, 'callLevel': 'SCAM'});
       await t.pumpAndSettle();
+      await t.scrollUntilVisible(find.text('कॉल चल रही है'), 200); // verdict card now leads; status card sits below it
       expect(find.text('कॉल चल रही है'), findsOneWidget);
       expect(find.text('धोखाधड़ी हो सकती है · 80%'), findsOneWidget);
       emit({..._v('SAFE'), 'type': 'verdict', 'preliminary': true, 'callRisk': 0.0, 'callLevel': 'SAFE'});

@@ -29,6 +29,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   StreamSubscription? _sub;
   bool _importing = false;
   bool _loaded = false;
+  final _expanded = <String>{}; // done steps the user opened again
   bool _failed = false;
 
   @override
@@ -116,37 +117,69 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
       required IconData icon, String? subtitle, List<Widget> actions = const []}) {
     final t = Theme.of(context);
     final cs = t.colorScheme;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(Sp.l),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(icon, size: 40, color: cs.primary),
+    final open = !done || _expanded.contains(title);
+    final details = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const SizedBox(height: Sp.m),
+      Text(body, style: t.textTheme.bodyLarge),
+      if (actions.isNotEmpty) ...[
+        const SizedBox(height: Sp.m),
+        Wrap(spacing: Sp.s, runSpacing: Sp.s, children: actions),
+      ],
+    ]);
+    // Done: one compact row (icon, title, "हो गया"); tap to show the details again.
+    // Pending: full step. State is icon + word, never colour alone.
+    final header = done
+        ? Row(children: [
+            Icon(icon, size: 32, color: cs.primary),
             const SizedBox(width: Sp.m),
+            // Wrap: title and chip share a line when they fit, stack at large text sizes.
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title, style: t.textTheme.titleLarge),
-                if (subtitle != null)
-                  Text(subtitle, style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              child: Wrap(spacing: Sp.s, runSpacing: Sp.xs, crossAxisAlignment: WrapCrossAlignment.center, children: [
+                Text(title, style: t.textTheme.titleMedium),
+                const StatusChip(label: RiskLabel.safe, text: 'हो गया'),
               ]),
             ),
-          ]),
-          const SizedBox(height: Sp.m),
-          // State is icon + word, never colour alone.
-          if (done)
-            const StatusChip(label: RiskLabel.safe, text: 'हो गया')
-          else
+            Icon(open ? Icons.expand_less : Icons.expand_more, size: 32, color: cs.onSurfaceVariant),
+          ])
+        : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Icon(icon, size: 40, color: cs.primary),
+              const SizedBox(width: Sp.m),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(title, style: t.textTheme.titleLarge),
+                  if (subtitle != null)
+                    Text(subtitle, style: t.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                ]),
+              ),
+            ]),
+            const SizedBox(height: Sp.m),
             Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(Icons.radio_button_unchecked, size: 24, color: cs.onSurfaceVariant),
               const SizedBox(width: Sp.s),
               Flexible(child: Text('बाकी है', style: t.textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant))),
             ]),
-          const SizedBox(height: Sp.m),
-          Text(body, style: t.textTheme.bodyLarge),
-          if (actions.isNotEmpty) ...[
-            const SizedBox(height: Sp.m),
-            Wrap(spacing: Sp.s, runSpacing: Sp.s, children: actions),
-          ],
+          ]);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: EdgeInsets.all(done ? Sp.m : Sp.l),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (done)
+            Semantics(
+              button: true,
+              expanded: open,
+              label: '$title, हो गया',
+              excludeSemantics: true,
+              onTap: () => setState(() => open ? _expanded.remove(title) : _expanded.add(title)),
+              child: InkWell(
+                onTap: () => setState(() => open ? _expanded.remove(title) : _expanded.add(title)),
+                child: ConstrainedBox(constraints: const BoxConstraints(minHeight: kTouch), child: header),
+              ),
+            )
+          else
+            header,
+          if (open) details,
         ]),
       ),
     );

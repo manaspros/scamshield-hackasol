@@ -261,4 +261,55 @@ void main() {
       await tester.pumpWidget(const SizedBox()); // dispose the family countdown timer
     }
   });
+
+  testWidgets('shots: verdict card with masked 40-char triggers, 2.0x', (tester) async {
+    if (!await _loadFonts(tester)) return;
+    final base = AppTheme.light();
+    final theme = base.copyWith(
+        textTheme: base.textTheme.apply(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']),
+        chipTheme: base.chipTheme.copyWith(
+            labelStyle: base.chipTheme.labelStyle?.copyWith(fontFamily: 'Roboto', fontFamilyFallback: ['Deva'])));
+    tester.view.physicalSize = const Size(720, 1600);
+    tester.view.devicePixelRatio = 2;
+    tester.view.physicalSize = const Size(720, 3000); // tall enough to show the whole card
+    addTearDown(tester.view.reset);
+    final key = GlobalKey();
+    await tester.pumpWidget(MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: theme,
+      builder: (c, child) =>
+          MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: const TextScaler.linear(2.0)), child: child!),
+      home: RepaintBoundary(
+        key: key,
+        child: const Scaffold(
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: VerdictCard(
+              verdict: Verdict(
+                text: 'आपके खाते से पैसे कट जाएंगे',
+                label: RiskLabel.scam,
+                confidence: 0.87,
+                reason: 'कॉल करने वाला ओटीपी माँग रहा है',
+                triggers: [
+                  'UPI xxxxxx@okhdfcbank को ₹45,000 भेजें…',
+                  '+91 98xxxxxx21 से कॉल आया, OTP माँगा…',
+                  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…',
+                ],
+                engine: 'rules',
+                latencyMs: 12,
+                source: 'caption',
+              ),
+            ),
+          ),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.runAsync(() async {
+      final b = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final img = await b.toImage(pixelRatio: 1);
+      final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+      File('$_out/ux_verdict_masked_light_2x.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+    });
+  });
 }

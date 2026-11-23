@@ -196,7 +196,6 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
       primary = _primary(Icons.closed_caption, 'लाइव कैप्शन चालू करें', TextApi.openCaptionSettings);
     } else {
       body = [
-        if (latest != null) _dominant(latest.verdict!),
         if (latest != null && rest.isNotEmpty) const SectionHeader(title: 'पिछली जाँच', icon: Icons.history),
         for (final it in rest) _history(it, st, cs),
       ];
@@ -206,8 +205,10 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
     return Column(children: [
       Expanded(
         child: ListView(padding: const EdgeInsets.all(Sp.l), children: [
+          // The newest verdict leads; call status sits under it, history below.
+          if (!_streamError && latest != null) _dominant(latest.verdict!),
           Card(
-            margin: EdgeInsets.zero,
+            margin: const EdgeInsets.symmetric(vertical: 6),
             child: Padding(
               padding: const EdgeInsets.all(Sp.l),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
