@@ -1,0 +1,113 @@
+{
+  "system": "qwen3.5-0.8b/fewshot/litertlm-mixed48",
+  "model": "qwen3.5-0.8b",
+  "prompt": "fewshot",
+  "template": "raw",
+  "runtime": "litert-lm",
+  "adapter": null,
+  "hf_id": "Qwen/Qwen3.5-0.8B",
+  "licence": "Apache-2.0",
+  "rows": 325,
+  "binary": {
+    "overall": {
+      "precision": 0.7413793103448276,
+      "recall": 0.9907834101382489,
+      "fpr": 0.6944444444444444,
+      "macro_f1": 0.4897038894609227,
+      "counts": {
+        "n": 325,
+        "tp": 215,
+        "fp": 75,
+        "fn": 2,
+        "tn": 33
+      },
+      "unparsed": 0
+    },
+    "per_language": {
+      "en": {
+        "precision": 0.8369565217391305,
+        "recall": 0.9871794871794872,
+        "fpr": 0.42857142857142855,
+        "macro_f1": 0.5605395959090937,
+        "counts": {
+          "n": 113,
+          "tp": 77,
+          "fp": 15,
+          "fn": 1,
+          "tn": 20
+        },
+        "unparsed": 0
+      },
+      "hi": {
+        "precision": 0.6990291262135923,
+        "recall": 0.9863013698630136,
+        "fpr": 0.8857142857142857,
+        "macro_f1": 0.42501188182302735,
+        "counts": {
+          "n": 108,
+          "tp": 72,
+          "fp": 31,
+          "fn": 1,
+          "tn": 4
+        },
+        "unparsed": 0
+      },
+      "hinglish": {
+        "precision": 0.6947368421052632,
+        "recall": 1.0,
+        "fpr": 0.7631578947368421,
+        "macro_f1": 0.472739591849499,
+        "counts": {
+          "n": 104,
+          "tp": 66,
+          "fp": 29,
+          "fn": 0,
+          "tn": 9
+        },
+        "unparsed": 0
+      }
+    }
+  },
+  "labels": {
+    "accuracy": 0.6276923076923077,
+    "macro_f1": 0.473001508295626,
+    "scam_missed_rate": 0.0,
+    "confusion": {
+      "SAFE": {
+        "SAFE": 33,
+        "SCAM": 70,
+        "SUSPICIOUS": 5,
+        "UNPARSED": 0
+      },
+      "SCAM": {
+        "SAFE": 0,
+        "SCAM": 164,
+        "SUSPICIOUS": 0,
+        "UNPARSED": 0
+      },
+      "SUSPICIOUS": {
+        "SAFE": 2,
+        "SCAM": 44,
+        "SUSPICIOUS": 7,
+        "UNPARSED": 0
+      }
+    }
+  },
+  "cost": {
+    "prompt_tokens_mean": 637.8215384615385,
+    "output_tokens_mean": 64,
+    "eos_rate": 0.0,
+    "phone_ms_estimate": 5759.945022220186,
+    "phone_ref": "Galaxy S25 Ultra, CPU",
+    "file_mb": 487,
+    "ram_mb": 1300,
+    "file": "Qwen3.5-0.8B_mixed48_h1024.litertlm",
+    "file_mb_measured": 487,
+    "host_cpu_threads": 4,
+    "host_cpu_ttft_ms_median": 697,
+    "host_cpu_total_ms_median": 1384,
+    "host_cpu_prefill_tps_median": 923,
+    "host_cpu_decode_tps_median": 94.2
+  },
+  "split": "test"
+}

@@ -1,0 +1,512 @@
+{
+  "caveat": "Test rows are synthetic, held out BY TEMPLATE (no test template is trained on), written by the same authors as the training rows. Fine-tuned scores are therefore optimistic versus real traffic; only real rows in data/eval/real/ remove that bias. Accuracy is the bf16 HF checkpoint, not the quantized phone file.",
+  "systems": {
+    "distilbert-base-multilingual-cased/classifier": {
+      "labels": {
+        "accuracy": 0.8430769230769231,
+        "macro_f1": 0.7312169212873907,
+        "scam_missed_rate": 0.012195121951219513
+      },
+      "binary": {
+        "precision": 0.9540816326530612,
+        "recall": 0.8617511520737328,
+        "fpr": 0.08333333333333333,
+        "macro_f1": 0.43712505655903156,
+        "counts": {
+          "n": 325,
+          "tp": 187,
+          "fp": 9,
+          "fn": 30,
+          "tn": 99
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 39.78769230769231,
+        "output_tokens_mean": 0,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": null,
+        "phone_ref": "no phone data; one forward pass, no decode",
+        "file_mb": 135,
+        "ram_mb": null,
+        "params_m": 135,
+        "host_single_ms_median": 1,
+        "host_device": "cuda"
+      }
+    },
+    "gemma4-e2b+ft/fewshot/raw": {
+      "labels": {
+        "accuracy": 0.9938461538461538,
+        "macro_f1": 0.9910404740535146,
+        "scam_missed_rate": 0.0
+      },
+      "binary": {
+        "precision": 1.0,
+        "recall": 0.9953917050691244,
+        "fpr": 0.0,
+        "macro_f1": 0.9559178017104847,
+        "counts": {
+          "n": 325,
+          "tp": 216,
+          "fp": 0,
+          "fn": 1,
+          "tn": 108
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 618.3323076923077,
+        "output_tokens_mean": 27.99692307692308,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": 1705.7910774049665,
+        "phone_ref": "Galaxy S26 Ultra, CPU",
+        "file_mb": 2580,
+        "ram_mb": 1733,
+        "params_m": 5104,
+        "host_batch_s": 13.8,
+        "host_single_ms_median": 589,
+        "host_device": "cuda"
+      }
+    },
+    "gemma4-e2b+ft/short/raw": {
+      "labels": {
+        "accuracy": 0.9692307692307692,
+        "macro_f1": 0.9616797187219722,
+        "scam_missed_rate": 0.0
+      },
+      "binary": {
+        "precision": 0.9727272727272728,
+        "recall": 0.9861751152073732,
+        "fpr": 0.05555555555555555,
+        "macro_f1": 0.9176739370624538,
+        "counts": {
+          "n": 325,
+          "tp": 214,
+          "fp": 6,
+          "fn": 3,
+          "tn": 102
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 68.3323076923077,
+        "output_tokens_mean": 28.021538461538462,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": 718.8821339476445,
+        "phone_ref": "Galaxy S26 Ultra, CPU",
+        "file_mb": 2580,
+        "ram_mb": 1733,
+        "params_m": 5104,
+        "host_batch_s": 12.3,
+        "host_single_ms_median": 477,
+        "host_device": "cuda"
+      }
+    },
+    "gemma4-e2b/fewshot/chat": {
+      "labels": {
+        "accuracy": 0.6307692307692307,
+        "macro_f1": 0.6423244605539,
+        "scam_missed_rate": 0.21341463414634146
+      },
+      "binary": {
+        "precision": 0.7836538461538461,
+        "recall": 0.7511520737327189,
+        "fpr": 0.4166666666666667,
+        "macro_f1": 0.44002541723528965,
+        "counts": {
+          "n": 325,
+          "tp": 163,
+          "fp": 45,
+          "fn": 54,
+          "tn": 63
+        },
+        "unparsed": 59
+      },
+      "cost": {
+        "prompt_tokens_mean": 626.3323076923077,
+        "output_tokens_mean": 31.055384615384614,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": 1785.2273842510292,
+        "phone_ref": "Galaxy S26 Ultra, CPU",
+        "file_mb": 2580,
+        "ram_mb": 1733,
+        "params_m": 5104,
+        "host_batch_s": 12.2,
+        "host_single_ms_median": 446,
+        "host_device": "cuda"
+      }
+    },
+    "gemma4-e2b/fewshot/litertlm": {
+      "labels": {
+        "accuracy": 0.7230769230769231,
+        "macro_f1": 0.6587714874914061,
+        "scam_missed_rate": 0.006097560975609756
+      },
+      "binary": {
+        "precision": 0.7712177121771218,
+        "recall": 0.9631336405529954,
+        "fpr": 0.5740740740740741,
+        "macro_f1": 0.6207060932045287,
+        "counts": {
+          "n": 325,
+          "tp": 209,
+          "fp": 62,
+          "fn": 8,
+          "tn": 46
+        },
+        "unparsed": 3
+      },
+      "cost": {
+        "prompt_tokens_mean": 619.3323076923077,
+        "output_tokens_mean": 54.64923076923077,
+        "eos_rate": 0.28,
+        "phone_ms_estimate": 2274.65678597349,
+        "phone_ref": "Galaxy S26 Ultra, CPU",
+        "file_mb": 2588,
+        "ram_mb": 1733,
+        "file": "gemma-4-E2B-it.litertlm",
+        "file_mb_measured": 2588,
+        "host_cpu_threads": 4,
+        "host_cpu_ttft_ms_median": 288,
+        "host_cpu_total_ms_median": 1283,
+        "host_cpu_prefill_tps_median": 2274,
+        "host_cpu_decode_tps_median": 64.0
+      }
+    },
+    "gemma4-e2b/fewshot/raw": {
+      "labels": {
+        "accuracy": 0.7138461538461538,
+        "macro_f1": 0.6519358741681791,
+        "scam_missed_rate": 0.012195121951219513
+      },
+      "binary": {
+        "precision": 0.7670250896057348,
+        "recall": 0.9861751152073732,
+        "fpr": 0.6018518518518519,
+        "macro_f1": 0.42363866660975413,
+        "counts": {
+          "n": 325,
+          "tp": 214,
+          "fp": 65,
+          "fn": 3,
+          "tn": 43
+        },
+        "unparsed": 2
+      },
+      "cost": {
+        "prompt_tokens_mean": 618.3323076923077,
+        "output_tokens_mean": 28.726153846153846,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": 1721.3066256864722,
+        "phone_ref": "Galaxy S26 Ultra, CPU",
+        "file_mb": 2580,
+        "ram_mb": 1733,
+        "params_m": 5104,
+        "host_batch_s": 17.3,
+        "host_single_ms_median": 513,
+        "host_device": "cuda"
+      }
+    },
+    "qwen3-0.6b/fewshot/chat": {
+      "labels": {
+        "accuracy": 0.64,
+        "macro_f1": 0.4455611390284757,
+        "scam_missed_rate": 0.08536585365853659
+      },
+      "binary": {
+        "precision": 0.7863247863247863,
+        "recall": 0.847926267281106,
+        "fpr": 0.46296296296296297,
+        "macro_f1": 0.24815869925656947,
+        "counts": {
+          "n": 325,
+          "tp": 184,
+          "fp": 50,
+          "fn": 33,
+          "tn": 58
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 679.9476923076924,
+        "output_tokens_mean": 30.473846153846154,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": null,
+        "phone_ref": "no published LiteRT-LM numbers",
+        "file_mb": null,
+        "ram_mb": null,
+        "params_m": 596,
+        "host_batch_s": 8.5,
+        "host_single_ms_median": 219,
+        "host_device": "cuda"
+      }
+    },
+    "qwen3.5-0.8b+ft/fewshot/litertlm-int8": {
+      "labels": {
+        "accuracy": 0.9569230769230769,
+        "macro_f1": 0.9454293971807838,
+        "scam_missed_rate": 0.024390243902439025
+      },
+      "binary": {
+        "precision": 0.9726027397260274,
+        "recall": 0.9815668202764977,
+        "fpr": 0.05555555555555555,
+        "macro_f1": 0.8291853541271321,
+        "counts": {
+          "n": 325,
+          "tp": 213,
+          "fp": 6,
+          "fn": 4,
+          "tn": 102
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 637.8215384615385,
+        "output_tokens_mean": 27.950769230769232,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": 4976.266092454299,
+        "phone_ref": "Galaxy S25 Ultra, CPU",
+        "file_mb": 791,
+        "ram_mb": 1300,
+        "file": "model.litertlm",
+        "file_mb_measured": 791,
+        "host_cpu_threads": 4,
+        "host_cpu_ttft_ms_median": 707,
+        "host_cpu_total_ms_median": 1171,
+        "host_cpu_prefill_tps_median": 916,
+        "host_cpu_decode_tps_median": 63.3
+      }
+    },
+    "qwen3.5-0.8b+ft/fewshot/raw": {
+      "labels": {
+        "accuracy": 0.9476923076923077,
+        "macro_f1": 0.9322937548576203,
+        "scam_missed_rate": 0.024390243902439025
+      },
+      "binary": {
+        "precision": 0.9594594594594594,
+        "recall": 0.9815668202764977,
+        "fpr": 0.08333333333333333,
+        "macro_f1": 0.8106551213270035,
+        "counts": {
+          "n": 325,
+          "tp": 213,
+          "fp": 9,
+          "fn": 4,
+          "tn": 99
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 637.8215384615385,
+        "output_tokens_mean": 26.97230769230769,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": 4954.995189444266,
+        "phone_ref": "Galaxy S25 Ultra, CPU",
+        "file_mb": 487,
+        "ram_mb": 1300,
+        "params_m": 752,
+        "host_batch_s": 20.4,
+        "host_single_ms_median": 537,
+        "host_device": "cuda"
+      }
+    },
+    "qwen3.5-0.8b+ft/short/litertlm-int8": {
+      "labels": {
+        "accuracy": 0.9476923076923077,
+        "macro_f1": 0.9317702790673081,
+        "scam_missed_rate": 0.024390243902439025
+      },
+      "binary": {
+        "precision": 0.9636363636363636,
+        "recall": 0.9769585253456221,
+        "fpr": 0.07407407407407407,
+        "macro_f1": 0.8153416435754878,
+        "counts": {
+          "n": 325,
+          "tp": 212,
+          "fp": 8,
+          "fn": 5,
+          "tn": 100
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 75.82153846153847,
+        "output_tokens_mean": 27.953846153846154,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": 1127.017913593256,
+        "phone_ref": "Galaxy S25 Ultra, CPU",
+        "file_mb": 791,
+        "ram_mb": 1300,
+        "file": "model.litertlm",
+        "file_mb_measured": 791,
+        "host_cpu_threads": 4,
+        "host_cpu_ttft_ms_median": 133,
+        "host_cpu_total_ms_median": 607,
+        "host_cpu_prefill_tps_median": 647,
+        "host_cpu_decode_tps_median": 59.6
+      }
+    },
+    "qwen3.5-0.8b+ft/short/raw": {
+      "labels": {
+        "accuracy": 0.9507692307692308,
+        "macro_f1": 0.9361412928771031,
+        "scam_missed_rate": 0.024390243902439025
+      },
+      "binary": {
+        "precision": 0.9680365296803652,
+        "recall": 0.9769585253456221,
+        "fpr": 0.06481481481481481,
+        "macro_f1": 0.8274839637634033,
+        "counts": {
+          "n": 325,
+          "tp": 212,
+          "fp": 7,
+          "fn": 5,
+          "tn": 101
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 75.82153846153847,
+        "output_tokens_mean": 26.978461538461538,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": 1105.8139002153298,
+        "phone_ref": "Galaxy S25 Ultra, CPU",
+        "file_mb": 487,
+        "ram_mb": 1300,
+        "params_m": 752,
+        "host_batch_s": 12.9,
+        "host_single_ms_median": 553,
+        "host_device": "cuda"
+      }
+    },
+    "qwen3.5-0.8b/fewshot/chat": {
+      "labels": {
+        "accuracy": 0.64,
+        "macro_f1": 0.4539819968391397,
+        "scam_missed_rate": 0.0
+      },
+      "binary": {
+        "precision": 0.7634408602150538,
+        "recall": 0.9815668202764977,
+        "fpr": 0.6111111111111112,
+        "macro_f1": 0.5383453082857924,
+        "counts": {
+          "n": 325,
+          "tp": 213,
+          "fp": 66,
+          "fn": 4,
+          "tn": 42
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 648.8215384615385,
+        "output_tokens_mean": 31.53846153846154,
+        "eos_rate": 1.0,
+        "phone_ms_estimate": 5129.601869244514,
+        "phone_ref": "Galaxy S25 Ultra, CPU",
+        "file_mb": 487,
+        "ram_mb": 1300,
+        "params_m": 752,
+        "host_batch_s": 16.3,
+        "host_single_ms_median": 394,
+        "host_device": "cuda"
+      }
+    },
+    "qwen3.5-0.8b/fewshot/litertlm-mixed48": {
+      "labels": {
+        "accuracy": 0.6276923076923077,
+        "macro_f1": 0.473001508295626,
+        "scam_missed_rate": 0.0
+      },
+      "binary": {
+        "precision": 0.7413793103448276,
+        "recall": 0.9907834101382489,
+        "fpr": 0.6944444444444444,
+        "macro_f1": 0.4897038894609227,
+        "counts": {
+          "n": 325,
+          "tp": 215,
+          "fp": 75,
+          "fn": 2,
+          "tn": 33
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 637.8215384615385,
+        "output_tokens_mean": 64,
+        "eos_rate": 0.0,
+        "phone_ms_estimate": 5759.945022220186,
+        "phone_ref": "Galaxy S25 Ultra, CPU",
+        "file_mb": 487,
+        "ram_mb": 1300,
+        "file": "Qwen3.5-0.8B_mixed48_h1024.litertlm",
+        "file_mb_measured": 487,
+        "host_cpu_threads": 4,
+        "host_cpu_ttft_ms_median": 697,
+        "host_cpu_total_ms_median": 1384,
+        "host_cpu_prefill_tps_median": 923,
+        "host_cpu_decode_tps_median": 94.2
+      }
+    },
+    "qwen3.5-0.8b/fewshot/raw": {
+      "labels": {
+        "accuracy": 0.6953846153846154,
+        "macro_f1": 0.6160039834804147,
+        "scam_missed_rate": 0.0
+      },
+      "binary": {
+        "precision": 0.7534722222222222,
+        "recall": 1.0,
+        "fpr": 0.6574074074074074,
+        "macro_f1": 0.48847913652089214,
+        "counts": {
+          "n": 325,
+          "tp": 217,
+          "fp": 71,
+          "fn": 0,
+          "tn": 37
+        },
+        "unparsed": 0
+      },
+      "cost": {
+        "prompt_tokens_mean": 637.8215384615385,
+        "output_tokens_mean": 64,
+        "eos_rate": 0.0,
+        "phone_ms_estimate": 5759.945022220186,
+        "phone_ref": "Galaxy S25 Ultra, CPU",
+        "file_mb": 487,
+        "ram_mb": 1300,
+        "params_m": 752,
+        "host_batch_s": 15.2,
+        "host_single_ms_median": 543,
+        "host_device": "cuda"
+      }
+    }
+  },
+  "tiers": [
+    {
+      "tier": "A: 3-4 GB RAM",
+      "ram_budget_mb": 700,
+      "system": "distilbert-base-multilingual-cased/classifier",
+      "macro_f1": 0.7312169212873907
+    },
+    {
+      "tier": "B: 4-6 GB RAM",
+      "ram_budget_mb": 1400,
+      "system": "qwen3.5-0.8b+ft/fewshot/litertlm-int8",
+      "macro_f1": 0.9454293971807838
+    },
+    {
+      "tier": "C: 8 GB+ RAM",
+      "ram_budget_mb": 4000,
+      "system": "gemma4-e2b+ft/fewshot/raw",
+      "macro_f1": 0.9910404740535146
+    }
+  ]
+}

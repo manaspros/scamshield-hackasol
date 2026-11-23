@@ -53,6 +53,22 @@ def build_prompt(text: str, context: Sequence[str] = (), context_label: str = "E
     return "".join(parts)
 
 
+# Short instruction for fine-tuned models: the few-shot HEADER is ~700 tokens of prefill on every call,
+# which dominates phone latency. Not used on device yet (GemmaPrompt.kt would need a matching variant).
+SHORT_HEADER = (
+    "Classify the Indian call or message STATEMENT as SAFE, SUSPICIOUS or SCAM with scam_type "
+    "(NONE for SAFE). Answer with one line of JSON.\n"
+)
+
+
+def build_short_prompt(text: str, context: Sequence[str] = (), context_label: str = "Earlier in this call") -> str:
+    """Same context and STATEMENT lines as build_prompt, with SHORT_HEADER instead of the few-shot HEADER."""
+    return SHORT_HEADER + build_prompt(text, context, context_label)[len(HEADER):]
+
+
+PROMPTS = {"fewshot": build_prompt, "short": build_short_prompt}
+
+
 def format_target(label: str, scam_type: str | None, reason: str) -> str:
     """Model output in the one-line JSON GemmaPrompt.kt documents and LlmOutputParser reads."""
     # Confidence is a fixed per-label value (matches the few-shot examples); the dataset carries none.

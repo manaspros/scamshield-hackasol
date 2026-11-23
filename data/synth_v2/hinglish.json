@@ -1,0 +1,1327 @@
+{
+ "lang": "hinglish",
+ "scam": {
+  "OTP": [
+   {
+    "text": "Sir main {bank} ke security department se bol rha hu, aapke account me suspicious login hua hai, abhi jo {otp} aaya he woh bata dijiye warna account block ho jayega",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "madam ek minute, aapka card band hone wala hai, verification ke liye jo 6 digit code aaya hai woh mujhe read kar do",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Dear customer aapka {bank} account aaj raat band ho jayega. Turant OTP {otp} reply karein is number par.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "bhai galti se mera code tere number pe chala gaya, jo OTP aaya woh forward kar de plz, bahut urgent hai",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "ji main amazon se bol raha hu, aapko refund dena hai, bas aapke phone pe jo code aayega woh bata do, paise turant aa jayenge",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Aapka UPI PIN expire ho gaya hai. Naya PIN set karne ke liye apna purana PIN aur OTP is link par daalein {domain}",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir card ka CVV aur peeche likha number bata dijiye, main aapka limit badha deta hu, 2 minute ka kaam hai",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Hello ji, gas subsidy aapke account me daalni hai, bas {otp} jo message aaya wo bol dijiye aur ATM PIN confirm kar dijiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Aapke {bank} netbanking ka password aaj expire ho jayega. Abhi login karke password aur OTP bhejein warna service band.",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "arre uncle ji OTP mat padhna band karo, mujhe bas last 4 digit nahi chahiye pura code chahiye jo abhi aaya, jaldi boliye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Congratulations! Aapka reward point redeem karne ke liye OTP {otp} neeche diye number par share karein: {phone}",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "beta main teri chacha ki taraf se hu, mera phone kharab he, tere number pe OTP aayega wo mujhe bhej dena paytm ke liye",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Sir aapke account se 49,000 ka ek transaction pending dikh raha he, kya ye aapne kiya he? hum abhi check kar rahe hain",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Aapke {bank} account me unusual activity detect hui hai. Kripya apna registered mobile number aur date of birth confirm karein.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam aapke card ka renewal pending he, hum aapko kuch der me verification ke liye call karenge, kripya phone paas rakhiye",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Your {bank} card has been temporarily limited. Please contact our team urgently to avoid inconvenience.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "hello ji main bank se bol raha hu, aapke naam se ek naya credit card apply hua he, aapne kiya tha kya",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Aapka account 24 ghante me freeze ho sakta he. Zaroori jaankari update karni hogi {domain}",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   }
+  ],
+  "KYC": [
+   {
+    "text": "Sir aapka KYC expire ho gaya he, abhi {bank} ka ye link khol ke Aadhaar aur PAN daal dijiye warna account band hoga: {domain}",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Dear user your {bank} KYC is pending. Update now: {domain} Account will be blocked in 24 hrs.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "madam main paytm KYC team se hu, aapko ek app download karni hogi {app}, usme card number aur OTP daalna hoga",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Aapka SIM card ka KYC adhura he, 2 ghante me band ho jayega. Is number par call karke Aadhaar ki photo bhejein {phone}",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir video KYC karna he, screen share karke apna net banking login kholiye main verify kar deta hu",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Aapke PAN card ka link Aadhaar se nahi hua, turant ₹{amount} penalty bharein is link se {domain} warna account freeze",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "ji aapka UPI id block hone wala he, bas ek rupya bhej do verification ke liye aur PIN daal do",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Hi sir I am from {bank} head office, KYC update ke liye Aadhaar card aur selfie WhatsApp karo abhi isi number pe",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Priya customer, aapka e-KYC fail ho gaya. Is APK ko install karein {app} aur permission allow karein, tabhi account chalega.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "dekhiye sir RBI ka naya rule aaya he, aapko aaj hi branch jaane ki zarurat nahi, bas card ke peeche ka CVV bata do main online kar deta hu",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Insurance KYC update karna he, apni photo ID aur bank account number reply me bhejiye jaldi",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Aapka demat account KYC lapse ho gaya. Abhi {domain} par login karke OTP daalein, warna holdings freeze.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Sir aapke account ka KYC kuch dino me expire hone wala he, aapko jaankari mil gayi hogi na",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "{bank} alert: KYC verification ke liye hamari team aapse sampark karegi. Kripya taiyar rahein.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam aapke mobile number se jude account ka kuch document match nahi ho raha, hum check kar rahe hain",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Your wallet KYC is incomplete. Complete soon to continue using services.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "hello kya aap {name} bol rahe hain? aapke Aadhaar ke saath kuch problem aa rahi he bank record me",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Reminder: aapka account limited ho sakta he agar KYC time pe update nahi hua. Details jald share ki jayengi.",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   }
+  ],
+  "DIGITAL_ARREST": [
+   {
+    "text": "Main CBI ke cyber cell se bol raha hu, aapke Aadhaar se ek money laundering case me 3 account khule hain, aap abhi video call par rahiye aur kisi ko mat bataiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "sir aapke naam se Mumbai se ek parcel pakda gaya jisme drugs mile hain, narcotics bureau aapko arrest karega, case khatam karna he to ₹{amount} security deposit transfer karo",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "TRAI se bol rahe hain, aapke number se illegal activity ho rahi he, 2 ghante me number band hoga aur FIR hogi, senior officer se baat karne ke liye press 1 nahi balki ye video call join karo",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "madam aap abhi se digital custody me hain, camera on rakhiye, phone mat kaatiye, ghar ke kisi member ko is baare me mat batana warna sidhe giraftari hogi",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "ED ka notice: aapke khate se hawala transaction hua he. Verification ke liye turant ₹{amount} RBI safe account me bhejein, case close ho jayega",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Supreme Court ka arrest warrant jari hua he aapke naam. Warrant cancel karne ke liye abhi {upi} par jama karwayein, ye confidential case he kisi se discuss na karein",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "dekhiye {name} ji aapke Aadhaar ka misuse hua he, hum aapko bachana chahte hain, bas apna saara paisa jaanch ke liye is government account me daal do, jaanch ke baad wapas",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Officer Rathore here, Mumbai police. Aapki beti ka naam ek sex racket case me aaya he, settle karna he to abhi paise bhejiye aur skype pe aaiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Aap video call pe 6 ghante tak rahenge, bathroom bhi nahi jaana, jab tak hamare officer verification na kar le. Phone band kiya to team ghar bhej di jayegi.",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Customs aur CBI joint notice. Aapke naam ka passport illegal parcel me mila. Apni saari FD ki detail aur ₹{amount} abhi transfer karein warna arrest.",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Sir main cyber crime branch se hu, aapka SIM 17 complaint me involved he. Aadhaar number aur bank balance batao verify karne ke liye, aur ye baat kisi ko nahi batani",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "FINAL NOTICE: Aapke khilaf FIR darj he. Turant {phone} par video call kijiye aur Rs {amount} ka bail bond bharein.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Sir aapke naam se ek parcel me kuch gair kanooni saman mila he, aapko jaanch me sahyog karna hoga",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Notice from Cyber Crime Dept: aapke Aadhaar se jude kuch sandigdh lenden mile hain. Jald hi aapse sampark kiya jayega.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam main police station se bol raha hu, aapke mobile number ki shikayat aayi he, kya aap abhi ghar par hain",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Aapke SIM ke khilaf TRAI me complaint darj hui he. Number 2 ghante me deactivate ho sakta he.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "hello kya aap {name} ho? aapka naam ek money laundering investigation me aaya he, hum aapse pooch-taach karenge",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Court summons: aapko case number 4471 me hazir hona he. Details ke liye hamari team call karegi.",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   }
+  ],
+  "COURIER_CUSTOMS": [
+   {
+    "text": "Sir FedEx se bol raha hu, aapke naam ka parcel Mumbai customs me ruka hua he, release karwane ke liye ₹{amount} duty abhi {upi} par bhej dijiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Your parcel {track} is held at customs. Pay clearance fee Rs {amount} here to release: {domain}",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "madam aapka package Dubai se aaya he usme 5 passport aur ek ATM card mile hain, aapko customs officer se baat karani hogi, abhi paise bhejo warna case ban jayega",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "DHL notice: delivery failed due to incomplete address. Re-schedule karne ke liye ₹{amount} bhejein aur card details bharein {domain}",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "ji main courier company se hu, aapka parcel wapas ja raha he, bas 49 rupay delivery fee UPI se bhej do aur is app me PIN daalo {app}",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "India Post: aapka parcel {track} aaj deliver nahi ho paya. Address update karne ke liye link kholein aur OTP daalein: {domain}",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir aapke naam se Thailand ko ek parcel book hua he jisme MDMA he, abhi mumbai crime branch se baat kijiye, pehle apna Aadhaar bhej do",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Hello sir aapke gift parcel ka tax baaki he, bina tax diye customs nahi chodega, ₹{amount} abhi transfer karo, receipt WhatsApp pe bhej dunga",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "bhaiya ek foreign gift aaya he aapke liye, mujhe delivery charge ₹{amount} bhej do pehle, phir ghar pe pohoch jayega",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Blue Dart: aapka shipment hold par he. Neeche link se ₹{amount} ka clearance fee jama karein warna parcel destroy kar diya jayega {domain}",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "madam parcel me suspicious saman nikla he, ye case aap kisi ko mat batana, hamari team ko apna bank detail aur OTP de dijiye hum clear kar denge",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Parcel delivery boy bol raha hu, address nahi mil raha, link pe click karke ek rupya UPI se pay karke location confirm karo {domain}",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir aapka ek international parcel customs me aaya he, kya aap kisi se kuch mangwaya tha",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Courier alert: aapka package {track} abhi tak deliver nahi hua. Kripya hamare customer care se sampark karein.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam FedEx se bol raha hu, aapke naam se ek parcel pending he, aap abhi ghar pe hain kya",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Parcel held: address verification pending. Details ke liye jaldi reply karein.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "Aapka package customs clearance me atka he, hamari team aapko call karegi.",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "hello aapke naam ka parcel Delhi airport pe aaya he, aapko pata he is baare me",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   }
+  ],
+  "FAKE_QR": [
+   {
+    "text": "Sir aapka payment aa raha he, bas ye QR code scan karke apna UPI PIN daal dijiye paisa aapke account me aa jayega",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "OLX par aapka sofa kharid raha hu, ye QR bheja he scan karo aur PIN daalo to advance ₹{amount} mil jayega",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Bhai paisa bhej diya he, receive karne ke liye is QR ko scan karke PIN enter karo, 2 baar try karna",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam cashback pane ke liye ye QR scan kijiye aur phone pe jo request aaye usko accept karke PIN daal dijiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Aapka electricity refund ₹{amount} ready he. QR scan karein aur UPI PIN dalkar claim karein.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "dekhiye aap ye link {domain} kholke QR code scan karo, fir 'Pay' pe click karo aur PIN dalo, paisa credit ho jayega aapko",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Sir aapka petrol pump ka reward ₹{amount} aaya he, scan karo QR aur PIN confirm karo to wallet me aayega",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "bhaiya maine collect request bheji he, approve kar do PIN daal ke, wo to paisa aane ke liye hoti he",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Tumhara scholarship amount aane ke liye is QR ko {upi} se scan karke authorise karo, PIN zaroori he",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Rental advance bhej raha hu, QR scan karo aur 'receive' dabao, PIN dalna padega bas ek baar",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam bas ek rupya test payment karna he, ye QR scan karo aur PIN daalo, verification ho jayega aapke account ka",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Get Rs {amount} cashback! Scan QR from {domain} and enter UPI PIN to claim. Offer ends today.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Sir maine aapko ek QR bheja he payment ke liye, dekh lijiye",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Aapko ₹{amount} ka reward mila he. QR code ke liye hamare agent se sampark karein.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "bhai tera paisa aane wala he, QR bhejunga thodi der me",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Cashback offer: scan karke jeetiye bumper prize. Details jald.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam aapko payment receive karna he na? hum QR bhej rahe hain",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Refund process ke liye ek QR generate kiya jayega, kripya apna UPI id taiyar rakhein.",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   }
+  ],
+  "LOAN_APP": [
+   {
+    "text": "Sir aapko 50,000 ka instant loan approve ho gaya he, bina document ke, bas ye app install karo {app} aur contacts aur gallery permission allow karo",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Loan approved Rs {amount}! Processing fee ₹{amount} abhi {upi} par bhejein, loan 5 min me account me aa jayega.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "madam aapne jo loan liya tha uski date nikal gayi he, aaj hi ₹{amount} bharo warna aapke saare contacts ko aapki photo bhej denge",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "tum paisa nahi de rahe, ab tumhari gandi photo tumhare rishtedaaron aur boss ko bhejunga, 1 ghante me ₹{amount} bhej do",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Pre-approved loan for you. Install {app} from {domain}, insurance fee pehle bharna hoga ₹{amount}, uske baad paisa milega",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "ji main loan department se hu, aapka CIBIL score kharab he, loan chahiye to pehle security deposit ₹{amount} jama kijiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Reminder: aapka loan overdue he. Abhi ₹{amount} pay karo is link se {domain} warna legal notice aur FIR hogi",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "bhai tumne jo 3000 liya tha wo 12000 ho gaya he, aaj raat tak bhej do {upi} par, nahi to teri family ko call karenge",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir bas ek chhota sa APK download karna he {app}, usse aapka loan turant sanction hoga, OTP bhi bata dena",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Aapko ₹1 lakh ka loan bina interest ke mil sakta he. Apna Aadhaar, PAN aur selfie abhi bhejein is number pe.",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam loan close karne ke liye NOC fee ₹{amount} bhejni hogi, abhi transfer kijiye, nahi to interest badhta rahega",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Urgent: Loan EMI bounce. ₹{amount} ki penalty turant bharein, nahi to aapke reference numbers par call jayegi.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Sir aapke liye ek pre-approved personal loan offer he, interest bahut kam, interested hain kya",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Get instant cash loan up to 5 lakh! Quick approval, no paperwork. Hamari team aapko call karegi.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "hello ji aapne loan ke liye enquiry ki thi kya? hum aapko kuch offers dena chahte hain",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Aapka loan limit badh gaya he. Jaldi check karein.",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Dost tujhe urgent paise chahiye to ek app he jisme turant loan milta he, naam yaad nahi",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Aapko lucky loan offer select kiya gaya he, details SMS me milengi.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   }
+  ],
+  "INVESTMENT": [
+   {
+    "text": "Sir hamare stock tips group me judiye, daily 20 percent profit guarantee he, pehle ₹{amount} deposit karke account activate kijiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Join our VIP trading group, SEBI registered analyst. Pehle {app} install karo aur ₹{amount} {upi} par bhejo, kal tak double",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "madam bitcoin me invest karo, 1 mahine me paisa teen guna, abhi ₹{amount} transfer karo to bonus bhi milega",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Aapko IPO ka allotment pakka dilwa dunga, bas ₹{amount} abhi bhej do, kisi ko mat batana ye insider tip he",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Congratulations, aapka trading account me profit ₹{amount} dikh raha he. Withdraw karne ke liye pehle tax ₹{amount} bharein {domain}",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "bhai maine 10 hazaar lagaye the aaj 80 hazaar ho gaye, tu bhi daal, ye link pe {domain} jaake ₹{amount} bhej",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Sir task complete karo, YouTube video like karne ke paise milenge, pehle prepaid task ₹{amount} jama karo, wapas commission ke saath milega",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Madam crypto mining ka plan he, ₹{amount} ka package lo, har din return aayega, abhi payment karo seat limited he",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Exclusive offer: invest ₹{amount} in gold scheme, 3x returns in 15 days. Pay now {upi} and send screenshot.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "dekhiye sir mutual fund se kahin zyada return he hamari scheme me, ghar baithe paise, aaj hi {amount} rupye bhejiye aur app download kijiye {app}",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Aapko forex trading ka free demo mila he. Real account kholne ke liye ₹{amount} abhi deposit karo, profit guaranteed",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Group admin: aaj ka stock pakka upper circuit jayega, ₹{amount} bhejo aur premium tip lo, 10 minute baaki",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Sir kya aap share market me interested hain? hamare paas bahut accha mauka he",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Earn 50,000 per month with simple online investment. Limited seats, join now.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam aapne trading ke baare me kabhi socha he, hamare expert aapko guide karenge",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Aapko ek exclusive investment group me add kiya ja raha he. Profit guaranteed, details jald.",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "bhai ek aisi scheme he jisme paisa double hota he, sach me, tujhe batata hu kal",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Hamari company me part time invest karke ghar baithe kamayein. Call back karein.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   }
+  ],
+  "JOB": [
+   {
+    "text": "Sir aapka resume shortlist hua he work from home job ke liye, registration fee ₹{amount} abhi {upi} par bhej dijiye, kal se kaam shuru",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Hiring: data entry job, salary 30k per month. Training kit ke liye ₹{amount} bhejein, uske baad offer letter milega.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "madam aapko Amazon me part time job mil gayi he, daily 2000 kamao, bas pehle ID card fee ₹{amount} jama karo",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Hi, main HR hu {company} se. Aapka selection ho gaya he. Joining ke liye security deposit ₹{amount} {upi} par bhejo aur Aadhaar bhi",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Sir job pakki he airport me ground staff ki, medical aur uniform ka ₹{amount} abhi bhejo, offer letter email kar dunga",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Earn money by liking videos! Pehle ₹{amount} ka task lo, wapas double milega. Telegram link: {domain}",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "ji Gulf me naukri he, visa aur ticket ke liye ₹{amount} agent ko abhi do, baad me company wapas kar degi",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Congratulations! {company} me aapka interview clear. Laptop courier ke liye ₹{amount} bhejein, laptop aapko mil jayega",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "bhai ek online task job he, 5 star rating dena hota he, pehle ₹{amount} lagao, commission ke saath wapas, maine 8000 kamaye",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Madam aapko typing job chahiye na? Pehle apna bank passbook ki photo aur OTP bhejo account verify karne ke liye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Railway recruitment direct selection. Seat pakki karne ke liye ₹{amount} abhi transfer karein, kisi ko batana nahi.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir aapka profile approve ho gaya he, joining ke liye ye app install karo {app} aur ₹{amount} registration payment karo",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Sir aapka resume humne naukri portal par dekha, aapke liye ek acchi job he, interested hain",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Urgent hiring! Work from home, no experience needed, 40,000 per month. Reply YES.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "hello ji kya aap job dhundh rahe hain? ghar baithe kaam hai, hamari team aapse baat karegi",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Aapko part time job ke liye shortlist kiya gaya he. Details jaldi bheji jayengi.",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "bhai ek online kaam he jisme roz 1500 banta he, bata dena agar chahiye to",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Dear candidate, aapka interview kal he. Kripya apni details confirm karein.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   }
+  ],
+  "MISTAKEN_TRANSFER": [
+   {
+    "text": "Bhaiya galti se mere account se aapke number par ₹{amount} chale gaye, please wapas bhej do {upi} par, bahut zarurat he",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Hello sir maine galti se aapko 15000 bhej diye, kripya wapas transfer kijiye warna police complaint karni padegi",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Sir main {bank} se hu, ek wrong transfer aapke account me hua he, wapas karne ke liye bas ye link par click karke PIN daal dijiye {domain}",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "bhai tere paas ₹{amount} aaye he na wo mere he, pehle wapas bhej de phir baat karte hain, abhi abhi bhej, jaldi",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Madam mere pita ke ilaaj ke paise galti se aapko chale gaye, please {upi} par wapas kar dijiye, main aapka ehsaan nahi bhoolunga",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Sorry wrong number me ₹{amount} bhej diya, please refund karo aur screenshot bhi bhejna, nahi to legal action",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "dekhiye aapke account me jo paisa aaya wo mera he, aap bas apna balance check karwane ke liye OTP bata dijiye main khud wapas le lunga",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Aapke account me galti se Rs {amount} credit hue. Wapas karne ke liye turant {upi} par pay karein.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Hello bhai, Phonepe se ₹{amount} tere number pe chala gaya, please reverse bhej do, main tere jaisa hi gareeb hu",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "sir maine apne ghar ka kiraya galat jagah bhej diya, wo aapke account me he, aapko wapas karna hoga abhi nahi to FIR",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Request: aapko ₹{amount} galti se mil gaye, kripya collect request accept karke PIN daal dijiye wapas hone ke liye",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "madam please paise wapas kijiye, main ek student hu, mummy ko pata chala to meri aafat aa jayegi, abhi {upi} pe bhejiye",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Hello kya aapko koi paisa aaya he abhi? Galti se aapke number pe transfer hua hoga",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Sir maine ek galat transaction kiya, kya aap {name} bol rahe hain?",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Hi sorry galat number lag gaya, kya aapko ek payment mila?",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Aapke account me kuch amount credit hua he jo aapka nahi hai. Jald hi sampark kiya jayega.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "bhai check kar kya tere account me kuch aaya he kal raat",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Madam wrong payment ka matter he, aap thoda free hain kya baat karne ke liye",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   }
+  ],
+  "OTHER": [
+   {
+    "text": "Sir aapka bijli ka bill pending he, aaj raat 9:30 baje connection kat jayega, abhi is number {phone} par call karke ₹{amount} bhar dijiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Dear consumer, aapka electricity bill update nahi hua. Aaj connection disconnect hoga. Abhi {domain} par pay karein ya {phone} par call karein.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Congratulations ji, aapne KBC me 25 lakh ka lucky draw jeeta he, prize lene ke liye ₹{amount} processing fee {upi} par bhejiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "madam main Jio customer care se hu, aapka network issue theek karne ke liye AnyDesk install kijiye aur code bata dijiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Sir QuickSupport app download karke ID bata dijiye, main aapka refund seedha process kar deta hu",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Papa main naye number se bol raha hu, accident ho gaya he, hospital ko abhi ₹{amount} chahiye, mummy ko mat batana, UPI se bhej do",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Tumhari video call recording mere paas he, 5000 abhi bhej do nahi to sab doston ko bhej dunga",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Aapka SIM 24 ghante me band hoga. 5G upgrade ke liye 1 dabaiye aur SIM ke peeche ka number aur OTP share kijiye.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "Amazon lucky draw: aapne iPhone jeeta he! Delivery charge ₹{amount} bhejein {domain} aur apna card number daalein.",
+    "label": "SCAM",
+    "channel": "sms"
+   },
+   {
+    "text": "sir aapki LIC policy ka bonus ₹{amount} atka he, release karne ke liye GST fee abhi bhejiye aur bank ka OTP bata dijiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Mausa ji main {name} hu, passport kho gaya foreign me, embassy ko ₹{amount} bhej do jaldi, ghar me abhi kisi ko mat batana",
+    "label": "SCAM",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Hello sir Google Pay support se, aapka transaction fail hua, TeamViewer download karke 9 digit code bataiye",
+    "label": "SCAM",
+    "channel": "call"
+   },
+   {
+    "text": "Sir aapka bijli ka meter reading galat aaya he, officer visit ke liye aapko call karega",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Aap lucky winner hain! Prize ki detail ke liye hamare agent se milein.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "hello ji main customer care se bol raha hu, aapko ek problem report hui he aapke number se",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   },
+   {
+    "text": "Beta main hu, number badal gaya he, save kar lena. Ek zaroori baat karni he",
+    "label": "SUSPICIOUS",
+    "channel": "whatsapp"
+   },
+   {
+    "text": "Your policy refund is ready. Hamari team verification ke liye call karegi.",
+    "label": "SUSPICIOUS",
+    "channel": "sms"
+   },
+   {
+    "text": "madam aapke SIM ki validity khatam hone wali he, kya aap abhi baat kar sakti hain",
+    "label": "SUSPICIOUS",
+    "channel": "call"
+   }
+  ]
+ },
+ "safe": [
+  {
+   "text": "{otp} is your OTP for transaction of Rs {amount} at {company}. Do not share this OTP with anyone. {bank} never asks for OTP.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Rs {amount} debited from A/c XX4821 on 12-Nov via UPI to {upi}. Not you? Call the number on back of your card. - {bank}",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Dear customer, Rs {amount} credited to your {bank} a/c XX7710. Avl bal updated. Thank you for banking with us.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "{bank} kabhi bhi call ya SMS par OTP, PIN ya CVV nahi maangta. Kisi ke saath share na karein.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Your {bank} credit card ending 3392 was used for Rs {amount} at {company}. If not you, block card from the official {bank} app.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "{otp} aapka login OTP he {bank} app ke liye. Ye 10 minute me expire hoga. Kisi ko na bataiye.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Alert: aapke {bank} account me ₹{amount} ka NEFT credit hua he. Ref no {track}.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Dhyan dein: fraud se bachne ke liye apna OTP ya PIN kisi ko na dein, chahe wo bank ka naam hi kyu na le. - {bank}",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Your a/c XX6655 has been debited Rs {amount} for EMI. Next due date 5th. Thank you - {bank}",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "{bank}: Aapka debit card ka PIN badal gaya he. Agar aapne nahi kiya to turant nazdeeki branch jaakar card block karwayein.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Mini statement: balance ₹{amount} as on today. For help use {bank} official app or visit your branch.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Your FD of Rs {amount} has matured and credited to a/c XX1204. Thank you for banking with {bank}.",
+   "category": "bank_alert",
+   "channel": "sms"
+  },
+  {
+   "text": "Aapka order {track} aaj shaam tak deliver hoga. Delivery partner aapko call karega.",
+   "category": "delivery",
+   "channel": "sms"
+  },
+  {
+   "text": "Your {company} order has been shipped and will reach {city} by tomorrow. Track it in the app.",
+   "category": "delivery",
+   "channel": "sms"
+  },
+  {
+   "text": "Sir main delivery boy bol raha hu, gate pe hu, aapke order ka OTP bata dijiye jo app me dikh raha he",
+   "category": "delivery",
+   "channel": "call"
+  },
+  {
+   "text": "Madam courier aaya he, aapko ghar pe delivery lena he ya guard ko de du? OTP wo hi he jo aapko company se aaya tha",
+   "category": "delivery",
+   "channel": "call"
+  },
+  {
+   "text": "Order {track} out for delivery. Share the delivery OTP {otp} only with the delivery person at your door.",
+   "category": "delivery",
+   "channel": "sms"
+  },
+  {
+   "text": "Aapka parcel delivered ho gaya. Kuch dikkat ho to {company} app me return request daal sakte hain.",
+   "category": "delivery",
+   "channel": "sms"
+  },
+  {
+   "text": "dekhiye ji main aapke building ke neeche hu, flat number confirm kar dijiye, 5 minute me upar aa raha hu",
+   "category": "delivery",
+   "channel": "call"
+  },
+  {
+   "text": "Package {track} aapke area ke local hub pahunch gaya he, kal subah deliver hoga.",
+   "category": "delivery",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Dear consumer, aapka bijli bill ₹{amount} generate hua he, due date 20th. Official app ya nazdeeki counter se bharein.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Your mobile bill of Rs {amount} is due on 15th. Pay via the official {company} app or website.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Reminder: aapka gas cylinder booking confirm hui, delivery 2 din me hogi. Zyada jaankari company app me dekhein.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Aapka broadband recharge 3 din me expire hoga. App me jaake plan renew kar lein.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Water bill ₹{amount} for the month of October is generated. Pay at municipal office or official portal.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Namaste, aapka insurance premium ₹{amount} 25th ko due he. Auto-debit active he, kuch karne ki zarurat nahi.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "Postpaid bill payment received Rs {amount}. Thank you. Receipt available in the app.",
+   "category": "bill",
+   "channel": "sms"
+  },
+  {
+   "text": "{company}: aapka DTH recharge due he. Apne account se app ya nearby store me recharge kar sakte hain.",
+   "category": "bill",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Namaste sir, main {bank} branch se bol raha hu, aapki passbook update ho gayi he, aap jab free ho le jaiye",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Madam aapke locker ka annual kiraya due he, aap branch aake kabhi bhi bhar sakti hain, koi jaldi nahi",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Hello ji, {bank} se aapka feedback lene ke liye call kiya, hamari service kaisi lagi, bas yahi poochna tha",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Sir aapka naya cheque book ready he, branch me aakar collect kar lijiye, saath me ID laiyega",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Namaste, {bank} se bol rahe hain. Aapke home loan ki EMI date change karni ho to branch aa jaiye ya app me dekh lijiye. Hum phone par koi detail nahi mangte.",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Madam kal branch me camp lag raha he, jisme aap apna nominee update karwa sakti hain, bas dastavez saath laiyega",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "sir aapka debit card ready he, branch se le sakte hain, ya post se bhi aa jayega 5 din me",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Hello, main branch manager bol raha hu, aapki FD ki date kal he, renewal ke liye aap kab aa sakte hain",
+   "category": "real_bank_call",
+   "channel": "call"
+  },
+  {
+   "text": "Beta kal sabzi le aana aur doodh bhi, paise table pe rakhe hain",
+   "category": "family",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Papa main {name} bol raha hu, hostel fees ₹{amount} bharni he is mahine ki, aaj shaam ko baat karte hain ghar aake",
+   "category": "family",
+   "channel": "call"
+  },
+  {
+   "text": "Mummy tumhari dawai khatam to nahi hui? Main chemist se le aaunga office se aate waqt",
+   "category": "family",
+   "channel": "call"
+  },
+  {
+   "text": "Bhai sunday ko shaadi me chalna he na, kapde ready rakhna, 11 baje nikalenge",
+   "category": "family",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Didi paise bhej diye maine tumhare account me, mummy ke liye saree le lena, rasid aa gayi he screenshot dekh lo",
+   "category": "family",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Dada ji ko bol do ki kal doctor ke yahan 5 baje appointment he, main gaadi leke aa jaunga",
+   "category": "family",
+   "channel": "call"
+  },
+  {
+   "text": "Arre yaar kal match dekhne aa raha he na? Pizza mai laa dunga",
+   "category": "family",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Beta jab ghar aaoge to bata dena, mujhe ATM se kuch paise nikalne hain, tum saath chalna",
+   "category": "family",
+   "channel": "call"
+  },
+  {
+   "text": "Papa mujhe college trip ke liye ₹{amount} chahiye, jab aap free ho tab bhej dena, jaldi nahi he",
+   "category": "family",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Naani ko pranam bol dena, Diwali pe sab ghar aa rahe hain, mithai main le aaunga",
+   "category": "family",
+   "channel": "call"
+  },
+  {
+   "text": "Sir kal ki meeting 11 baje shift ho gayi he, link calendar me bhej diya he",
+   "category": "work",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Please submit your timesheet by Friday evening. HR will process salary on the 1st.",
+   "category": "work",
+   "channel": "sms"
+  },
+  {
+   "text": "Hello sir, aapka interview {company} me kal 3 baje he, address mail me bheja he, koi fees nahi lagti, bas resume laiyega",
+   "category": "work",
+   "channel": "call"
+  },
+  {
+   "text": "Team, project ki deadline Monday tak extend ho gayi he. Updates group me daal dena.",
+   "category": "work",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Boss ne bola he report aaj shaam tak chahiye, tum draft bhej dena, main review kar leta hu",
+   "category": "work",
+   "channel": "call"
+  },
+  {
+   "text": "Your salary for October has been credited to your account. Payslip available on HR portal.",
+   "category": "work",
+   "channel": "sms"
+  },
+  {
+   "text": "Sir leave application approve ho gayi he, 3 din ki chhutti Monday se",
+   "category": "work",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Kal office me ID card photo hogi, formal kapde pehen kar aana, kuch lana nahi he",
+   "category": "work",
+   "channel": "call"
+  },
+  {
+   "text": "Rs {amount} received from {name} via UPI. Ref no {track}. - {bank}",
+   "category": "merchant",
+   "channel": "sms"
+  },
+  {
+   "text": "Bhaiya ye 250 ka bill he, UPI pe de dijiye, aapke phone pe QR ke saamne scan kar lena, paise mere account me ayenge",
+   "category": "merchant",
+   "channel": "call"
+  },
+  {
+   "text": "Madam aapka blouse silkar ready he, kal shaam tak le jaiye, ₹{amount} baki he",
+   "category": "merchant",
+   "channel": "call"
+  },
+  {
+   "text": "Cashback of Rs {amount} has been credited to your wallet for your recent order. Thank you for shopping with {company}.",
+   "category": "merchant",
+   "channel": "sms"
+  },
+  {
+   "text": "Aapne ₹{amount} {company} ko pay kiya, payment successful. Receipt app me dekh sakte hain.",
+   "category": "merchant",
+   "channel": "sms"
+  },
+  {
+   "text": "Sir aapka scooter service complete ho gaya he, bill ₹{amount} he, aap counter pe pay kar dijiye",
+   "category": "merchant",
+   "channel": "call"
+  },
+  {
+   "text": "Thank you for shopping with us! Aapke order {track} ka refund Rs {amount} original payment method me 5-7 din me aa jayega.",
+   "category": "merchant",
+   "channel": "sms"
+  },
+  {
+   "text": "Dukandaar: bhai maine tumhare number pe ₹{amount} bhej diye UPI se, ek baar apni app me dekh lo aaya ki nahi",
+   "category": "merchant",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "PM Kisan ki agli kisht ke liye apna eKYC nazdeeki CSC kendra ya official portal par kar lein. Koi paisa nahi lagta.",
+   "category": "government",
+   "channel": "sms"
+  },
+  {
+   "text": "Aadhaar update ke liye aap nazdeeki Aadhaar seva kendra ja sakte hain. Sarkari center me ye seva muft ya kam shulk par uplabdh he.",
+   "category": "government",
+   "channel": "call"
+  },
+  {
+   "text": "Gram panchayat se suchna: kal gaon me ration card verification camp lagega, apne dastavez le kar panchayat bhawan aaiye.",
+   "category": "government",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Election Commission: voter list me naam check karne ke liye official voters portal par jaayein ya BLO se milein.",
+   "category": "government",
+   "channel": "sms"
+  },
+  {
+   "text": "Ayushman card banwane ke liye nazdeeki aspatal ya CSC me jaayein. Kisi ko paisa na dein.",
+   "category": "government",
+   "channel": "sms"
+  },
+  {
+   "text": "Income tax ka refund aapke registered account me directly aata he. Kisi link par click na karein, official portal par status dekhein.",
+   "category": "government",
+   "channel": "sms"
+  },
+  {
+   "text": "Kal mere padosi ko kisi ne call karke bola OTP do, wo samajh gaya ki scam he aur phone kaat diya",
+   "category": "user_about_scam",
+   "channel": "call"
+  },
+  {
+   "text": "Beta mujhe kal ek call aaya tha jisme bola CBI se bol rahe hain, mujhe dar lag raha he, ye fraud hota he na",
+   "category": "user_about_scam",
+   "channel": "call"
+  },
+  {
+   "text": "Dhyan rakhna yaar, aajkal WhatsApp pe QR scan karwa ke paise nikaal lete hain, kabhi PIN mat daalna",
+   "category": "user_about_scam",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Maine news me dekha ki digital arrest ek scam he, asli police video call pe arrest nahi karti",
+   "category": "user_about_scam",
+   "channel": "call"
+  },
+  {
+   "text": "Mummy ko kisi ne bola KYC update karo, humne bank jaake pucha to bola ye fake call thi, ab hum block kar diye",
+   "category": "user_about_scam",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Yaar mere cousin ke saath loan app wala fraud hua, usne cybercrime pe complaint kar di he, tum bhi savdhaan rehna",
+   "category": "user_about_scam",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Doctor sahab ne kaha he ki report kal mil jayegi, aap lab me aake collect kar lijiye",
+   "category": "other",
+   "channel": "call"
+  },
+  {
+   "text": "Aaj school me PTM he 4 baje, aap time pe aa jaiye. Teacher ne bulaya he",
+   "category": "other",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Society meeting Sunday 6 baje clubhouse me, parking aur maintenance pe baat hogi",
+   "category": "other",
+   "channel": "whatsapp"
+  },
+  {
+   "text": "Train 12951 platform number 4 par aayegi, 20 minute late chal rahi he",
+   "category": "other",
+   "channel": "sms"
+  },
+  {
+   "text": "Hello sir, aapki gaadi ki service ka reminder, last service 6 mahine pehle hui thi, appointment ke liye call kar lijiye",
+   "category": "other",
+   "channel": "call"
+  },
+  {
+   "text": "Sir aapke fridge ka technician kal subah 10 se 1 ke beech aayega, ghar pe rahiyega",
+   "category": "other",
+   "channel": "call"
+  }
+ ]
+}

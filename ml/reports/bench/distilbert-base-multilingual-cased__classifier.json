@@ -1,0 +1,108 @@
+{
+  "system": "distilbert-base-multilingual-cased/classifier",
+  "model": "distilbert-base-multilingual-cased",
+  "prompt": "none",
+  "template": "classifier",
+  "hf_id": "distilbert/distilbert-base-multilingual-cased",
+  "licence": "Apache-2.0",
+  "rows": 325,
+  "split": "test",
+  "binary": {
+    "overall": {
+      "precision": 0.9540816326530612,
+      "recall": 0.8617511520737328,
+      "fpr": 0.08333333333333333,
+      "macro_f1": 0.43712505655903156,
+      "counts": {
+        "n": 325,
+        "tp": 187,
+        "fp": 9,
+        "fn": 30,
+        "tn": 99
+      },
+      "unparsed": 0
+    },
+    "per_language": {
+      "en": {
+        "precision": 0.9577464788732394,
+        "recall": 0.8717948717948718,
+        "fpr": 0.08571428571428572,
+        "macro_f1": 0.6371425959661254,
+        "counts": {
+          "n": 113,
+          "tp": 68,
+          "fp": 3,
+          "fn": 10,
+          "tn": 32
+        },
+        "unparsed": 0
+      },
+      "hi": {
+        "precision": 0.9242424242424242,
+        "recall": 0.8356164383561644,
+        "fpr": 0.14285714285714285,
+        "macro_f1": 0.15787878787878787,
+        "counts": {
+          "n": 108,
+          "tp": 61,
+          "fp": 5,
+          "fn": 12,
+          "tn": 30
+        },
+        "unparsed": 0
+      },
+      "hinglish": {
+        "precision": 0.9830508474576272,
+        "recall": 0.8787878787878788,
+        "fpr": 0.02631578947368421,
+        "macro_f1": 0.3734432234432234,
+        "counts": {
+          "n": 104,
+          "tp": 58,
+          "fp": 1,
+          "fn": 8,
+          "tn": 37
+        },
+        "unparsed": 0
+      }
+    }
+  },
+  "labels": {
+    "accuracy": 0.8430769230769231,
+    "macro_f1": 0.7312169212873907,
+    "scam_missed_rate": 0.012195121951219513,
+    "confusion": {
+      "SAFE": {
+        "SAFE": 99,
+        "SCAM": 8,
+        "SUSPICIOUS": 1,
+        "UNPARSED": 0
+      },
+      "SCAM": {
+        "SAFE": 2,
+        "SCAM": 160,
+        "SUSPICIOUS": 2,
+        "UNPARSED": 0
+      },
+      "SUSPICIOUS": {
+        "SAFE": 28,
+        "SCAM": 10,
+        "SUSPICIOUS": 15,
+        "UNPARSED": 0
+      }
+    }
+  },
+  "cost": {
+    "prompt_tokens_mean": 39.78769230769231,
+    "output_tokens_mean": 0,
+    "eos_rate": 1.0,
+    "phone_ms_estimate": null,
+    "phone_ref": "no phone data; one forward pass, no decode",
+    "file_mb": 135,
+    "ram_mb": null,
+    "params_m": 135,
+    "host_single_ms_median": 1,
+    "host_device": "cuda"
+  },
+  "val_macro_f1": 0.7814389683718176
+}
