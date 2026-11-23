@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../lessons/prefs_store.dart';
 import '../models/verdict.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
@@ -229,15 +230,17 @@ class _Pack {
 /// Report screen. Path 1 "I lost money" (1930 + portal, golden-hour clock, evidence ZIP);
 /// path 2 "no money lost yet" (Chakshu + 1930). Constructible standalone; T3.11 wires navigation.
 class ReportScreen extends StatefulWidget {
-  const ReportScreen({super.key, this.initialLang = 'hi', this.api = const HandoffApi()});
-  final String initialLang;
+  const ReportScreen({super.key, this.initialLang, this.api = const HandoffApi()});
+  final String? initialLang; // null: use the stored first-run choice, else Hindi
   final HandoffApi api;
   @override
   State<ReportScreen> createState() => _ReportScreenState();
 }
 
 class _ReportScreenState extends State<ReportScreen> {
-  late String _lang = widget.initialLang;
+  late String _lang = widget.initialLang ?? 'hi';
+  bool _langPicked = false; // a chip tap beats the stored choice
+  final _detailKey = GlobalKey();
   bool? _lost; // null until the user picks a path
   _Pack? _pack;
   bool _loading = false;
@@ -248,8 +251,22 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialLang == null) _loadLang();
     _restore();
   }
+
+  Future<void> _loadLang() async {
+    final stored = await PrefsStrings().get(PrefsStrings.langKey);
+    if (mounted && !_langPicked && ReportStrings.all.containsKey(stored)) setState(() => _lang = stored!);
+  }
+
+  // Bring the chosen path's detail into view; the tiles alone show no change above the fold.
+  void _reveal() => WidgetsBinding.instance.addPostFrameCallback((_) {
+        final c = _detailKey.currentContext;
+        if (mounted && c != null) {
+          Scrollable.ensureVisible(c, alignment: 0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+        }
+      });
 
   @override
   void dispose() {
@@ -297,6 +314,7 @@ class _ReportScreenState extends State<ReportScreen> {
       _pack = m == null ? _Pack.fallback() : _Pack(m);
       _loading = false;
     });
+    _reveal();
   }
 
   Future<void> _startGolden() async {
@@ -338,7 +356,10 @@ class _ReportScreenState extends State<ReportScreen> {
                     label: Text(label),
                     selected: _lang == code,
                     checkmarkColor: t.colorScheme.primary,
-                    onSelected: (_) => setState(() => _lang = code),
+                    onSelected: (_) => setState(() {
+                      _lang = code;
+                      _langPicked = true;
+                    }),
                   ),
               ]),
               if (_lost == true && _remainingMs != null) _golden(t, s),
@@ -346,9 +367,11 @@ class _ReportScreenState extends State<ReportScreen> {
               _path(const Key('path_lost'), true, Icons.currency_rupee, s['pathLost'], s['pathLostSub']),
               const SizedBox(height: Sp.m),
               _path(const Key('path_notyet'), false, Icons.shield, s['pathNot'], s['pathNotSub']),
-              if (_loading)
-                StateMessage(loading: true, title: s['loading'])
-              else if (_pack != null) ..._detail(t, s, _pack!),
+              Column(key: _detailKey, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                if (_loading)
+                  StateMessage(loading: true, title: s['loading'])
+                else if (_pack != null) ..._detail(t, s, _pack!),
+              ]),
             ],
           ),
         ),

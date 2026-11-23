@@ -113,12 +113,25 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     return Scaffold(
       appBar: _bar(_titles[_tab], actions: [
         // Always visible: the fastest way to the 1930 report flow (the dial itself happens only in ReportScreen).
-        TextButton(
-          key: const Key('btn_report_1930'),
-          onPressed: _openReport,
-          style: TextButton.styleFrom(minimumSize: const Size(kTouch, kTouch)),
-          child: const Text('ठगे गए? 1930'),
-        ),
+        Builder(builder: (context) {
+          final st = Theme.of(context).extension<StatusColors>() ?? StatusColors.light;
+          return TextButton.icon(
+            key: const Key('btn_report_1930'),
+            onPressed: _openReport,
+            style: TextButton.styleFrom(
+              minimumSize: const Size(kTouch, 48),
+              padding: const EdgeInsets.symmetric(horizontal: Sp.m, vertical: 0),
+              foregroundColor: st.scam,
+              backgroundColor: Color.alphaBlend(st.scam.withValues(alpha: 0.10), Theme.of(context).colorScheme.surface),
+              shape: const StadiumBorder(),
+            ),
+            icon: const Icon(Icons.support_agent, size: 24),
+            label: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('मदद चाहिए?', style: TextStyle(height: 1.1)),
+              Text('ठगे गए? 1930', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: st.scam, height: 1.1)),
+            ]),
+          );
+        }),
         const SizedBox(width: Sp.s),
       ]),
       body: IndexedStack(index: _tab, children: [

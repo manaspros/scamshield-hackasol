@@ -21,10 +21,11 @@ class LiveFeedScreen extends StatefulWidget {
 }
 
 class _FeedItem {
-  _FeedItem.verdict(this.verdict) : text = null, kind = 'verdict', path = null;
-  _FeedItem.note(this.kind, this.text, {this.path}) : verdict = null;
+  _FeedItem.verdict(this.verdict) : text = null, kind = 'verdict', path = null, en = null;
+  _FeedItem.note(this.kind, this.text, {this.path, this.en}) : verdict = null;
   final String kind;
   final String? text;
+  final String? en; // muted English second line under a Hindi-first row
   final Verdict? verdict;
   final String? path; // playable probe recording
 }
@@ -84,18 +85,22 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
           _add(_FeedItem.verdict(v));
         case 'call':
           _inCall = e['active'] == true;
-          _add(_FeedItem.note('call', _inCall ? 'Call started' : 'Call ended'));
+          _add(_FeedItem.note('call', _inCall ? 'कॉल शुरू हुई' : 'कॉल खत्म हुई', en: _inCall ? 'Call started' : 'Call ended'));
           if (_inCall) { _callRisk = 0; _callLevel = RiskLabel.safe; }
         case 'signal':
-          _add(_FeedItem.note(e['kind'] == 'otp' ? 'signal_otp' : 'signal', 'In-call signal: ${e['kind']} (${e['trigger']})'));
+          _add(_FeedItem.note(e['kind'] == 'otp' ? 'signal_otp' : 'signal', 'कॉल के दौरान संकेत: ${e['trigger']}',
+              en: 'In-call signal: ${e['kind']} (${e['trigger']})'));
         case 'mic_probe':
           final status = '${e['status']}';
           final db = e['dbfs'] is num ? ' ${(e['dbfs'] as num).toStringAsFixed(1)} dBFS, peak ${e['peak']}' : '';
           final kind = status == 'HAS_AUDIO' ? 'mic' : (status == 'SILENT' ? 'mic_off' : 'mic_warn');
-          _add(_FeedItem.note(kind, 'Mic ${e['source']}: $status$db${e['detail'] != null ? ' — ${e['detail']}' : ''}',
+          final hi = switch (status) { 'HAS_AUDIO' => 'आवाज़ मिली', 'SILENT' => 'आवाज़ नहीं मिली', _ => 'माइक में दिक्कत' };
+          _add(_FeedItem.note(kind, 'माइक जाँच (${e['source']}): $hi',
+              en: 'Mic ${e['source']}: $status$db${e['detail'] != null ? ' — ${e['detail']}' : ''}',
               path: e['path'] as String?));
         case 'mic_probe_done':
-          _add(_FeedItem.note('mic', 'Mic test finished. Play each recording: can you hear the CALLER?'));
+          _add(_FeedItem.note('mic', 'माइक जाँच पूरी हुई। हर रिकॉर्डिंग सुनें: क्या कॉल करने वाले की आवाज़ आती है?',
+              en: 'Mic test finished. Play each recording: can you hear the CALLER?'));
         case 'error':
           _add(_FeedItem.note('error', '${e['where']}: ${e['message']}'));
         case 'download':
@@ -110,7 +115,8 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
           _add(_FeedItem.note('dev', 'Model: ${e['status']} ${e['message']}'));
         case 'service':
           _serviceOn = e['connected'] == true;
-          _add(_FeedItem.note('info', e['connected'] == true ? 'Protection service connected' : 'Protection service stopped'));
+          _add(_FeedItem.note('info', _serviceOn! ? 'सुरक्षा सेवा जुड़ गई' : 'सुरक्षा सेवा बंद हो गई',
+              en: _serviceOn! ? 'Protection service connected' : 'Protection service stopped'));
       }
     });
   }
@@ -170,6 +176,9 @@ class _LiveFeedScreenState extends State<LiveFeedScreen> with AutomaticKeepAlive
         },
       ),
       title: Text(it.text ?? '', maxLines: 4, overflow: TextOverflow.ellipsis),
+      subtitle: it.en == null
+          ? null
+          : Text(it.en!, maxLines: 3, overflow: TextOverflow.ellipsis, style: TextStyle(color: cs.onSurfaceVariant)),
       trailing: it.path == null
           ? null
           : IconButton(
