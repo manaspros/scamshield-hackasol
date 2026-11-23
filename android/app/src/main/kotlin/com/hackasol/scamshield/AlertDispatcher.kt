@@ -26,7 +26,7 @@ class AlertDispatcher(private val ctx: Context, private val overlay: OverlayCont
         if (plan.bubble) overlay?.showVerdict(v, shown, callLevel, callRisk)
         // Preliminary (rules-only, LLM pending) verdicts never notify: a final one follows.
         if (!plan.notify || v.preliminary) return
-        val f = AlertNotificationMapper.fields(plan, sv, v.scamType) ?: return
+        val f = AlertNotificationMapper.fields(plan, sv, v.scamType, AppSettings.lang) ?: return
         ensureChannel(f.channelId)
         val b = Notification.Builder(ctx, f.channelId)
             .setSmallIcon(ctx.applicationInfo.icon)

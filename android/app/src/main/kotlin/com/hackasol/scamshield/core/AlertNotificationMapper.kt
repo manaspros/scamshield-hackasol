@@ -16,32 +16,15 @@ object AlertNotificationMapper {
     const val ROUTE_REPORT = "report"
     private const val MAX_TRIGGER = 40
 
-    private fun typeHi(t: ScamType?): String? = when (t) {
-        ScamType.OTP -> "OTP ठगी"
-        ScamType.KYC -> "KYC ठगी"
-        ScamType.DIGITAL_ARREST -> "डिजिटल अरेस्ट"
-        ScamType.COURIER_CUSTOMS -> "कूरियर/कस्टम्स ठगी"
-        ScamType.FAKE_QR -> "नकली QR"
-        ScamType.LOAN_APP -> "लोन ऐप ठगी"
-        ScamType.INVESTMENT -> "निवेश ठगी"
-        ScamType.JOB -> "नौकरी ठगी"
-        ScamType.MISTAKEN_TRANSFER -> "गलत ट्रांसफर ठगी"
-        ScamType.OTHER, null -> null
-    }
-
     /** Null when the plan does not notify (SAFE, or a live SUSPICIOUS that gets a bubble only). */
-    fun fields(plan: AlertPlan, v: Verdict, scamType: ScamType? = null): NotificationFields? {
+    fun fields(plan: AlertPlan, v: Verdict, scamType: ScamType? = null, lang: String = "hi"): NotificationFields? {
         if (!plan.notify) return null
-        val title = when (v.label) {
-            Label.SCAM -> "स्कैम की चेतावनी (SCAM)"
-            Label.SUSPICIOUS -> "संदिग्ध (SUSPICIOUS)"
-            Label.SAFE -> return null
-        }
-        val advice = if (v.label == Label.SCAM) "OTP/PIN/पैसे न दें" else "निजी जानकारी न दें"
+        val title = L10n.notifTitle(v.label, lang) ?: return null
+        val advice = L10n.advice(v.label, lang)
         val trigger = v.triggers.firstOrNull()?.trim()?.takeIf { it.isNotEmpty() }?.take(MAX_TRIGGER)?.let { "\"$it\"" }
-        val text = listOfNotNull(typeHi(scamType), trigger, advice).joinToString(" · ")
+        val text = listOfNotNull(L10n.scamType(scamType, lang), trigger, advice).joinToString(" · ")
         // Report action is unconditional whenever we notify (T1.7 requirement).
         return NotificationFields(CHANNEL_ID, title, text, priorityHigh = true,
-            actions = listOf(ActionSpec("रिपोर्ट करें (Report)", ROUTE_REPORT)))
+            actions = listOf(ActionSpec(L10n.reportAction(lang), ROUTE_REPORT)))
     }
 }

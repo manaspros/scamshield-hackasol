@@ -16,6 +16,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.hackasol.scamshield.core.L10n
 import com.hackasol.scamshield.core.Label
 import com.hackasol.scamshield.core.Verdict
 
@@ -58,8 +59,8 @@ class OverlayController(private val service: AccessibilityService) {
         quote = tv(13f).apply { setTypeface(typeface, Typeface.ITALIC); maxLines = 3 }
         detail = tv(13f)
         callLine = tv(12f).apply { alpha = 0.9f }
-        primaryBtn = Button(ctx).apply { text = "Call 1930"; isAllCaps = false }
-        val dismiss = Button(ctx).apply { text = "Dismiss"; isAllCaps = false; setOnClickListener { hide() } }
+        primaryBtn = Button(ctx).apply { text = L10n.call1930(AppSettings.lang); isAllCaps = false }
+        val dismiss = Button(ctx).apply { text = L10n.dismiss(AppSettings.lang); isAllCaps = false; setOnClickListener { hide() } }
         buttons = LinearLayout(ctx).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.END
             addView(primaryBtn); addView(dismiss)
@@ -101,20 +102,17 @@ class OverlayController(private val service: AccessibilityService) {
         (view.background as GradientDrawable).setColor(color(shown))
         val icon = when (shown) { Label.SAFE -> "🟢"; Label.SUSPICIOUS -> "🟡"; Label.SCAM -> "🔴" }
         val pct = (v.confidence * 100).toInt()
-        title.text = "$icon This statement is ${shown.name} · $pct%" + if (v.preliminary) " …" else ""
-        hindi.text = when (shown) {
-            Label.SCAM -> "यह धोखाधड़ी हो सकती है — OTP / PIN / पैसे न दें"
-            Label.SUSPICIOUS -> "सावधान रहें — कोई निजी जानकारी न दें"
-            Label.SAFE -> "सामान्य बातचीत"
-        }
+        val lang = AppSettings.lang
+        title.text = "$icon ${L10n.overlayTitle(shown, pct, lang)}" + if (v.preliminary) " …" else ""
+        hindi.text = L10n.overlayLine(shown, lang)
         quote.text = "“${v.text}”"
         detail.text = buildString {
-            append("Why: ").append(v.reason)
-            if (v.triggers.isNotEmpty()) append("\nHeard: ").append(v.triggers.take(4).joinToString(", ") { "\"$it\"" })
-            append("\nEngine: ").append(v.engine)
+            append(L10n.why(lang)).append(v.reason)
+            if (v.triggers.isNotEmpty()) append("\n").append(L10n.heard(lang)).append(v.triggers.take(4).joinToString(", ") { "\"$it\"" })
+            append("\n").append(L10n.engine(lang)).append(v.engine)
         }
-        callLine.text = "Overall call: ${callLevel.name} risk ${(callRisk * 100).toInt()}%"
-        primaryBtn.text = "Call 1930"
+        callLine.text = L10n.overallCall(callLevel, (callRisk * 100).toInt(), lang)
+        primaryBtn.text = L10n.call1930(lang)
         primaryBtn.setOnClickListener { dial("1930") }
         setExpanded(shown != Label.SAFE)
         scheduleCollapse()
@@ -123,11 +121,12 @@ class OverlayController(private val service: AccessibilityService) {
     fun showCaptionPrompt(onOpen: () -> Unit) {
         val view = ensureView()
         (view.background as GradientDrawable).setColor(Color.parseColor("#F01E3A8A"))
-        title.text = "🛡️ Turn on Live Caption for protection"
-        hindi.text = "कॉल सुरक्षा के लिए Live Caption चालू करें"
-        quote.text = "Tap below, then press the captions button in the volume panel."
+        val lang = AppSettings.lang
+        title.text = L10n.captionTitle(lang)
+        hindi.text = L10n.captionLine(lang)
+        quote.text = L10n.captionHint(lang)
         detail.text = ""; callLine.text = ""
-        primaryBtn.text = "Open volume panel"
+        primaryBtn.text = L10n.openVolumePanel(lang)
         primaryBtn.setOnClickListener { onOpen(); hide() }
         setExpanded(true)
         scheduleCollapse()

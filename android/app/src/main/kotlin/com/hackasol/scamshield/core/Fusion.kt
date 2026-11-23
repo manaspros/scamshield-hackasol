@@ -77,7 +77,7 @@ object Fusion {
      * returned untouched. When raised, the context reasons lead the triggers (alerts show the first trigger)
      * and become the reason; otherwise they are appended to the triggers of a SUSPICIOUS/SCAM result.
      */
-    fun raiseForContext(fused: FusedResult, flags: List<ContextFlag>): FusedResult {
+    fun raiseForContext(fused: FusedResult, flags: List<ContextFlag>, lang: String = "en"): FusedResult {
         if (flags.isEmpty()) return fused
         val score = contextScore(flags)
         val label = when {
@@ -95,7 +95,7 @@ object Fusion {
             confidence = maxOf(fused.confidence, FusionWeights.CONTEXT_RAISED_CONF),
             scamType = type,
             triggers = (reasons + fused.triggers).distinct(),
-            reason = reasons.first(),
+            reason = L10n.flagReason(flags.first(), lang),
         )
     }
 

@@ -2,6 +2,7 @@ package com.hackasol.scamshield
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.hackasol.scamshield.core.normalizeLang
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -9,14 +10,22 @@ import kotlinx.coroutines.flow.SharedFlow
 /** Settings shared by the accessibility service and the Flutter bridge (same process). */
 object AppSettings {
     private lateinit var prefs: SharedPreferences
+    private lateinit var appCtx: Context
 
     val DEFAULT_CAPTION_PACKAGES = listOf(
         "com.google.android.as",            // Pixel / GMS "Android System Intelligence" (Live Caption)
     )
 
     fun init(ctx: Context) {
+        appCtx = ctx.applicationContext
         if (!::prefs.isInitialized) prefs = ctx.applicationContext.getSharedPreferences("scamshield", Context.MODE_PRIVATE)
     }
+
+    /** App language written by Flutter under pref `lang_v1` (en|hi|hne); unset or unknown = hi. Read-only here. */
+    val lang: String
+        get() = if (::prefs.isInitialized) normalizeLang(langPrefs().getString("lang_v1", null)) else "hi"
+
+    private fun langPrefs() = appCtx.getSharedPreferences("scamshield_prefs", Context.MODE_PRIVATE)
 
     var discoveryMode: Boolean
         get() = prefs.getBoolean("discoveryMode", false)

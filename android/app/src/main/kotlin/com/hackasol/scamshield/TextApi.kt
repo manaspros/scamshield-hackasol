@@ -66,7 +66,7 @@ object TextApi {
             scope.launch {
                 for ((req, cb) in captionQueue) {
                     try {
-                        val rules = RuleScorer.score(req.text)
+                        val rules = RuleScorer.score(req.text, AppSettings.lang)
                         // Instant rules-only warning while the LLM thinks.
                         if (rules.label != Label.SAFE) cb(rulesVerdict(req, rules, 0, preliminary = true))
                         cb(classify(req))
@@ -128,10 +128,10 @@ object TextApi {
             val g = withContext(Dispatchers.IO) { appContext?.let(::graph) }
             if (g == null) req0 else Pipeline.withCallContext(req0, g, System.currentTimeMillis())
         } else req0
-        val rules = RuleScorer.score(req.text)
+        val rules = RuleScorer.score(req.text, AppSettings.lang)
         val llm = if (AppSettings.useLlm) GemmaClassifier.classify(req.text, req.context, req.contextLabel) else null
         val elapsed = SystemClock.elapsedRealtime() - t0
-        val f = Pipeline.decide(req.text, rules, llm, req.contextFlags)
+        val f = Pipeline.decide(req.text, rules, llm, req.contextFlags, AppSettings.lang)
         return Verdict(req.text, f.label, f.confidence, f.reason, f.triggers, f.engine, elapsed, req.source, scamType = f.scamType)
     }
 

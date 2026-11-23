@@ -43,30 +43,6 @@ object RuleScorer {
         Rule("urgency", 0.20, "\\b(turant|abhi ke abhi|immediately|urgent|right now)\\b|within \\d+ (minutes|hours)|तुरंत|अभी के अभी"),
     )
 
-    private val reasons = mapOf(
-        "otp_share" to "Asks you to share an OTP/code",
-        "otp" to "Mentions OTP",
-        "pin" to "Asks for PIN/CVV",
-        "digital_arrest" to "'Digital arrest' is always a scam",
-        "authority" to "Claims to be police/CBI/customs",
-        "arrest" to "Threatens arrest or legal case",
-        "parcel" to "Parcel/courier story",
-        "contraband" to "Claims illegal items in your name",
-        "secrecy" to "Tells you to keep it secret",
-        "stay_on_call" to "Tells you not to disconnect",
-        "money_transfer" to "Asks you to move money",
-        "remote_app" to "Asks for screen-sharing app",
-        "kyc" to "KYC claim",
-        "account_block" to "Threatens account/SIM block",
-        "prize" to "Prize/lottery claim",
-        "prize_fee" to "Asks a fee to release a prize",
-        "bank_claim" to "Claims to call from a bank",
-        "app_install" to "Asks to install app/click link",
-        "loan" to "Unsolicited loan offer",
-        "video_stay" to "Tells you to stay on video",
-        "urgency" to "Creates urgency",
-    )
-
     const val SCAM_AT = 0.75
     const val SUSPICIOUS_AT = 0.40
 
@@ -101,7 +77,8 @@ object RuleScorer {
         return matched
     }
 
-    fun score(text: String): RuleResult {
+    /** [lang] only picks the language of the human-readable reason; matching and scoring are unchanged. */
+    fun score(text: String, lang: String = "en"): RuleResult {
         val matched = matches(text)
         var keep = 1.0
         for ((r, _) in matched) keep *= (1 - r.weight)
@@ -112,8 +89,8 @@ object RuleScorer {
             else -> Label.SAFE
         }
         val top = matched.sortedByDescending { it.first.weight }
-        val reason = if (top.isEmpty()) "No scam phrases found"
-        else top.take(2).joinToString("; ") { reasons[it.first.tag] ?: it.first.tag }
+        val reason = if (top.isEmpty()) L10n.noPhrases(lang)
+        else top.take(2).joinToString("; ") { L10n.ruleReason(it.first.tag, lang) }
         return RuleResult(score, label, top.map { it.second }.distinct(), reason)
     }
 

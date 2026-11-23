@@ -16,8 +16,8 @@ data class UpiRisk(val label: Label, val confidence: Double, val triggers: List<
  */
 object Pipeline {
     /** SLM label + rules (rules only raise), then claim-vs-context / context rules raise one step. */
-    fun decide(text: String, rules: RuleResult, llm: LlmResult?, flags: List<ContextFlag>): FusedResult =
-        Fusion.raiseForFakeCreditReturn(Fusion.raiseForContext(Fusion.fuse(llm, rules, RuleScorer.scamType(text)), flags), flags)
+    fun decide(text: String, rules: RuleResult, llm: LlmResult?, flags: List<ContextFlag>, lang: String = "en"): FusedResult =
+        Fusion.raiseForFakeCreditReturn(Fusion.raiseForContext(Fusion.fuse(llm, rules, RuleScorer.scamType(text)), flags, lang), flags)
 
     /** Call sources: live captions and recorded calls. Only these get the call-side context rules. */
     fun isCall(source: Source): Boolean = source == Source.CAPTION || source == Source.RECORDING
