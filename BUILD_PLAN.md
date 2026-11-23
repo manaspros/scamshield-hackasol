@@ -224,7 +224,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T7.2 [sonnet] `DEMO.md`: merge handoff §10 with FINAL_PLAN scenarios; mark which steps need the phone; fallbacks (pre-recorded audio, Try API paste); answers for "why not Truecaller/Google" and "how do you hear the call"
   - **Files**: `DEMO.md`  **Depends on**: T3.11, T5.5
   - **Done when**: file exists, every step names its feature task
-- [ ] T7.3 [sonnet] Full gate and test summary
+- [x] T7.3 [sonnet] Full gate and test summary
   - **Files**: `scripts/check.sh`  **Depends on**: all unblocked tasks
   - **Done when**: `bash scripts/check.sh && bash scripts/trace_report.sh` exits 0 and `REL` succeeds; each ID pass or blocked, none failing
 

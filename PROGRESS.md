@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T7.3 [sonnet] Full gate on a clean worktree of 4ac3d51: bash scripts/check.sh (kotlin 348, flutter 209, pytest 75, node 31: all PASS) && bash scripts/trace_report.sh (44 pass, 6 blocked, 10 not-run, 0 fail, 0 untagged) exit 0; REL succeeds (arm64 53.9MB, armeabi-v7a 41.9MB, x86_64 57.5MB); debug 246.8MB — 2026-11-23
 - T0.6 [sonnet] scripts/check.sh (Kotlin/Flutter/pytest/node; skips missing; writable GRADLE_USER_HOME fallback; -PskipDependencyChecks) + scripts/trace_report.sh (task ID -> pass/fail/not-run/blocked from JUnit XML, flutter json, pytest -rA, node TAP) — 2026-11-23 — bash scripts/check.sh && bash scripts/trace_report.sh
 - QA emulator fixes [sonnet] lottery/prize fee-for-release now SCAM typed OTHER (new prize_fee rule; loan's processing-fee match requires 'loan' nearby); Hindi KYC message typed KYC (scamType priority: OTP-share/PIN > KYC > bare OTP); Demo Lab lottery_fee scenario — 2026-11-23 — ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest (354/354); golden + heldout export unchanged
 - T7.1 [sonnet] ARCHITECTURE.md (<120 lines, Mermaid pipeline, sections cite FINAL_PLAN) — 2026-11-23 — wc -l ARCHITECTURE.md
@@ -65,6 +66,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
 ## Decisions
+- 2026-11-23: T7.3 gate run on a clean git worktree of committed HEAD, because the shared checkout holds other sessions' uncommitted UI work that breaks tests mid-edit.
 - 2026-11-23: No LOTTERY ScamType (enum unchanged); prize-fee scams type OTHER (INVESTMENT doesn't fit). Known false-positive risk: a genuine prize-draw message with "pay" near the prize word scores SCAM.
 - 2026-11-23: T8.1 extracted core/Pipeline.kt (decide = fuse + raiseForContext; withCallContext for CAPTION/RECORDING) so TextApi and the Demo Lab run the same code; ClaimVsContext (no-matching-event) is NOT applied to calls because ordinary calls mention payment/order. Demo expectations: SAFE must stay SAFE, other labels mean at least that severe; mistaken transfer A/B reach SUSPICIOUS in rules-only mode (Gemma may go higher). demo_mode added to the prefs allowlist; [DEMO] title prefix; demo uses notification id 7001 like the dispatcher (a demo alert replaces a real one).
 - 2026-11-23: route=recording deep link verified wired (main.dart branch + MainActivity passes any route); test T3_11_deepLinkOpensRecording added.
