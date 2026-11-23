@@ -279,7 +279,9 @@ void main() {
       await _openUpi(t);
       await tapVisible(t, find.byKey(const Key('btn_upi_scan')));
       await t.pumpAndSettle();
-      expect(find.textContaining('Camera permission denied'), findsOneWidget);
+      expect(find.text('जाँच नहीं हो पाई, फिर कोशिश करें'), findsOneWidget);
+      expect(find.text('दोबारा जाँचें'), findsOneWidget); // retry action
+      expect(find.textContaining('Camera permission denied'), findsNothing); // raw detail never shown
       expect(env.upiCalls, isEmpty);
       expect(t.takeException(), isNull);
     });
@@ -364,7 +366,9 @@ void main() {
           upiReply: (_) => PlatformException(code: 'X', message: 'upi parser down')));
       await _open(t, themes['light']!(), scale: 1.0);
       await _analyse(t, 'pay upi://pay?pa=a@b now');
-      expect(find.textContaining('upi parser down'), findsOneWidget);
+      expect(find.text('जाँच नहीं हो पाई, फिर कोशिश करें'), findsOneWidget);
+      expect(find.text('दोबारा जाँचें'), findsOneWidget); // retry action
+      expect(find.textContaining('upi parser down'), findsNothing); // raw detail never shown
       await reveal(t, find.byKey(const Key('helpline_1930')));
       expect(find.byKey(const Key('upi_card')), findsNothing);
     });
