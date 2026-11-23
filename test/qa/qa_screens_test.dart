@@ -82,15 +82,15 @@ void main() {
       await tapVisible(t, find.byKey(const Key('settings_advanced')));
       await t.pumpAndSettle();
       expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Use on-device Gemma')).value, isTrue);
-      await reveal(t, find.widgetWithText(SwitchListTile, 'Show warning bubble'));
-      expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Show warning bubble')).value, isFalse);
-      await tapVisible(t, find.widgetWithText(SwitchListTile, 'Show warning bubble'));
+      await reveal(t, find.widgetWithText(SwitchListTile, 'Show warning chip during calls'));
+      expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Show warning chip during calls')).value, isFalse);
+      await tapVisible(t, find.widgetWithText(SwitchListTile, 'Show warning chip during calls'));
       await t.pumpAndSettle();
       expect(api.named('setSettings').single.arguments, {'overlayEnabled': true});
-      await reveal(t, find.widgetWithText(SwitchListTile, 'Show warning bubble'));
-      expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Show warning bubble')).value, isTrue);
+      await reveal(t, find.widgetWithText(SwitchListTile, 'Show warning chip during calls'));
+      expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Show warning chip during calls')).value, isTrue);
       // every switch is reachable at 2.0 scale
-      for (final title in ['Use on-device Gemma', 'Show warning bubble', 'Auto-turn-on Live Caption',
+      for (final title in ['Use on-device Gemma', 'Show warning chip during calls', 'Auto-turn-on Live Caption',
         'Screen-reading fallback (OCR)', 'In-call scam signals', 'Call audio test on next call (experimental)',
         'Download model on Wi-Fi only', 'Discovery mode (debug)']) {
         final f = find.widgetWithText(SwitchListTile, title);

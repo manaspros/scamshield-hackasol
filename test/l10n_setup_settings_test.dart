@@ -102,7 +102,7 @@ void main() {
       // First in the list: above the "Warning settings" header.
       expect(t.getTopLeft(row).dy, lessThan(t.getTopLeft(find.text('Warning settings')).dy));
       expect(find.descendant(of: row, matching: find.text('English')), findsOneWidget);
-      expect(find.text('Show warning bubble'), findsOneWidget);
+      expect(find.text('Show warning chip during calls'), findsOneWidget);
 
       AppLanguage.debugSet('hi');
       await t.pumpAndSettle();
@@ -134,6 +134,9 @@ void main() {
       await _pump(t, const SettingsScreen());
       await t.scrollUntilVisible(find.byKey(const Key('settings_advanced')), 300,
           scrollable: find.byType(Scrollable).first, maxScrolls: 100);
+      // The extra alert row lengthens the list; bring the tile fully on screen so the tap lands.
+      await t.ensureVisible(find.byKey(const Key('settings_advanced')));
+      await t.pumpAndSettle();
       await t.tap(find.byKey(const Key('settings_advanced')));
       await t.pumpAndSettle();
       final all = <String>[];

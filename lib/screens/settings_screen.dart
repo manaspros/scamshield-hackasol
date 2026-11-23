@@ -483,13 +483,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _enLine(String t) => Text(t, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant));
 
   // Title and detail lead in the app language; in hi/hne the English name is the muted last line.
-  Widget _switch(String key, String tk) => SwitchListTile(
+  Widget _switch(String key, String tk, {bool defaultOn = false}) => SwitchListTile(
     title: Text(_t(tk)),
     subtitle: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [Text(_t('${tk}_d')), if (_sub('${tk}_s') case final en?) _enLine(en)],
     ),
-    value: _s[key] == true,
+    value: _s[key] == null ? defaultOn : _s[key] == true,
     onChanged: (v) => _set(key, v),
   );
 
@@ -531,6 +531,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         _switch('overlayEnabled', 'overlay'),
+        _switch('readAloud', 'read_aloud', defaultOn: true),
         _switch('autoEnableCaptions', 'caps'),
         _switch('inCallSignals', 'signals'),
         _switch('wifiOnly', 'wifi'),
