@@ -1,27 +1,66 @@
 text,label,lang,scam_type,template_id,source
+"Courier notice: parcel TEST456 blocked until ₹2,500 is paid online.",SCAM,en,COURIER_CUSTOMS,en_courier_customs_03,synthetic
 Customs clearance failed. Submit payment at demo-loan-app.test for your parcel.,SCAM,en,COURIER_CUSTOMS,en_courier_customs_04,synthetic
-"Exclusive shares offer: send ₹2,500 now for a guaranteed profit.",SCAM,en,INVESTMENT,en_investment_03,synthetic
-Your Example Bank account needs KYC. Submit details at demo-loan-app.test.,SCAM,en,KYC,en_kyc_03,synthetic
+Your parcel case is under investigation. Do not disconnect; pay ₹500.,SCAM,en,DIGITAL_ARREST,en_digital_arrest_03,synthetic
+A caller claiming to be an officer demands ₹500 to clear your name.,SCAM,en,DIGITAL_ARREST,en_digital_arrest_04,synthetic
+"Guaranteed daily returns! Invest ₹2,500 through example-parcel-check.test today.",SCAM,en,INVESTMENT,en_investment_01,synthetic
+You are selected for a remote job. Pay ₹500 for registration at example-parcel-check.test.,SCAM,en,JOB,en_job_01,synthetic
 Final KYC reminder: confirm your Test Bank profile at example-parcel-check.test today.,SCAM,en,KYC,en_kyc_04,synthetic
-"Get a quick loan today; send ₹2,500 upfront to unlock funds.",SCAM,en,LOAN_APP,en_loan_app_02,synthetic
-"Wrong transfer of ₹2,500; send it back to this UPI handle: sample.person@example.",SCAM,en,MISTAKEN_TRANSFER,en_mistaken_transfer_02,synthetic
+Your account is compromised. Install support app from sample-reward.test now.,SCAM,en,OTHER,en_other_01,synthetic
 Salary credit: ₹500 deposited to account ending XXXXXX1234.,SAFE,en,,en_safe_04,synthetic
-पार्सल TEST456 का सीमा शुल्क ₹750 बाकी है। छुड़ाने के लिए demo-loan-app.test पर दें।,SCAM,hi,COURIER_CUSTOMS,hi_courier_customs_01,synthetic
-"कूरियर सूचना: SAMPLE789 पार्सल ₹2,500 भुगतान तक रुका है।",SCAM,hi,COURIER_CUSTOMS,hi_courier_customs_03,synthetic
 कस्टम क्लियरेंस नहीं हुआ। पार्सल के लिए demo-loan-app.test पर भुगतान करें।,SCAM,hi,COURIER_CUSTOMS,hi_courier_customs_04,synthetic
-"पुलिस केस सूचना: डिजिटल गिरफ्तारी से बचने के लिए ₹1,200 भेजें।",SCAM,hi,DIGITAL_ARREST,hi_digital_arrest_02,synthetic
-"आपका पार्सल जांच में है। कॉल न काटें, ₹1,200 जमा करें।",SCAM,hi,DIGITAL_ARREST,hi_digital_arrest_03,synthetic
-"आपका ₹2,500 रिफंड तैयार है। QR स्कैन कर कलेक्ट अनुरोध मंजूर करें।",SCAM,hi,FAKE_QR,hi_fake_qr_02,synthetic
-"खास शेयर ऑफर: निश्चित लाभ के लिए ₹1,200 अभी भेजें।",SCAM,hi,INVESTMENT,hi_investment_03,synthetic
-₹500 का भुगतान भूल से हुआ। इसे demo.payee@example पर वापस करें।,SCAM,hi,MISTAKEN_TRANSFER,hi_mistaken_transfer_04,synthetic
-आपका खाता खतरे में है। अभी example-bank-kyc.xyz से सहायता ऐप लें।,SCAM,hi,OTHER,hi_other_01,synthetic
-संदिग्ध लॉगिन रद्द करने के लिए सुरक्षा एजेंट को OTP 123456 भेजें।,SCAM,hi,OTP,hi_otp_04,synthetic
-डिलीवरी सूचना: पार्सल DEMO123 आज पहुंचेगा। कोई भुगतान बाकी नहीं।,SAFE,hi,,hi_safe_02,synthetic
-"Aapka parcel investigation mein hai. Call mat kaato, ₹500 do.",SCAM,hinglish,DIGITAL_ARREST,hinglish_digital_arrest_03,synthetic
-₹500 refund ready hai. QR scan karke collect request approve karo.,SCAM,hinglish,FAKE_QR,hinglish_fake_qr_02,synthetic
-Abhi sample-reward.test par KYC update karein warna Test Bank access block hoga.,SCAM,hinglish,KYC,hinglish_kyc_02,synthetic
-Instant loan approved. example-bank-kyc.xyz app install karo aur ₹500 processing fee do.,SCAM,hinglish,LOAN_APP,hinglish_loan_app_01,synthetic
-Loan limit ready hai. example-parcel-check.test se app lo aur contacts share karo.,SCAM,hinglish,LOAN_APP,hinglish_loan_app_04,synthetic
-₹500 payment mistake se gaya. Abhi test.receiver@example par return karo.,SCAM,hinglish,MISTAKEN_TRANSFER,hinglish_mistaken_transfer_04,synthetic
-Aapka Sample Bank account locked hai. Unlock karne ko agent ko OTP 123456 bhejein.,SCAM,hinglish,OTP,hinglish_otp_02,synthetic
-Salary credit: account XXXXXX1234 mein ₹500 jama hue.,SAFE,hinglish,,hinglish_safe_04,synthetic
+एक हफ्ते में पैसा दोगुना। demo-loan-app.test निवेश समूह से जुड़ें।,SCAM,hi,INVESTMENT,hi_investment_02,synthetic
+घर से नौकरी के लिए चयन हुआ। example-bank-kyc.xyz पर ₹500 पंजीकरण शुल्क दें।,SCAM,hi,JOB,hi_job_01,synthetic
+"नौकरी पक्की। ₹1,200 की किट demo-loan-app.test से खरीदें।",SCAM,hi,JOB,hi_job_03,synthetic
+"₹1,200 गलत भेजे गए; इस UPI पर वापस भेजें: demo.user@example।",SCAM,hi,MISTAKEN_TRANSFER,hi_mistaken_transfer_02,synthetic
+इनाम जीता है। जानकारी और ₹750 रिलीज फीस भेजें।,SCAM,hi,OTHER,hi_other_04,synthetic
+Delivery hold hai. example-parcel-check.test par ₹750 customs charge do.,SCAM,hinglish,COURIER_CUSTOMS,hinglish_courier_customs_02,synthetic
+"Officer bolta hai ID case se linked hai. Video par raho aur ₹2,500 pay karo.",SCAM,hinglish,DIGITAL_ARREST,hinglish_digital_arrest_01,synthetic
+"Quick loan pao; funds unlock karne ko pehle ₹1,200 bhejo.",SCAM,hinglish,LOAN_APP,hinglish_loan_app_02,synthetic
+Test Bank support ko aapka OTP 654321 chahiye; access ke liye code reply karein.,SCAM,hinglish,OTP,hinglish_otp_01,synthetic
+Suspicious login cancel karne ko security agent ko OTP 654321 bhejein.,SCAM,hinglish,OTP,hinglish_otp_04,synthetic
+Sample Bank: OTP 246810. Is code ko kisi ke saath share na karein.,SAFE,hinglish,,hinglish_safe_01,synthetic
+Your SIM will be blocked in 24 hours. Complete telecom KYC at sample-reward.test or call 97XXXXXX20.,SCAM,en,SIM_SWAP,en_sim_swap_r3_01,synthetic
+Your number will be deactivated. Share the SIM swap code 246810 with our agent to keep it.,SCAM,en,SIM_SWAP,en_sim_swap_r3_03,synthetic
+A collect request of ₹500 is pending. Enter your UPI PIN to receive the money.,SCAM,en,UPI_COLLECT,en_upi_collect_r3_01,synthetic
+Rs 500 credited to your account via UPI from test.receiver@example. No action needed.,SAFE,en,,en_safe_r3_upi_collect_01,synthetic
+Your video is saved. Pay now to sample.person@example else it will be posted to your family.,SCAM,en,SEXTORTION,en_sextortion_r3_03,synthetic
+"You are selected for a free prize. Share details and pay ₹2,500 processing at example-bank-kyc.xyz.",SCAM,en,LOTTERY,en_lottery_r3_03,synthetic
+"Society raffle draw is on Sunday at the club. Entry is free for residents, nothing to pay.",SAFE,en,,en_safe_r3_lottery_01,synthetic
+"Your brother is in trouble with the police. Send ₹1,200 to demo.user@example immediately.",SCAM,en,FAMILY_EMERGENCY,en_family_emergency_r3_03,synthetic
+"Mom, I reached the hostel safely. Will call after dinner.",SAFE,en,,en_safe_r3_family_emergency_01,synthetic
+Your account is suspended. Verify now at example-bank-kyc.xyz/login to restore access.,SCAM,en,PHISHING_LINK,en_phishing_link_r3_01,synthetic
+"Package fee pending, confirm your card at bit.ly/example-pay within 1 hour.",SCAM,en,PHISHING_LINK,en_phishing_link_r3_02,synthetic
+Your statement is ready. Log in at onlinesbi.sbi to view it. We never ask for your password.,SAFE,en,,en_safe_r3_phishing_link_01,synthetic
+Courier update: parcel TEST456 is out for delivery today. No payment is due.,SAFE,en,,en_safe_r3_courier_customs_01,synthetic
+रिफंड के लिए कस्टमर केयर 99XXXXXX30 पर कॉल करें और example-bank-kyc.xyz से सपोर्ट ऐप लें।,SCAM,hi,CUSTOMER_CARE,hi_customer_care_r3_01,synthetic
+आपका रिफंड विफल रहा। अभी टोल फ्री नंबर 98XXXXXX10 पर संपर्क करें।,SCAM,hi,CUSTOMER_CARE,hi_customer_care_r3_03,synthetic
+कस्टमर केयर: आपकी शिकायत दर्ज हो गई है। आधिकारिक ऐप में ट्रैक करें।,SAFE,hi,,hi_safe_r3_customer_care_02,synthetic
+"demo.user@example का कलेक्ट अनुरोध मंजूर करें और ₹1,200 कैशबैक पाने को PIN डालें।",SCAM,hi,UPI_COLLECT,hi_upi_collect_r3_02,synthetic
+Test Bank: UPI से आपके खाते में ₹750 प्राप्त हुए। बैलेंस अपडेट हो गया।,SAFE,hi,,hi_safe_r3_upi_collect_02,synthetic
+"सोसाइटी रैफल ड्रॉ रविवार को क्लब में है। निवासियों के लिए प्रवेश मुफ्त है, कुछ देना नहीं।",SAFE,hi,,hi_safe_r3_lottery_01,synthetic
+आपका भाई पुलिस के चक्कर में फंसा है। demo.payee@example पर तुरंत ₹750 भेजें।,SCAM,hi,FAMILY_EMERGENCY,hi_family_emergency_r3_03,synthetic
+"पापा, परीक्षा अच्छी रही। शुक्रवार को घर आ रहा हूं, कुछ भेजने की जरूरत नहीं।",SAFE,hi,,hi_safe_r3_family_emergency_02,synthetic
+आपका खाता निलंबित है। पहुंच बहाल करने के लिए sample-reward.test/login पर सत्यापित करें।,SCAM,hi,PHISHING_LINK,hi_phishing_link_r3_01,synthetic
+आधिकारिक सूचना: खाता केवल onlinesbi.sbi या बैंक ऐप पर संभालें।,SAFE,hi,,hi_safe_r3_phishing_link_02,synthetic
+"sample-reward.test पर हमारे VIP शेयर ट्रेडिंग ग्रुप से जुड़ें। पक्के टिप्स, गारंटीड मुनाफा।",SCAM,hi,INVESTMENT,hi_investment_r3_01,synthetic
+हमारा एक्सपर्ट आपके लिए ट्रेड करेगा। पक्के रोज़ मुनाफे को example-bank-kyc.xyz पर खाता भरें।,SCAM,hi,INVESTMENT,hi_investment_r3_03,synthetic
+"इंस्टेंट लोन ऐप: रकम जारी होने से पहले ₹2,500 बीमा शुल्क दें। example-parcel-check.test पर भरें।",SCAM,hi,LOAN_APP,hi_loan_app_r3_02,synthetic
+बकाया लोन के लिए ₹500 न दिया तो आपकी फोटो परिवार और संपर्कों को भेजी जाएगी।,SCAM,hi,LOAN_APP,hi_loan_app_r3_03,synthetic
+आपका कूरियर SAMPLE789 कस्टम में जब्त है। sample-reward.test पर ₹750 क्लियरेंस दें।,SCAM,hi,COURIER_CUSTOMS,hi_courier_customs_r3_02,synthetic
+OLX खरीदार: आपके सामान के ₹500 पाने के लिए यह QR स्कैन करें।,SCAM,hi,FAKE_QR,hi_fake_qr_r3_01,synthetic
+"मैं ₹2,500 एडवांस दूंगा। मेरा QR स्कैन करें और पाने के लिए PIN डालें।",SCAM,hi,FAKE_QR,hi_fake_qr_r3_02,synthetic
+Example Store पर QR से ₹500 का भुगतान मिला। कुछ करना नहीं।,SAFE,hi,,hi_safe_r3_fake_qr_01,synthetic
+Aapka number deactivate hoga. Rakhne ke liye SIM swap code 135790 agent ko do.,SCAM,hinglish,SIM_SWAP,hinglish_sim_swap_r3_03,synthetic
+Aapka ₹750 ka recharge successful raha. Plan 28 din valid hai. Dhanyavaad.,SAFE,hinglish,,hinglish_safe_r3_sim_swap_01,synthetic
+demo.payee@example se UPI dwara aapke account mein Rs 500 credit hue. Kuch karna nahi hai.,SAFE,hinglish,,hinglish_safe_r3_upi_collect_01,synthetic
+Sample Bank: UPI se aapke account mein ₹500 mile. Balance update ho gaya.,SAFE,hinglish,,hinglish_safe_r3_upi_collect_02,synthetic
+"Hi, aaj raat 8 baje family video call karein? Sab join honge.",SAFE,hinglish,,hinglish_safe_r3_sextortion_01,synthetic
+"Congratulations! Aapne KBC lottery jeeti hai. Claim ke liye demo-loan-app.test par ₹2,500 release fee do.",SCAM,hinglish,LOTTERY,hinglish_lottery_r3_01,synthetic
+"Mummy mera phone kho gaya, ye mera naya number 97XXXXXX20 hai. Abhi ₹500 chahiye, emergency hai.",SCAM,hinglish,FAMILY_EMERGENCY,hinglish_family_emergency_r3_02,synthetic
+"Papa, exam achha gaya. Friday ko ghar aa raha hoon, kuch bhejne ki zarurat nahi.",SAFE,hinglish,,hinglish_safe_r3_family_emergency_02,synthetic
+HR: apply karne ke liye dhanyavaad. Aapka interview Tuesday ko hai. Koi payment nahi.,SAFE,hinglish,,hinglish_safe_r3_job_02,synthetic
+"Aapki ₹1,200 ki SIP aaj debit hui. Mutual fund returns market linked hain, guaranteed nahi.",SAFE,hinglish,,hinglish_safe_r3_investment_01,synthetic
+Aaj loan repay karo warna saare contacts ko bolenge ki aap fraud ho.,SCAM,hinglish,LOAN_APP,hinglish_loan_app_r3_01,synthetic
+"Aapka courier SAMPLE789 customs mein seize hai. example-bank-kyc.xyz par ₹1,200 clearance do.",SCAM,hinglish,COURIER_CUSTOMS,hinglish_courier_customs_r3_02,synthetic
+Courier update: parcel DEMO123 aaj out for delivery hai. Koi payment due nahi.,SAFE,hinglish,,hinglish_safe_r3_courier_customs_01,synthetic

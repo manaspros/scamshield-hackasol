@@ -1,19 +1,30 @@
 # M1 held-out accuracy
 
-Data: synthetic held-out by template (0 real, 26 synthetic rows). Headline: synthetic.
+> STUB RUN: NOT MEASURED. Gemma rows come from a keyword stub, not a model.
+
+Data: synthetic held-out by template (0 real, 65 synthetic rows). Headline: synthetic.
 Positive class: SCAM or SUSPICIOUS; UNPARSED counts as negative.
 
 | System | Slice | Precision | Recall | FPR | Type macro-F1 | n | Unparsed |
 |---|---|---|---|---|---|---|---|
-| rules | overall | 100.0% | 47.8% | 0.0% | 0.31 | 26 | 0 |
-| rules | lang=en | 100.0% | 50.0% | 0.0% | 0.40 | 7 | 0 |
-| rules | lang=hi | 100.0% | 40.0% | 0.0% | 0.31 | 11 | 0 |
-| rules | lang=hinglish | 100.0% | 57.1% | 0.0% | 0.28 | 8 | 0 |
-| base_gemma | overall | 100.0% | 91.3% | 0.0% | 0.39 | 26 | 0 |
-| base_gemma | lang=en | 100.0% | 100.0% | 0.0% | 0.60 | 7 | 0 |
-| base_gemma | lang=hi | 100.0% | 90.0% | 0.0% | 0.21 | 11 | 0 |
-| base_gemma | lang=hinglish | 100.0% | 85.7% | 0.0% | 0.44 | 8 | 0 |
+| rules | overall | 100.0% | 61.4% | 0.0% | 0.45 | 65 | 0 |
+| rules | lang=en | 100.0% | 50.0% | 0.0% | 0.32 | 22 | 0 |
+| rules | lang=hi | 100.0% | 61.1% | 0.0% | 0.41 | 24 | 0 |
+| rules | lang=hinglish | 100.0% | 80.0% | 0.0% | 0.67 | 19 | 0 |
+| base_gemma | overall | 90.9% | 22.7% | 4.8% | 0.00 | 65 | 0 |
+| base_gemma | lang=en | 100.0% | 25.0% | 0.0% | 0.00 | 22 | 0 |
+| base_gemma | lang=hi | 100.0% | 16.7% | 0.0% | 0.00 | 24 | 0 |
+| base_gemma | lang=hinglish | 75.0% | 30.0% | 11.1% | 0.00 | 19 | 0 |
 | finetuned_gemma | - | future work (not planned for this prototype): no --finetuned path given | | | | | |
+
+## How to read this table (round 3 coverage)
+
+- All data is 100% synthetic: 65 rows (44 SCAM, 21 SAFE; en 22, hi 24, hinglish 19), template-held-out, 0 real rows. These are not real-world accuracy figures, and with n this small one row moves recall by about 2 points.
+- The `rules` rows are the rules-only path (`RuleScorer` through `ml/reports/rules_preds`), not the shipped fusion. The `base_gemma` rows come from a keyword stub, so they say nothing about the on-device model and should be ignored.
+- The held-out split now includes the round-3 types: SIM_SWAP 3, FAMILY_EMERGENCY 3, PHISHING_LINK 3, CUSTOMER_CARE 2, UPI_COLLECT 2, LOTTERY 2, SEXTORTION 1. ELECTRICITY_BILL has 0 held-out rows in this split, so its type score is not measured here.
+- Fusion behaviour (not shown in the rules-only rows): when Gemma says SAFE and the rule score is 0.40 to 0.85, fusion raises the verdict to SUSPICIOUS and never to SCAM; SCAM from rules alone needs a score of 0.85 or more. Rules can only raise a verdict, never lower it.
+- Before vs after (rules-only, held-out): before 26 rows, precision 100.0%, recall 47.8%, FPR 0.0%, type macro-F1 0.31. After 65 rows, precision 100.0%, recall 61.4%, FPR 0.0%, type macro-F1 0.45. The two splits differ, so this is not a like-for-like comparison. A Hindi safe customer-care message used to match the "customs" authority keyword (a false positive); the keyword is now `कस्टम(?!र)`, so it no longer does.
+- `data/golden/eval_smoke.csv` (107 rows, rules-only): precision 98.5%, recall 92.9%, FPR 2.7%. The 65 `r3_` rows score 100% recall with 0 false positives, but the rules were written against those templates, so treat that as a smoke check rather than accuracy.
 
 ## Future work: LoRA fine-tune
 

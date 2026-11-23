@@ -1,7 +1,7 @@
 {
   "data": {
     "real_rows": 0,
-    "synthetic_rows": 26,
+    "synthetic_rows": 65,
     "headline": "synthetic",
     "label": "synthetic held-out by template"
   },
@@ -9,18 +9,18 @@
   "systems": {
     "rules": {
       "coverage": 1.0,
-      "matched": 26,
+      "matched": 65,
       "overall": {
         "precision": 1.0,
-        "recall": 0.4782608695652174,
+        "recall": 0.6136363636363636,
         "fpr": 0.0,
-        "macro_f1": 0.3134920634920635,
+        "macro_f1": 0.4515151515151515,
         "counts": {
-          "n": 26,
-          "tp": 11,
+          "n": 65,
+          "tp": 27,
           "fp": 0,
-          "fn": 12,
-          "tn": 3
+          "fn": 17,
+          "tn": 21
         },
         "unparsed": 0
       },
@@ -29,103 +29,103 @@
           "precision": 1.0,
           "recall": 0.5,
           "fpr": 0.0,
-          "macro_f1": 0.4,
+          "macro_f1": 0.3194444444444444,
           "counts": {
-            "n": 7,
-            "tp": 3,
+            "n": 22,
+            "tp": 8,
             "fp": 0,
-            "fn": 3,
-            "tn": 1
+            "fn": 8,
+            "tn": 6
           },
           "unparsed": 0
         },
         "hi": {
           "precision": 1.0,
-          "recall": 0.4,
+          "recall": 0.6111111111111112,
           "fpr": 0.0,
-          "macro_f1": 0.3095238095238095,
+          "macro_f1": 0.4090909090909091,
           "counts": {
-            "n": 11,
-            "tp": 4,
+            "n": 24,
+            "tp": 11,
             "fp": 0,
-            "fn": 6,
-            "tn": 1
+            "fn": 7,
+            "tn": 6
           },
           "unparsed": 0
         },
         "hinglish": {
           "precision": 1.0,
-          "recall": 0.5714285714285714,
+          "recall": 0.8,
           "fpr": 0.0,
-          "macro_f1": 0.27777777777777773,
+          "macro_f1": 0.6666666666666666,
           "counts": {
-            "n": 8,
-            "tp": 4,
+            "n": 19,
+            "tp": 8,
             "fp": 0,
-            "fn": 3,
-            "tn": 1
+            "fn": 2,
+            "tn": 9
           },
           "unparsed": 0
         }
       }
     },
     "base_gemma": {
-      "backend": "hf",
-      "model": "google/gemma-3-1b-it",
+      "backend": "stub",
+      "model": "stub",
       "overall": {
-        "precision": 1.0,
-        "recall": 0.9130434782608695,
-        "fpr": 0.0,
-        "macro_f1": 0.39153439153439146,
+        "precision": 0.9090909090909091,
+        "recall": 0.22727272727272727,
+        "fpr": 0.047619047619047616,
+        "macro_f1": 0.0,
         "counts": {
-          "n": 26,
-          "tp": 21,
-          "fp": 0,
-          "fn": 2,
-          "tn": 3
+          "n": 65,
+          "tp": 10,
+          "fp": 1,
+          "fn": 34,
+          "tn": 20
         },
         "unparsed": 0
       },
       "per_language": {
         "en": {
           "precision": 1.0,
-          "recall": 1.0,
+          "recall": 0.25,
           "fpr": 0.0,
-          "macro_f1": 0.6,
+          "macro_f1": 0.0,
           "counts": {
-            "n": 7,
-            "tp": 6,
+            "n": 22,
+            "tp": 4,
             "fp": 0,
-            "fn": 0,
-            "tn": 1
+            "fn": 12,
+            "tn": 6
           },
           "unparsed": 0
         },
         "hi": {
           "precision": 1.0,
-          "recall": 0.9,
+          "recall": 0.16666666666666666,
           "fpr": 0.0,
-          "macro_f1": 0.21428571428571427,
+          "macro_f1": 0.0,
           "counts": {
-            "n": 11,
-            "tp": 9,
+            "n": 24,
+            "tp": 3,
             "fp": 0,
-            "fn": 1,
-            "tn": 1
+            "fn": 15,
+            "tn": 6
           },
           "unparsed": 0
         },
         "hinglish": {
-          "precision": 1.0,
-          "recall": 0.8571428571428571,
-          "fpr": 0.0,
-          "macro_f1": 0.4444444444444444,
+          "precision": 0.75,
+          "recall": 0.3,
+          "fpr": 0.1111111111111111,
+          "macro_f1": 0.0,
           "counts": {
-            "n": 8,
-            "tp": 6,
-            "fp": 0,
-            "fn": 1,
-            "tn": 1
+            "n": 19,
+            "tp": 3,
+            "fp": 1,
+            "fn": 7,
+            "tn": 8
           },
           "unparsed": 0
         }

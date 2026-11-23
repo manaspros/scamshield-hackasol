@@ -31,6 +31,14 @@ SCAM_TYPES = {
     "JOB",
     "MISTAKEN_TRANSFER",
     "OTHER",
+    "ELECTRICITY_BILL",
+    "SIM_SWAP",
+    "CUSTOMER_CARE",
+    "UPI_COLLECT",
+    "SEXTORTION",
+    "LOTTERY",
+    "FAMILY_EMERGENCY",
+    "PHISHING_LINK",
 }
 SOURCES = {"synthetic", "real"}
 
