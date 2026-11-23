@@ -4,6 +4,15 @@ import 'app_language.dart';
 /// `_s`); en is English only, so it has no `_s` keys. Placeholders use {x}.
 const settingsStrings = Tri(
   hi: {
+    'sec_appearance': 'दिखावट', 'sec_protection': 'सुरक्षा', 'sec_ai': 'AI मॉडल', 'sec_more': 'निजता और अन्य',
+    'theme': 'थीम', 'theme_hint_sys': 'फ़ोन के हिसाब से। बदलने के लिए एक चुनें।', 'theme_hint_pick': 'आपने चुना। फ़ोन के हिसाब से चलाने के लिए सिस्टम चुनें।',
+    'theme_system': 'सिस्टम', 'theme_light': 'लाइट', 'theme_dark': 'डार्क', 'lang_row': 'भाषा',
+    'overlay_short': 'कॉल के दौरान किनारे पर छोटी चेतावनी', 'read_aloud_short': 'ठगी जैसी कॉल पर एक लाइन बोलकर सुनाता है', 'caps_short': 'अगर 6 सेकंड में कैप्शन न आएँ',
+    'signals_short': 'OTP आए या UPI ऐप खुले तो चेतावनी', 'llm_short': 'बंद = तेज़, सिर्फ़ नियम',
+    'wifi_short': 'मॉडल 300 MB या ज़्यादा के होते हैं', 'model_none': 'कोई AI मॉडल नहीं', 'model_ready': 'चालू है',
+    'model_get': 'मॉडल डाउनलोड करें', 'change': 'बदलें', 'share_d': 'सिर्फ़ ज़िला, प्रकार और तारीख',
+    'adv_d': 'टेस्ट और डेवलपर विकल्प', 'adv_intro': 'ये विकल्प जाँच और परीक्षण के लिए हैं। आम उपयोग में इन्हें बदलने की ज़रूरत नहीं।',
+    'footer': 'सब कुछ इसी फ़ोन पर चलता है',
     'lang_label': 'Language / भाषा', 'lang_title': 'Language / भाषा',
     'lang_en': 'English', 'lang_hi': 'हिन्दी', 'lang_hne': 'छत्तीसगढ़ी',
     'fail_title': 'सेटिंग नहीं खुलीं', 'fail_sub': 'Could not load settings', 'retry': 'फिर कोशिश करें',
@@ -44,6 +53,7 @@ const settingsStrings = Tri(
     'demo': 'डेमो मोड', 'demo_s': 'Demo mode', 'demo_d': 'मदद टैब में "डेमो लैब" दिखाएँ',
   },
   hne: {
+    'sec_protection': 'सुरक्छा', 'change': 'बदलव', 'theme_hint_sys': 'फोन के हिसाब ले। बदले बर एक चुनव।',
     'retry': 'फेर कोसिस करव',
     'loading': 'लोड होवत हे…',
     'warn_title': 'चेतावनी के सेटिंग',
@@ -60,6 +70,15 @@ const settingsStrings = Tri(
     'adv': 'उन्नत सेटिंग', 'demo': 'डेमो मोड',
   },
   en: {
+    'sec_appearance': 'Appearance', 'sec_protection': 'Protection', 'sec_ai': 'AI model', 'sec_more': 'Privacy & more',
+    'theme': 'Theme', 'theme_hint_sys': 'Follows your phone. Pick one to override.', 'theme_hint_pick': 'You chose this. Pick System to follow your phone.',
+    'theme_system': 'System', 'theme_light': 'Light', 'theme_dark': 'Dark', 'lang_row': 'Language',
+    'overlay_short': 'A small chip at the screen edge during a call', 'read_aloud_short': 'Speaks one short line when a call looks like a scam', 'caps_short': 'If captions do not start within 6 s',
+    'signals_short': 'Warns if an OTP arrives or a UPI app opens', 'llm_short': 'Off = faster, rules only',
+    'wifi_short': 'Models are 300 MB or more', 'model_none': 'No AI model yet', 'model_ready': 'In use',
+    'model_get': 'Download a model', 'change': 'Change', 'share_d': 'Only district, type and date',
+    'adv_d': 'Test and developer options', 'adv_intro': 'These are for testing and troubleshooting. You do not need to change them.',
+    'footer': 'Everything runs on this phone',
     'lang_label': 'Language / भाषा', 'lang_title': 'Language / भाषा',
     'lang_en': 'English', 'lang_hi': 'हिन्दी', 'lang_hne': 'छत्तीसगढ़ी',
     'fail_title': 'Could not load settings', 'retry': 'Try again',

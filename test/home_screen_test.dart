@@ -143,11 +143,11 @@ void main() {
       await t.pump();
       await t.pump();
       for (var i = 1; i <= 3; i++) {
-        expect(t.widget<LinearProgressIndicator>(find.byKey(const Key('onb_step'))).semanticsLabel, 'Step $i of 4');
+        expect(t.widget<Semantics>(find.byKey(const Key('onb_step'))).properties.label, 'Step $i of 4');
         await t.tap(find.byKey(const Key('onb_next')));
         await _settle(t);
       }
-      expect(t.widget<LinearProgressIndicator>(find.byKey(const Key('onb_step'))).semanticsLabel, 'Step 4 of 4');
+      expect(t.widget<Semantics>(find.byKey(const Key('onb_step'))).properties.label, 'Step 4 of 4');
       expect(find.byKey(const Key('onb_skip')), findsNothing); // nothing left to skip
       await t.tap(find.text('Start using ScamShield'));
       await _settle(t);
@@ -168,7 +168,7 @@ void main() {
       await _settle(t);
       await t.tap(find.byKey(const Key('onb_back')));
       await _settle(t);
-      expect(t.widget<LinearProgressIndicator>(find.byKey(const Key('onb_step'))).semanticsLabel, 'Step 1 of 4');
+      expect(t.widget<Semantics>(find.byKey(const Key('onb_step'))).properties.label, 'Step 1 of 4');
       await _end(t);
     });
   });

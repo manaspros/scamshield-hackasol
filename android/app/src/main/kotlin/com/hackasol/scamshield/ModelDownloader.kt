@@ -50,10 +50,11 @@ object ModelDownloader {
     private fun setId(ctx: Context, id: Long) = prefs(ctx).edit().putLong("downloadId", id).apply()
 
     /** Starts a download of [modelId] (null = the default) from its release URL. Returns a status map (or ERROR with a readable message). */
-    suspend fun start(ctx: Context, wifiOnly: Boolean, modelId: String? = null): Map<String, Any?> = withContext(Dispatchers.IO) {
+    suspend fun start(ctx: Context, wifiOnly: Boolean, modelId: String? = null, remote: ModelSpec? = null): Map<String, Any?> = withContext(Dispatchers.IO) {
         val app = ctx.applicationContext
         try {
-            val spec: ModelSpec = ModelCatalog.byId(modelId) ?: ModelCatalog.byId(ModelCatalog.DEFAULT_ID)!!
+            // A model from the online models.json comes with its own spec; otherwise use the built-in list.
+            val spec: ModelSpec = remote ?: ModelCatalog.byId(modelId) ?: ModelCatalog.byId(ModelCatalog.DEFAULT_ID)!!
             val url = spec.url ?: return@withContext err("${spec.name} is not available to download yet")
             cancel(app)
             val needMb = spec.sizeMb + ModelCatalog.HEADROOM_MB

@@ -39,7 +39,7 @@ class MainActivity : FlutterActivity() {
     companion object { private const val REQ_IMPORT = 4201
         private const val REQ_NOTIF = 4203
         private val PREF_KEYS = setOf("lesson_best_v1", "district", "lang_v1", "captions_ack_v1", "demo_mode", "onboarded_v1",
-            "theme_v1", "profile_v1", "family_contacts_v1", "learn_v2") }
+            "theme_v1", "profile_v1", "family_contacts_v1", "learn_v2", "models_v1") }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,15 +102,15 @@ class MainActivity : FlutterActivity() {
                 "loadModel" -> { GemmaClassifier.ensureLoaded(this, force = true); result.success(GemmaClassifier.statusMap(this)) }
                 "importModel" -> startImport(result)
                 "downloadModel" -> scope.launch {
-                    result.success(ModelDownloader.start(this@MainActivity, AppSettings.wifiOnly, call.argument<String>("modelId")))
+                    result.success(ModelDownloader.start(this@MainActivity, AppSettings.wifiOnly, call.argument<String>("modelId"), remoteSpec(call)))
                 }
                 "models.catalog" -> result.success(ModelCatalog.all.map { it.toMap() })
                 "models.select" -> {
-                    // Switch to an already-installed model and reload it.
-                    val spec = ModelCatalog.byId(call.argument<String>("id"))
-                    if (spec == null) result.error("BAD_ID", "unknown model", null)
+                    // Switch to an already-installed model (by file name, or a built-in id) and reload it.
+                    val file = call.argument<String>("file")?.takeIf { safeTaskName(it) } ?: ModelCatalog.byId(call.argument<String>("id"))?.file
+                    if (file == null) result.error("BAD_ID", "unknown model", null)
                     else {
-                        GemmaClassifier.setPreferred(this, spec.file)
+                        GemmaClassifier.setPreferred(this, file)
                         GemmaClassifier.ensureLoaded(this, force = true)
                         result.success(GemmaClassifier.statusMap(this))
                     }
@@ -192,6 +192,25 @@ class MainActivity : FlutterActivity() {
 
         TrendChannel.register(this, messenger)
         DemoChannel.register(this, messenger)
+    }
+
+    /** A plain `name.task` file name: no folders, so a remote list can never write outside models/. */
+    private fun safeTaskName(f: String) = Regex("""^[A-Za-z0-9._-]{1,120}\.task$""").matches(f)
+
+    /** Spec sent by Dart for a model from the online models.json; null when absent or unsafe. */
+    private fun remoteSpec(call: io.flutter.plugin.common.MethodCall): com.hackasol.scamshield.core.ModelSpec? {
+        val url = call.argument<String>("url") ?: return null
+        val file = call.argument<String>("file") ?: return null
+        if (!url.startsWith("https://") || !safeTaskName(file)) return null
+        return com.hackasol.scamshield.core.ModelSpec(
+            id = call.argument<String>("modelId") ?: file,
+            name = call.argument<String>("name") ?: file,
+            file = file,
+            url = url,
+            sizeMb = call.argument<Number>("sizeMb")?.toInt() ?: 600,
+            minRamMb = call.argument<Number>("minRamMb")?.toInt() ?: 0,
+            tier = "remote",
+        )
     }
 
     /** RAM, chip and free storage for the model picker's recommendation. */

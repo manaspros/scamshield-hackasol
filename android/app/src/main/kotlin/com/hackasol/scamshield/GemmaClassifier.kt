@@ -63,6 +63,13 @@ object GemmaClassifier {
         return all.firstOrNull { it.name == want } ?: all.maxByOrNull { it.lastModified() }
     }
 
+    /** File names of every .task model on this phone (Dart maps them to the live catalog). */
+    fun installedFiles(ctx: Context): List<String> = modelDirs(ctx)
+        .flatMap { d -> d.listFiles()?.toList().orEmpty() }
+        .filter { it.isFile && it.name.endsWith(".task") }
+        .map { it.name }
+        .distinct()
+
     /** Catalog ids of the models present on this phone. */
     fun installedIds(ctx: Context): List<String> = modelDirs(ctx)
         .flatMap { d -> d.listFiles()?.toList().orEmpty() }
@@ -78,6 +85,8 @@ object GemmaClassifier {
             "sizeMb" to (f?.length()?.div(1024 * 1024)),
             "modelId" to ModelCatalog.byFile(f?.name)?.id,
             "installed" to installedIds(ctx),
+            "file" to f?.name,
+            "files" to installedFiles(ctx),
             "searchDirs" to modelDirs(ctx).map { it.absolutePath },
         )
     }

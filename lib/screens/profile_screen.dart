@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../api/home_api.dart';
 import '../api/llm_api.dart';
 import '../api/model_api.dart';
+import '../api/model_catalog.dart';
 import '../demo/demo_flag.dart';
 import '../l10n/app_language.dart';
 import '../l10n/strings_home.dart';
@@ -63,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
     final paired = await widget.api.familyPaired();
     final prot = await widget.api.protection();
     final m = await widget.models.state();
-    final cat = await widget.models.catalog();
+    final cat = ModelCatalogStore.models.value;
     if (!mounted) return;
     LlmStatus.ready.value = m.ready;
     setState(() {
@@ -277,7 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
     final flags = [_prot?.call, _prot?.messages, _prot?.alerts];
     final on = flags.where((f) => f == true).length;
     final m = _model;
-    final name = _catalog.where((c) => c.id == m?.modelId).map((c) => c.name).firstOrNull;
+    final name = m == null ? null : _catalog.where((c) => c.id == m.idIn(_catalog)).map((c) => c.name).firstOrNull;
     final aiLine = m == null
         ? '…'
         : m.ready

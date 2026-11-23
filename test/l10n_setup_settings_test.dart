@@ -48,14 +48,15 @@ void main() {
         }).install();
     await _pump(t, const SetupScreen());
     expect(find.text('0 / 4 required steps done'), findsOneWidget);
-    expect(find.text('Turn on call protection'), findsWidgets);
+    await t.scrollUntilVisible(find.text('Call protection'), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.text('Call protection'), findsWidgets);
     await t.scrollUntilVisible(find.text('Open Accessibility'), 200, scrollable: find.byType(Scrollable).first);
     await t.drag(find.byType(ListView).first, const Offset(0, 6000));
     await t.pumpAndSettle();
     expect(find.byKey(const Key('setup_firstrun_card')), findsNothing);
     // Open the optional section too, then scan every visible Text for Devanagari.
-    await t.scrollUntilVisible(find.byKey(const Key('setup_advanced')), 300, maxScrolls: 100);
-    await t.tap(find.byKey(const Key('setup_advanced')));
+    await t.scrollUntilVisible(find.byKey(const Key('setup_mic')), 300, maxScrolls: 100);
+    await t.tap(find.byKey(const Key('setup_mic')));
     await t.pumpAndSettle();
     final all = <String>[];
     for (var i = 0; i < 40; i++) {
@@ -64,7 +65,7 @@ void main() {
       await t.pump();
     }
     expect(all.where(_devanagari.hasMatch), isEmpty);
-    expect(all.any((s) => s.contains('On-device AI model')), isTrue);
+    expect(all.any((s) => s.contains('On-device AI')), isTrue);
     expect(t.takeException(), isNull);
     await t.pumpWidget(const SizedBox());
   });
@@ -83,8 +84,8 @@ void main() {
         }).install();
     await _pump(t, const SetupScreen());
     expect(find.text('0 / 4 ज़रूरी कदम पूरे'), findsOneWidget);
-    await t.scrollUntilVisible(find.text('Turn on call protection'), 200, scrollable: find.byType(Scrollable).first);
-    expect(find.text('Turn on call protection'), findsOneWidget);
+    await t.scrollUntilVisible(find.text('कॉल सुरक्षा'), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.text('कॉल सुरक्षा'), findsOneWidget);
     await t.pumpWidget(const SizedBox());
   });
 
@@ -99,14 +100,14 @@ void main() {
       await _pump(t, const SettingsScreen());
       final row = find.byKey(const Key('settings_language_row'));
       expect(row, findsOneWidget);
-      // First in the list: above the "Warning settings" header.
-      expect(t.getTopLeft(row).dy, lessThan(t.getTopLeft(find.text('Warning settings')).dy));
+      // In the first group: above the "Protection" header.
+      expect(t.getTopLeft(row).dy, lessThan(t.getTopLeft(find.text('PROTECTION')).dy));
       expect(find.descendant(of: row, matching: find.text('English')), findsOneWidget);
       expect(find.text('Show warning chip during calls'), findsOneWidget);
 
       AppLanguage.debugSet('hi');
       await t.pumpAndSettle();
-      expect(find.text('चेतावनी की सेटिंग'), findsOneWidget);
+      expect(find.text('सुरक्षा'), findsOneWidget);
       AppLanguage.debugSet('en');
       await t.pumpAndSettle();
 
@@ -117,14 +118,14 @@ void main() {
       await t.pumpAndSettle();
       expect(AppLanguage.code, 'hi');
       expect(find.byKey(const Key('lang_hne')), findsNothing); // page closed
-      expect(find.text('चेतावनी की सेटिंग'), findsOneWidget);
+      expect(find.text('सुरक्षा'), findsOneWidget);
 
       await t.tap(row);
       await t.pumpAndSettle();
       await t.tap(find.byKey(const Key('lang_en')));
       await t.pumpAndSettle();
-      expect(find.text('Warning settings'), findsOneWidget);
-      expect(find.text('चेतावनी की सेटिंग'), findsNothing);
+      expect(find.text('PROTECTION'), findsOneWidget);
+      expect(find.text('सुरक्षा'), findsNothing);
       expect(t.takeException(), isNull);
       await t.pumpWidget(const SizedBox());
     });
@@ -152,7 +153,7 @@ void main() {
       }
       // The only Hindi allowed is the deliberate "Language / भाषा" label.
       expect(all.where(_devanagari.hasMatch).toSet(), isEmpty.or(equals({'Language / भाषा'})));
-      expect(all, contains('Use on-device Gemma'));
+      expect(all, contains('Screen-reading fallback (OCR)')); // Advanced page
       expect(t.takeException(), isNull);
       await t.pumpWidget(const SizedBox());
     });

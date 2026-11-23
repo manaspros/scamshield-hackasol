@@ -79,23 +79,20 @@ void main() {
       })..install();
       await show(t, theme(), const SettingsScreen());
       expect(t.takeException(), isNull);
-      await tapVisible(t, find.byKey(const Key('settings_advanced')));
-      await t.pumpAndSettle();
-      expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Use on-device Gemma')).value, isTrue);
-      await reveal(t, find.widgetWithText(SwitchListTile, 'Show warning chip during calls'));
-      expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Show warning chip during calls')).value, isFalse);
-      await tapVisible(t, find.widgetWithText(SwitchListTile, 'Show warning chip during calls'));
+      Switch sw(String k) => t.widget<Switch>(find.descendant(of: find.byKey(Key(k)), matching: find.byType(Switch)));
+      await reveal(t, find.byKey(const Key('sw_useLlm')));
+      expect(sw('sw_useLlm').value, isTrue);
+      await reveal(t, find.byKey(const Key('sw_overlayEnabled')));
+      expect(sw('sw_overlayEnabled').value, isFalse);
+      await tapVisible(t, find.byKey(const Key('sw_overlayEnabled')));
       await t.pumpAndSettle();
       expect(api.named('setSettings').single.arguments, {'overlayEnabled': true});
-      await reveal(t, find.widgetWithText(SwitchListTile, 'Show warning chip during calls'));
-      expect(t.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Show warning chip during calls')).value, isTrue);
-      // every switch is reachable at 2.0 scale
-      for (final title in ['Use on-device Gemma', 'Show warning chip during calls', 'Auto-turn-on Live Caption',
-        'Screen-reading fallback (OCR)', 'In-call scam signals', 'Call audio test on next call (experimental)',
-        'Download model on Wi-Fi only', 'Discovery mode (debug)']) {
-        final f = find.widgetWithText(SwitchListTile, title);
-        await reveal(t, f);
-        expectTapTarget(t, f);
+      await reveal(t, find.byKey(const Key('sw_overlayEnabled')));
+      expect(sw('sw_overlayEnabled').value, isTrue);
+      // every switch is reachable at 2.0 scale; the whole row is the tap target
+      for (final k in ['sw_overlayEnabled', 'sw_readAloud', 'sw_autoEnableCaptions', 'sw_inCallSignals', 'sw_useLlm', 'sw_wifiOnly']) {
+        await reveal(t, find.byKey(Key(k)));
+        expectTapTarget(t, find.byKey(Key(k)));
       }
       expect(t.takeException(), isNull);
     });
@@ -123,8 +120,10 @@ void main() {
             _ => null,
           })..install();
       await show(t, theme(), const SetupScreen());
-      await tapVisible(t, find.text('Open Accessibility'));
-      await tapVisible(t, find.text('Open caption settings'));
+      await tapVisible(t, find.byKey(const Key('setup_primary'))); // the next step (call) is open with its button
+      await tapVisible(t, find.byKey(const Key('setup_step_cap'))); // open the caption card (collapsed: its header)
+      await t.pumpAndSettle();
+      await tapVisible(t, find.byKey(const Key('setup_action_cap')));
       expect(api.named('openAccessibilitySettings'), hasLength(1));
       expect(api.named('openCaptionSettings'), hasLength(1));
       expect(t.takeException(), isNull);

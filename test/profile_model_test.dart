@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/api/llm_api.dart';
+import 'package:scamshield/api/model_api.dart';
+import 'package:scamshield/api/model_catalog.dart';
 import 'package:scamshield/l10n/app_language.dart';
 import 'package:scamshield/lessons/quiz_engine.dart';
 import 'package:scamshield/profile/user_profile.dart';
@@ -122,6 +124,61 @@ void main() {
   });
 
   group('model picker', () {
+    // What models.json would list: 270M not hosted, 1B and E2B hosted.
+    const catalog = [
+      ModelSpec(id: 'gemma3-270m', name: 'Gemma 3 · 270M', file: 'a.task', sizeMb: 300, minRamMb: 3000, tier: 'fast'),
+      ModelSpec(id: 'gemma3-1b-int4', name: 'Gemma 3 · 1B', file: 'b.task', url: 'https://x/b.task', sizeMb: 555, minRamMb: 4000, tier: 'balanced'),
+      ModelSpec(id: 'gemma3n-e2b', name: 'Gemma 3n · E2B', file: 'c.task', url: 'https://x/c.task', sizeMb: 3100, minRamMb: 8000, tier: 'best'),
+    ];
+    setUp(() {
+      ModelCatalogStore.debugReset();
+      ModelCatalogStore.models.value = catalog;
+      ModelCatalogStore.links.value = {'gemma3-1b-int4': LinkStatus.ok, 'gemma3n-e2b': LinkStatus.ok};
+    });
+
+    test('MODEL_manifest_parsesValidEntries_skipsUnsafeOnes', () {
+      final list = parseManifest('{"models":['
+          '{"id":"a","name":"A","file":"a.task","url":"https://x/a.task","sizeMb":300,"minRamMb":3000,"tier":"fast","isNew":true,"note":{"en":"tiny"}},'
+          '{"id":"b","name":"B","file":"../evil.task","url":"https://x/b"},'
+          '{"id":"c","name":"C","file":"c.task","url":"http://insecure/c.task"},'
+          '{"id":"a","name":"dup","file":"d.task"}'
+          ']}')!;
+      expect(list.map((m) => m.id), ['a']);
+      expect(list.single.isNew, isTrue);
+      expect(list.single.noteIn('hi'), 'tiny');
+      expect(parseManifest('not json'), isNull);
+      expect(parseManifest('{"models":[]}'), isNull);
+    });
+
+    test('MODEL_store_refreshReplacesList_andChecksLinks', () async {
+      ModelCatalogStore.debugReset(withNet: _Net(
+        manifest: '{"models":[{"id":"z","name":"Z","file":"z.task","url":"https://ok/z.task","sizeMb":100,"minRamMb":1000},'
+            '{"id":"y","name":"Y","file":"y.task","url":"https://bad/y.task","sizeMb":100,"minRamMb":1000},'
+            '{"id":"w","name":"W","file":"w.task","sizeMb":100,"minRamMb":1000}]}',
+      ));
+      expect(await ModelCatalogStore.refresh(), isTrue);
+      expect(ModelCatalogStore.models.value.map((m) => m.id), ['z', 'y', 'w']);
+      expect(ModelCatalogStore.updated.value, isNotNull);
+      await ModelCatalogStore.checkLinks();
+      expect(ModelCatalogStore.links.value, {'z': LinkStatus.ok, 'y': LinkStatus.broken, 'w': LinkStatus.none});
+    });
+
+    test('MODEL_store_offline_keepsBuiltInList_marksLinksOffline', () async {
+      ModelCatalogStore.debugReset();
+      expect(await ModelCatalogStore.refresh(), isFalse);
+      expect(ModelCatalogStore.models.value, kFallbackCatalog);
+      await ModelCatalogStore.checkLinks();
+      expect(ModelCatalogStore.links.value['gemma3-1b-int4'], LinkStatus.offline);
+    });
+
+    testWidgets('MODEL_brokenLink_isShownAndCannotBeDownloaded', (t) async {
+      _native();
+      ModelCatalogStore.links.value = {'gemma3-1b-int4': LinkStatus.broken, 'gemma3n-e2b': LinkStatus.ok};
+      await _pump(t, const ModelPickerScreen(listenToEvents: false, syncOnOpen: false));
+      expect(find.text('Link not reachable'), findsOneWidget);
+      expect(t.widget<FilledButton>(find.byKey(const Key('mp_action'))).onPressed, isNull);
+    });
+
     testWidgets('MODEL_showsDevice_recommendsFittingModel_flagsTooBig_downloadsPicked', (t) async {
       _native();
       final calls = <MethodCall>[];
@@ -141,7 +198,7 @@ void main() {
           _ => null,
         };
       }).install();
-      await _pump(t, const ModelPickerScreen(listenToEvents: false));
+      await _pump(t, const ModelPickerScreen(listenToEvents: false, syncOnOpen: false));
       expect(find.text('6 GB'), findsOneWidget);
       expect(find.text('SM6225'), findsOneWidget);
       expect(find.text('Xiaomi Redmi Note 12 · Android 14'), findsOneWidget);
@@ -152,7 +209,7 @@ void main() {
       await t.pumpAndSettle();
       expect(find.byKey(const Key('mp_opt_gemma3n-e2b')), findsOneWidget);
       expect(find.text('Needs 8 GB RAM'), findsOneWidget);
-      expect(find.text('Coming soon'), findsOneWidget); // 270M is not hosted yet
+      expect(find.textContaining('Not available yet'), findsOneWidget); // 270M has no link in this list
       await t.tap(find.byKey(const Key('mp_opt_gemma3-270m'))); // disabled: nothing happens
       await t.pumpAndSettle();
       expect(find.byKey(const Key('mp_opt_gemma3-270m')), findsOneWidget, reason: 'disabled row keeps the island open');
@@ -160,14 +217,17 @@ void main() {
       await t.pumpAndSettle();
       await t.tap(find.byKey(const Key('mp_action')));
       await t.pump();
-      expect(calls.where((c) => c.method == 'downloadModel').single.arguments, {'modelId': 'gemma3-1b-int4'});
+      final args = calls.where((c) => c.method == 'downloadModel').single.arguments as Map;
+      expect(args['modelId'], 'gemma3-1b-int4');
+      expect(args['url'], 'https://x/b.task');
+      expect(args['file'], 'b.task');
       await t.pump(const Duration(seconds: 4));
       expect(t.takeException(), isNull);
     });
 
     testWidgets('MODEL_tooHeavy_asksBeforeDownloading', (t) async {
       _native(device: {'totalRamMb': 3500, 'freeStorageMb': 21000});
-      await _pump(t, const ModelPickerScreen(listenToEvents: false));
+      await _pump(t, const ModelPickerScreen(listenToEvents: false, syncOnOpen: false));
       await t.tap(find.byKey(const Key('mp_action')));
       await t.pumpAndSettle();
       expect(find.text('This model may be too heavy'), findsOneWidget);
@@ -190,4 +250,14 @@ void main() {
       expect(find.byKey(const Key('quiz_reminder')), findsNothing);
     });
   });
+}
+
+/// Scripted network: one manifest; any URL containing "ok" answers 200, others 404.
+class _Net implements ModelNet {
+  _Net({required this.manifest});
+  final String manifest;
+  @override
+  Future<String?> getText(String url) async => manifest;
+  @override
+  Future<int?> status(String url) async => url.contains('//ok/') ? 200 : 404;
 }

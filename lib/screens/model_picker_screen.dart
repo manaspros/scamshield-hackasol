@@ -5,28 +5,30 @@ import 'package:flutter/services.dart';
 
 import '../api/llm_api.dart';
 import '../api/model_api.dart';
+import '../api/model_catalog.dart';
 import '../api/text_api.dart';
 import '../l10n/app_language.dart';
+import '../l10n/strings_home.dart';
 import '../l10n/strings_profile.dart';
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
 import '../widgets/island.dart';
 import '../widgets/premium.dart';
 
-/// Pick which on-device model to download, with a recommendation from this phone's RAM, chip and free space.
+/// Pick which on-device model to download. The list comes from the online models.json (cached, with a built-in
+/// fallback), each download link is checked live, and the recommendation follows this phone's RAM and free space.
 class ModelPickerScreen extends StatefulWidget {
-  const ModelPickerScreen({super.key, this.api = const ModelApi(), this.listenToEvents = true});
+  const ModelPickerScreen({super.key, this.api = const ModelApi(), this.listenToEvents = true, this.syncOnOpen = true});
   final ModelApi api;
 
-  /// Tests switch the native event stream off.
-  final bool listenToEvents;
+  /// Tests switch the native event stream and the network sync off.
+  final bool listenToEvents, syncOnOpen;
 
   @override
   State<ModelPickerScreen> createState() => _ModelPickerScreenState();
 }
 
 class _ModelPickerScreenState extends State<ModelPickerScreen> {
-  List<ModelSpec> _catalog = kFallbackCatalog;
   DeviceInfo _dev = const DeviceInfo();
   ModelState _state = const ModelState();
   String? _picked;
@@ -38,7 +40,11 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
   @override
   void initState() {
     super.initState();
+    for (final n in [ModelCatalogStore.models, ModelCatalogStore.links, ModelCatalogStore.updated, ModelCatalogStore.refreshing]) {
+      n.addListener(_changed);
+    }
     _load();
+    if (widget.syncOnOpen) ModelCatalogStore.sync();
     if (widget.listenToEvents) {
       try {
         _sub = TextApi.events.listen((e) {
@@ -56,40 +62,37 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
     }
   }
 
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    for (final n in [ModelCatalogStore.models, ModelCatalogStore.links, ModelCatalogStore.updated, ModelCatalogStore.refreshing]) {
+      n.removeListener(_changed);
+    }
     _sub?.cancel();
     super.dispose();
   }
 
   Future<void> _load() async {
-    final cat = await widget.api.catalog();
     final dev = await widget.api.device();
     final st = await widget.api.state();
     Map<Object?, Object?> settings = const {};
-    try {
-      settings = await TextApi.getSettings();
-    } on MissingPluginException {
-      // keep defaults
-    } on PlatformException {
-      // keep defaults
-    }
     Map<Object?, Object?> dl = const {};
     try {
+      settings = await TextApi.getSettings();
       dl = await TextApi.downloadStatus();
     } on MissingPluginException {
-      // no download
+      // keep defaults
     } on PlatformException {
-      // no download
+      // keep defaults
     }
     if (!mounted) return;
-    final rec = dev.recommendedId ?? recommendModelId(cat, dev);
     LlmStatus.ready.value = st.ready;
     setState(() {
-      _catalog = cat;
       _dev = dev;
       _state = st;
-      _picked ??= st.modelId ?? rec;
       _wifiOnly = settings['wifiOnly'] != false;
       _dl = dl;
       _loaded = true;
@@ -98,37 +101,66 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
 
   String _t(String k, [Map<String, Object?> a = const {}]) => profileT(AppLanguage.of(context), k, a);
 
-  String get _recId => _dev.recommendedId ?? recommendModelId(_catalog, _dev);
+  List<ModelSpec> get _catalog => ModelCatalogStore.models.value;
 
-  ModelSpec get _sel => _catalog.firstWhere((m) => m.id == _picked, orElse: () => _catalog.first);
+  String get _recId => recommendModelId(_catalog, _dev);
+
+  /// The picked model: the user's choice, else the one in use, else the recommendation.
+  ModelSpec get _sel {
+    final c = _catalog;
+    final id = _picked ?? _state.idIn(c) ?? _recId;
+    return c.firstWhere((m) => m.id == id, orElse: () => c.first);
+  }
+
+  LinkStatus _link(ModelSpec m) => m.url == null ? LinkStatus.none : ModelCatalogStore.links.value[m.id] ?? LinkStatus.checking;
+
+  bool _inUse(ModelSpec m) => _state.ready && _state.idIn(_catalog) == m.id;
+
+  /// A model can be chosen when it is already on the phone, or its link is not known to be broken.
+  bool _selectable(ModelSpec m) =>
+      _state.isInstalled(m) || (m.url != null && _link(m) != LinkStatus.broken);
 
   bool get _downloading => const {'RUNNING', 'PENDING', 'PAUSED'}.contains('${_dl['status']}');
 
-  String _tierLine(ModelSpec m) => '${m.sizeLabel} · ${_t('m_${m.tier}')}';
+  /// "555 MB · balanced · Hindi support": the note from models.json, else the built-in tier wording.
+  String _line(ModelSpec m, String lang) {
+    final n = m.noteIn(lang) ?? (const {'fast', 'balanced', 'best'}.contains(m.tier) ? _t('m_${m.tier}') : null);
+    return n == null ? m.sizeLabel : '${m.sizeLabel} · $n';
+  }
 
-  /// Badge text and colours for one model row.
-  (String, Color, Color) _tag(ModelSpec m) {
+  /// (text, colour) for the live link line.
+  (String, Color) _linkLine(ModelSpec m) {
     final p = palOf(context);
     final st = Theme.of(context).extension<StatusColors>() ?? StatusColors.light;
-    if (m.id == _state.modelId && _state.ready) return (_t('m_in_use'), st.safe, st.safe.withValues(alpha: 0.14));
-    if (_state.installed.contains(m.id)) return (_t('m_installed'), p.accent, p.accentTint);
+    if (_inUse(m)) return (_t('m_in_use'), st.safe);
+    if (_state.isInstalled(m)) return (_t('m_installed'), p.accent);
+    return switch (_link(m)) {
+      LinkStatus.ok => (_t('m_link_ok'), st.safe),
+      LinkStatus.checking => (_t('m_link_checking'), p.muted),
+      LinkStatus.broken => (_t('m_link_bad'), st.scam),
+      LinkStatus.offline => (_t('m_link_offline'), p.muted),
+      LinkStatus.none => (_t('m_link_none'), p.muted),
+    };
+  }
+
+  /// Badge: recommendation, or why it does not suit this phone.
+  (String, Color, Color)? _tag(ModelSpec m) {
+    final st = Theme.of(context).extension<StatusColors>() ?? StatusColors.light;
     final b = blockFor(m, _dev);
-    if (b == ModelBlock.notHosted) return (_t('m_soon'), p.muted, p.isDark ? const Color(0xFF3A3A3C) : const Color(0xFFF0F0F2));
     if (b == ModelBlock.lowRam) return (_t('m_low_ram', {'n': (m.minRamMb / 1000).round()}), st.suspicious, st.suspicious.withValues(alpha: 0.14));
-    if (b == ModelBlock.lowStorage) {
-      return (_t('m_low_storage', {'n': ModelSpec(id: '', name: '', file: '', sizeMb: m.sizeMb + kModelHeadroomMb, minRamMb: 0, tier: '').sizeLabel}),
-          st.suspicious, st.suspicious.withValues(alpha: 0.14));
-    }
+    if (b == ModelBlock.lowStorage) return (_t('m_low_storage', {'n': m.sizeLabel}), st.suspicious, st.suspicious.withValues(alpha: 0.14));
+    if (_link(m) == LinkStatus.broken && !_state.isInstalled(m)) return (_t('m_unavailable'), st.scam, st.scam.withValues(alpha: 0.14));
     if (m.id == _recId) return (_t('m_rec'), st.safe, st.safe.withValues(alpha: 0.14));
-    return (_t('m_${m.tier}').split(' · ').first, p.ink, p.isDark ? const Color(0xFF3A3A3C) : const Color(0xFFF0F0F2));
+    return null;
   }
 
   Future<void> _act() async {
     final m = _sel;
-    if (_state.installed.contains(m.id)) {
-      final s = await widget.api.select(m.id);
+    if (_state.isInstalled(m)) {
+      final s = await widget.api.select(m);
       if (!mounted) return;
       setState(() => _state = s);
+      LlmStatus.ready.value = s.ready;
       showIsland(context, _t('m_switched'), tone: IslandTone.success);
       return;
     }
@@ -146,7 +178,7 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
       });
       if (go != true || !mounted) return;
     }
-    final r = await widget.api.download(m.id);
+    final r = await widget.api.download(m);
     if (!mounted) return;
     setState(() => _dl = r);
     if (r['status'] == 'ERROR') {
@@ -171,10 +203,13 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
   Widget build(BuildContext context) {
     final th = Theme.of(context);
     final p = palOf(context);
+    final lang = AppLanguage.of(context);
     final sel = _sel;
-    final installed = _state.installed.contains(sel.id);
-    final inUse = installed && sel.id == _state.modelId && _state.ready;
-    final canAct = _loaded && !_downloading && !inUse && (sel.available || installed);
+    final installed = _state.isInstalled(sel);
+    final inUse = _inUse(sel);
+    final canAct = _loaded && !_downloading && !inUse && _selectable(sel);
+    final upd = ModelCatalogStore.updated.value;
+    final busy = ModelCatalogStore.refreshing.value;
     return ListView(
       padding: const EdgeInsets.fromLTRB(Sp.l, Sp.s, Sp.l, Sp.xl),
       children: [
@@ -182,7 +217,28 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
         const SizedBox(height: Sp.l),
         _deviceCard(th, p),
         const SizedBox(height: Sp.l + 2),
-        Text(_t('m_model'), style: th.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+        Row(children: [
+          Expanded(child: Text(_t('m_model'), style: th.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700))),
+          Flexible(
+            child: TextButton.icon(
+              key: const Key('mp_refresh'),
+              style: TextButton.styleFrom(
+                minimumSize: const Size(48, 40),
+                backgroundColor: p.accentTint,
+                padding: const EdgeInsets.symmetric(horizontal: Sp.m),
+                textStyle: th.textTheme.labelMedium?.copyWith(fontSize: 14, fontWeight: FontWeight.w700),
+              ),
+              onPressed: busy ? null : ModelCatalogStore.sync,
+              icon: busy
+                  ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.refresh_rounded, size: 18),
+              label: Text(
+                upd == null ? _t('m_builtin') : _t('m_updated', {'t': agoIn(lang, upd.millisecondsSinceEpoch).toLowerCase()}),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ]),
         const SizedBox(height: Sp.s),
         IslandMenu<String>(
           matchAnchorWidth: true,
@@ -193,12 +249,12 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
               IslandMenuItem(
                 key: Key('mp_opt_${m.id}'),
                 value: m.id,
-                label: m.name,
-                caption: _tierLine(m),
-                selected: m.id == _picked,
-                enabled: m.available || _state.installed.contains(m.id),
-                leading: _chipIcon(m),
-                trailing: m.id == _picked ? null : _tagChip(th, _tag(m)),
+                label: m.isNew ? '${m.name}  ·  ${_t('m_new')}' : m.name,
+                caption: '${_line(m, lang)}\n${_linkLine(m).$1}',
+                selected: m.id == sel.id,
+                enabled: _selectable(m),
+                leading: _chipIcon(m, m.id == sel.id),
+                trailing: m.id == sel.id ? null : (_tag(m) == null ? null : _tagChip(th, _tag(m)!)),
               ),
           ],
           builder: (context, open, toggle) => Material(
@@ -214,13 +270,13 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Sp.l, vertical: Sp.m),
                 child: Row(children: [
-                  _chipIcon(sel),
+                  _chipIcon(sel, true),
                   const SizedBox(width: Sp.m),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(sel.name, style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
                       const SizedBox(height: 2),
-                      _tagChip(th, _tag(sel)),
+                      if (_tag(sel) case final tg?) _tagChip(th, tg),
                     ]),
                   ),
                   AnimatedRotation(
@@ -234,8 +290,27 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
           ),
         ),
         const SizedBox(height: Sp.s),
-        Text(_tierLine(sel), style: th.textTheme.bodySmall?.copyWith(color: p.muted)),
-        const SizedBox(height: Sp.xl),
+        Text(_line(sel, lang), style: th.textTheme.bodySmall?.copyWith(color: p.muted)),
+        const SizedBox(height: 2),
+        Row(children: [
+          Container(width: 8, height: 8, decoration: BoxDecoration(color: _linkLine(sel).$2, shape: BoxShape.circle)),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(_linkLine(sel).$1,
+                key: const Key('mp_link'), style: th.textTheme.bodySmall?.copyWith(color: _linkLine(sel).$2, fontWeight: FontWeight.w700)),
+          ),
+        ]),
+        const SizedBox(height: Sp.l),
+        Container(
+          padding: const EdgeInsets.all(Sp.m + 2),
+          decoration: BoxDecoration(color: p.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFEEEEF1), borderRadius: BorderRadius.circular(18)),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(Icons.public_rounded, color: p.accent, size: 22),
+            const SizedBox(width: Sp.m),
+            Expanded(child: Text(_t('m_online_note'), style: th.textTheme.bodySmall?.copyWith(color: p.muted, fontSize: 14))),
+          ]),
+        ),
+        const SizedBox(height: Sp.l),
         if (_downloading) _progress(th, p),
         FilledButton.icon(
           key: const Key('mp_action'),
@@ -246,9 +321,9 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
               ? _t('m_in_use')
               : installed
                   ? _t('m_use')
-                  : sel.available
+                  : _selectable(sel)
                       ? _t('m_download', {'s': sel.sizeLabel})
-                      : _t('m_soon')),
+                      : _t('m_unavailable')),
         ),
         if (_downloading)
           TextButton(
@@ -274,9 +349,8 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
     );
   }
 
-  Widget _chipIcon(ModelSpec m) {
+  Widget _chipIcon(ModelSpec m, bool on) {
     final p = palOf(context);
-    final on = m.id == _picked;
     return Container(
       width: 40,
       height: 40,
@@ -288,7 +362,7 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
   Widget _tagChip(ThemeData th, (String, Color, Color) t) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
         decoration: BoxDecoration(color: t.$3, borderRadius: BorderRadius.circular(Rad.pill)),
-        child: Text(t.$1, maxLines: 1, overflow: TextOverflow.ellipsis, style: th.textTheme.labelSmall?.copyWith(color: t.$2, fontWeight: FontWeight.w700, fontSize: 14)),
+        child: Text(t.$1, maxLines: 1, overflow: TextOverflow.ellipsis, style: th.textTheme.labelSmall?.copyWith(color: t.$2, fontWeight: FontWeight.w700, fontSize: 13)),
       );
 
   Widget _deviceCard(ThemeData th, Pal p) {
@@ -302,7 +376,6 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
             ]),
           ),
         );
-    final chip = _dev.soc.isEmpty ? '—' : _dev.soc;
     return PCard(
       key: const Key('mp_device'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -320,7 +393,7 @@ class _ModelPickerScreenState extends State<ModelPickerScreen> {
         Row(children: [
           cell(_dev.ramLabel, _t('m_ram')),
           const SizedBox(width: Sp.s),
-          cell(chip, _t('m_chip')),
+          cell(_dev.soc.isEmpty ? '—' : _dev.soc, _t('m_chip')),
           const SizedBox(width: Sp.s),
           cell(_dev.storageLabel, _t('m_free')),
         ]),
