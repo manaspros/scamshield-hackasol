@@ -8,6 +8,7 @@ import '../theme/app_theme.dart' show StatusColors;
 import '../theme/tokens.dart';
 import '../widgets/action_tile.dart';
 import '../widgets/section_header.dart';
+import '../widgets/state_message.dart';
 import '../widgets/status_chip.dart';
 import 'report_screen.dart';
 
@@ -85,6 +86,14 @@ class RecordingStrings {
     'l_safe': 'सामान्य',
     'l_suspicious': 'सावधान',
     'l_scam': 'ठगी',
+    'empty': 'कॉल की रिकॉर्डिंग चुनें, हम बताएँगे कि कहीं ठगी तो नहीं',
+    'listening': 'सुन रहे हैं… लंबी रिकॉर्डिंग में कुछ मिनट लग सकते हैं',
+    'counter': 'जाँची गई बातें: {n}',
+    'retry': 'फिर कोशिश करें',
+    'sum_safe': 'इस कॉल में ठगी के संकेत नहीं मिले।',
+    'sum_suspicious': 'इस कॉल में कुछ बातें शक वाली हैं। सावधान रहें।',
+    'sum_scam': 'इस कॉल में ठगी के संकेत हैं। पैसे या OTP न दें।',
+    'firstFlag': 'पहली चेतावनी {t} पर आई',
   });
 
   static const hne = RecordingStrings({
@@ -110,6 +119,14 @@ class RecordingStrings {
     'l_safe': 'सामान्य',
     'l_suspicious': 'सावधान',
     'l_scam': 'ठगी',
+    'empty': 'कॉल के रिकॉर्डिंग चुनव, हम बताबो कि कहूँ ठगी तो नइहे',
+    'listening': 'सुनत हन… लंबा रिकॉर्डिंग म कुछ मिनट लग सकथे',
+    'counter': 'जांचे गोठ: {n}',
+    'retry': 'फेर कोसिस करव',
+    'sum_safe': 'ए कॉल म ठगी के संकेत नइ मिलिस।',
+    'sum_suspicious': 'ए कॉल म कुछ गोठ शक वाले हें। सावधान रहव।',
+    'sum_scam': 'ए कॉल म ठगी के संकेत हे। पइसा या OTP झन देव।',
+    'firstFlag': 'पहिली चेतावनी {t} म आइस',
   });
 
   static const en = RecordingStrings({
@@ -135,6 +152,14 @@ class RecordingStrings {
     'l_safe': 'Normal',
     'l_suspicious': 'Be careful',
     'l_scam': 'Scam',
+    'empty': 'Pick a call recording and we will tell you if it is a scam',
+    'listening': 'Listening… a long recording can take a few minutes',
+    'counter': '{n} statements checked',
+    'retry': 'Try again',
+    'sum_safe': 'No signs of a scam were found in this call.',
+    'sum_suspicious': 'Some things in this call look suspicious. Be careful.',
+    'sum_scam': 'This call shows signs of a scam. Do not give money or an OTP.',
+    'firstFlag': 'First warning came at {t}',
   });
 
   static const all = {'hi': hi, 'hne': hne, 'en': en};
@@ -315,60 +340,80 @@ class _RecordingScreenState extends State<RecordingScreen> {
     final t = Theme.of(context);
     final working = _phase == _Phase.working;
     final timeline = _report?.statements ?? _live;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(Sp.l),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SectionHeader(title: s['title'], icon: Icons.graphic_eq),
-          if (_modelReady)
-            ActionTile(
-              key: const Key('btn_pick'),
-              icon: Icons.audio_file,
-              label: s['pick'],
-              caption: s['pickSub'],
-              onTap: working ? null : _pick,
-            )
-          else
-            ActionTile(
-              key: const Key('btn_download'),
-              icon: Icons.download,
-              label: s['download'],
-              caption: s['downloadSub'],
-              onTap: working ? null : _download,
+    final err = _phase == _Phase.error;
+    final empty = _phase == _Phase.idle && timeline.isEmpty && _modelReady;
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(Sp.l),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SectionHeader(title: s['title'], icon: Icons.graphic_eq),
+                if (empty) StateMessage(icon: Icons.graphic_eq, title: s['empty'], subtitle: s['pickSub']),
+                if (!_modelReady && !working && !err) _downloadStep(t, s),
+                if (working) _progress(t, s),
+                if (err) _error(t, s),
+                if (_report != null) ..._summary(t, s, _report!),
+                if (timeline.isNotEmpty) ...[
+                  SectionHeader(title: s['timeline'], icon: Icons.timeline),
+                  for (final (i, st) in timeline.indexed) _row(t, s, i, st, last: i == timeline.length - 1),
+                ],
+                if (_report != null && _report!.topTriggers.isNotEmpty) _triggers(t, s, _report!),
+                const SizedBox(height: Sp.xl),
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Icon(Icons.lock, size: 24, color: t.colorScheme.onSurfaceVariant),
+                  const SizedBox(width: Sp.s),
+                  Expanded(
+                    child: Text(s['privacy'],
+                        key: const Key('privacy_line'),
+                        style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
+                  ),
+                ]),
+                const SizedBox(height: Sp.l),
+                Wrap(spacing: Sp.s, runSpacing: Sp.xs, children: [
+                  for (final (code, label) in const [('hi', 'हिन्दी'), ('hne', 'छत्तीसगढ़ी'), ('en', 'English')])
+                    ChoiceChip(
+                      key: Key('lang_$code'),
+                      label: Text(label),
+                      selected: _lang == code,
+                      checkmarkColor: t.colorScheme.primary,
+                      onSelected: (_) => setState(() => _lang = code),
+                    ),
+                ]),
+              ],
             ),
-          if (working) _progress(t, s),
-          if (_phase == _Phase.error) _error(t, s),
-          if (_report != null) ..._summary(t, s, _report!),
-          if (timeline.isNotEmpty) ...[
-            SectionHeader(title: s['timeline'], icon: Icons.timeline),
-            for (final (i, st) in timeline.indexed) _row(t, s, i, st),
-          ],
-          const SizedBox(height: Sp.xl),
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(Icons.lock, size: 24, color: t.colorScheme.onSurfaceVariant),
-            const SizedBox(width: Sp.s),
-            Expanded(
-              child: Text(s['privacy'],
-                  key: const Key('privacy_line'),
-                  style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
-            ),
-          ]),
-          const SizedBox(height: Sp.l),
-          // Language chips sit last so the big pick tile stays above the fold at large text.
-          Wrap(spacing: Sp.s, runSpacing: Sp.xs, children: [
-            for (final (code, label) in const [('hi', 'हिन्दी'), ('hne', 'छत्तीसगढ़ी'), ('en', 'English')])
-              ChoiceChip(
-                key: Key('lang_$code'),
-                label: Text(label, style: t.textTheme.labelMedium),
-                selected: _lang == code,
-                onSelected: (_) => setState(() => _lang = code),
-              ),
-          ]),
-        ],
-      ),
+          ),
+        ),
+        // The one primary action stays pinned: pick a file, or get the model first.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(Sp.l, Sp.s, Sp.l, Sp.l),
+          child: FilledButton.icon(
+            key: Key(_modelReady ? 'btn_pick' : 'btn_download'),
+            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kTouch)),
+            onPressed: working ? null : (_modelReady ? _pick : _download),
+            icon: Icon(_modelReady ? Icons.audio_file : Icons.download, size: 28),
+            label: Text(_modelReady ? s['pick'] : s['download'], textAlign: TextAlign.center),
+          ),
+        ),
+      ],
     );
   }
+
+  Widget _downloadStep(ThemeData t, RecordingStrings s) => _card(
+        t,
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.download, size: 40, color: t.colorScheme.primary),
+          const SizedBox(width: Sp.m),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(s['download'], style: t.textTheme.titleMedium),
+              Text(s['downloadSub'], style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
+            ]),
+          ),
+        ]),
+      );
 
   Widget _card(ThemeData t, Widget child, {Color? color, Color? border}) => Container(
         padding: const EdgeInsets.all(Sp.l),
@@ -384,10 +429,16 @@ class _RecordingScreenState extends State<RecordingScreen> {
   Widget _progress(ThemeData t, RecordingStrings s) => _card(
         t,
         Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Semantics(
-            liveRegion: true,
-            child: Text('${s['stage_$_stage']}  $_pct%', key: const Key('progress_stage'), style: t.textTheme.titleMedium),
-          ),
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(_stage == 'download' ? Icons.download : Icons.hearing, size: 32, color: t.colorScheme.primary),
+            const SizedBox(width: Sp.m),
+            Expanded(
+              child: Semantics(
+                liveRegion: true,
+                child: Text('${s['stage_$_stage']}  $_pct%', key: const Key('progress_stage'), style: t.textTheme.titleMedium),
+              ),
+            ),
+          ]),
           const SizedBox(height: Sp.m),
           ClipRRect(
             borderRadius: BorderRadius.circular(Rad.pill),
@@ -397,6 +448,16 @@ class _RecordingScreenState extends State<RecordingScreen> {
               minHeight: 12,
             ),
           ),
+          const SizedBox(height: Sp.m),
+          Text(_stage == 'download' ? s['downloadSub'] : s['listening'],
+              key: const Key('progress_hint'),
+              style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
+          if (_live.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: Sp.s),
+              child: Text(s['counter'].replaceAll('{n}', '${_live.length}'),
+                  key: const Key('progress_counter'), style: t.textTheme.titleSmall),
+            ),
           if (_heard != null && _heard!.isNotEmpty) ...[
             const SizedBox(height: Sp.m),
             Text(_heard!, maxLines: 2, overflow: TextOverflow.ellipsis, style: t.textTheme.bodyLarge),
@@ -413,28 +474,28 @@ class _RecordingScreenState extends State<RecordingScreen> {
         ]),
       );
 
-  Widget _error(ThemeData t, RecordingStrings s) {
-    final st = t.extension<StatusColors>() ?? StatusColors.light;
-    return _card(
-      t,
-      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(Icons.error_outline, size: 32, color: st.scam),
-        const SizedBox(width: Sp.m),
-        Expanded(child: Text(s[_errKey], key: const Key('error_text'), style: t.textTheme.titleMedium)),
-      ]),
-    );
-  }
+  // Download failures retry the download; the rest reopen the file picker.
+  Widget _error(ThemeData t, RecordingStrings s) => KeyedSubtree(
+        key: const Key('error_text'),
+        child: StateMessage(
+          icon: Icons.error_outline,
+          title: s[_errKey],
+          actionLabel: s['retry'],
+          onAction: _errKey == 'err_download' ? _download : _pick,
+        ),
+      );
 
   List<Widget> _summary(ThemeData t, RecordingStrings s, _Report r) {
     final st = t.extension<StatusColors>() ?? StatusColors.light;
     final solid = st.solid(r.overall);
+    final first = r.statements.where((x) => x.label != RiskLabel.safe).firstOrNull;
     return [
       _card(
         t,
         color: st.tintOver(r.overall, t.colorScheme.surface),
         border: solid.withValues(alpha: 0.35),
         Column(key: const Key('risk_card'), crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(s['riskTitle'], style: t.textTheme.titleLarge),
+          Text(s['riskTitle'], style: t.textTheme.titleMedium),
           const SizedBox(height: Sp.s),
           Row(children: [
             StatusChip(label: r.overall, text: _label(s, r.overall)),
@@ -442,66 +503,103 @@ class _RecordingScreenState extends State<RecordingScreen> {
             Expanded(
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.centerRight,
                 child: Text('${(r.risk * 100).round()}%',
-                    key: const Key('risk_value'), style: t.textTheme.displayLarge?.copyWith(color: solid)),
+                    key: const Key('risk_value'), style: t.textTheme.headlineMedium?.copyWith(color: solid)),
               ),
             ),
           ]),
+          const SizedBox(height: Sp.m),
+          Text(s['sum_${r.overall.name}'], style: t.textTheme.bodyLarge),
+          if (first != null)
+            Padding(
+              padding: const EdgeInsets.only(top: Sp.xs),
+              child: Text(s['firstFlag'].replaceAll('{t}', _clock(first.startMs)), style: t.textTheme.bodySmall),
+            ),
         ]),
       ),
-      if (r.topTriggers.isNotEmpty)
-        _card(
-          t,
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              const Icon(Icons.search, size: 32),
-              const SizedBox(width: Sp.m),
-              Expanded(child: Text(s['triggers'], style: t.textTheme.titleLarge)),
-            ]),
-            const SizedBox(height: Sp.s),
-            Wrap(spacing: Sp.s, runSpacing: Sp.s, children: [
-              for (final (i, trig) in r.topTriggers.indexed)
-                Container(
-                  key: Key('trigger_$i'),
-                  padding: const EdgeInsets.symmetric(horizontal: Sp.m, vertical: Sp.s),
-                  decoration: BoxDecoration(
-                    color: t.colorScheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(Rad.sm),
-                  ),
-                  child: Text(trig, style: t.textTheme.titleSmall),
-                ),
-            ]),
-          ]),
+      // 1930 and the evidence pack live behind this button (ReportScreen has the dialer).
+      if (r.overall != RiskLabel.safe) ...[
+        const SizedBox(height: Sp.m),
+        ActionTile(
+          key: const Key('btn_report'),
+          icon: Icons.report_problem,
+          label: s['report'],
+          caption: s['reportSub'],
+          onTap: _openReport,
         ),
-      const SizedBox(height: Sp.m),
-      ActionTile(
-        key: const Key('btn_report'),
-        icon: Icons.report_problem,
-        label: s['report'],
-        caption: s['reportSub'],
-        onTap: _openReport,
-      ),
+      ],
     ];
   }
 
-  // Time, statement and verdict stack vertically so nothing overflows at large text scale.
-  Widget _row(ThemeData t, RecordingStrings s, int i, _Stmt st) => Container(
-        key: Key('row_$i'),
-        margin: const EdgeInsets.only(bottom: Sp.m),
-        padding: const EdgeInsets.all(Sp.l),
-        decoration: BoxDecoration(
-          color: t.colorScheme.surface,
-          borderRadius: BorderRadius.circular(Rad.lg),
-          border: Border.all(color: t.colorScheme.outline),
-        ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Wrap(spacing: Sp.m, runSpacing: Sp.xs, crossAxisAlignment: WrapCrossAlignment.center, children: [
-            Text(_clock(st.startMs), key: Key('row_time_$i'), style: t.textTheme.titleMedium),
-            StatusChip(label: st.label, text: _label(s, st.label)),
+  // After the story, so the timeline sits right under the summary.
+  Widget _triggers(ThemeData t, RecordingStrings s, _Report r) => _card(
+        t,
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(Icons.search, size: 32),
+            const SizedBox(width: Sp.m),
+            Expanded(child: Text(s['triggers'], style: t.textTheme.titleLarge)),
           ]),
           const SizedBox(height: Sp.s),
-          Text(st.text, style: t.textTheme.bodyLarge),
+          Wrap(spacing: Sp.s, runSpacing: Sp.s, children: [
+            for (final (i, trig) in r.topTriggers.indexed)
+              Container(
+                key: Key('trigger_$i'),
+                padding: const EdgeInsets.symmetric(horizontal: Sp.m, vertical: Sp.s),
+                decoration: BoxDecoration(
+                  color: t.colorScheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(Rad.sm),
+                ),
+                child: Text(trig, style: t.textTheme.titleSmall),
+              ),
+          ]),
         ]),
       );
+
+  // Story row: a status-coloured rail with a dot, then time, the line said and its verdict.
+  // The rail changes colour where the call turns risky. Content stacks so 2.0x text never overflows.
+  Widget _row(ThemeData t, RecordingStrings s, int i, _Stmt st, {required bool last}) {
+    final sc = t.extension<StatusColors>() ?? StatusColors.light;
+    final c = sc.solid(st.label);
+    return IntrinsicHeight(
+      key: Key('row_$i'),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        SizedBox(
+          width: 20,
+          child: Column(children: [
+            Container(
+              width: 16,
+              height: 16,
+              margin: const EdgeInsets.only(top: Sp.xs),
+              decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+            ),
+            if (last)
+              const Spacer()
+            else
+              Expanded(child: Container(width: 3, margin: const EdgeInsets.only(top: Sp.xs), color: c)),
+          ]),
+        ),
+        const SizedBox(width: Sp.m),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: Sp.l),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(_clock(st.startMs),
+                  key: Key('row_time_$i'),
+                  style: t.textTheme.bodySmall?.copyWith(color: t.colorScheme.onSurfaceVariant)),
+              Text(st.text, style: t.textTheme.bodyLarge?.copyWith(fontStyle: FontStyle.italic)),
+              const SizedBox(height: Sp.s),
+              StatusChip(label: st.label, text: _label(s, st.label)),
+              if (st.label != RiskLabel.safe && st.triggers.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: Sp.xs),
+                  child: Text('${s['triggers']}: ${st.triggers.join(', ')}', style: t.textTheme.bodySmall),
+                ),
+            ]),
+          ),
+        ),
+      ]),
+    );
+  }
 }

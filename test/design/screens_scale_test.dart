@@ -1,4 +1,5 @@
 // Restyled screens must not overflow at text scale 2.0 on a 360x800 phone, light or dark.
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:scamshield/lessons/quiz_engine.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/quiz_screen.dart';
+import 'package:scamshield/screens/recording_screen.dart';
 import 'package:scamshield/screens/report_screen.dart';
 import 'package:scamshield/screens/settings_screen.dart';
 import 'package:scamshield/screens/setup_screen.dart';
@@ -250,5 +252,64 @@ void main() {
       expect(find.byType(VerdictCard), findsOneWidget); // events reached the screen
       expect(t.takeException(), isNull);
     });
+
+    for (final state in ['empty', 'downloading', 'transcribing', 'results']) {
+      testWidgets('recording_screen_${state}_noOverflow_${e.key}_scale2', (t) async {
+        final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+        const ch = MethodChannel('scamshield/recording');
+        final events = StreamController<Object?>.broadcast();
+        messenger.setMockMethodCallHandler(ch, (c) async => switch (c.method) {
+              'recording.status' => {'modelReady': state != 'downloading', 'busy': false},
+              'recording.pending' || 'recording.pick' => false,
+              _ => true,
+            });
+        addTearDown(() {
+          messenger.setMockMethodCallHandler(ch, null);
+          events.close();
+        });
+        addTearDown(() => t.pumpWidget(const SizedBox())); // registered after the mocks: runs before they go away
+        await _show(t, e.value, RecordingScreen(initialLang: 'hi', api: RecordingApi(events: events.stream)));
+        expect(find.byKey(Key(state == 'downloading' ? 'btn_download' : 'btn_pick')), findsOneWidget);
+        expect(t.getSize(find.byKey(Key(state == 'downloading' ? 'btn_download' : 'btn_pick'))).height,
+            greaterThanOrEqualTo(56));
+        expect(t.takeException(), isNull);
+        if (state == 'downloading') {
+          await t.tap(find.byKey(const Key('btn_download')));
+          await t.pump();
+          events.add({'stage': 'download', 'pct': 40});
+          await t.pumpAndSettle();
+          expect(find.byKey(const Key('progress_bar')), findsOneWidget);
+        } else if (state != 'empty') {
+          events.add({'stage': 'shared', 'pct': 0});
+          await t.pump();
+          await t.pump();
+          events.add({
+            'stage': 'stt',
+            'pct': 40,
+            'segment': {'startMs': 0, 'text': 'नमस्ते, मैं आपके बैंक से बोल रहा हूँ'},
+          });
+          await t.pumpAndSettle();
+          expect(find.byKey(const Key('progress_hint')), findsOneWidget);
+        }
+        if (state == 'results') {
+          final stmts = [
+            {'startMs': 0, 'text': 'नमस्ते, मैं आपके बैंक से बोल रहा हूँ', 'label': 'SAFE', 'triggers': <String>[]},
+            {'startMs': 12000, 'text': 'आपका खाता बंद हो जाएगा, ओटीपी बताइए', 'label': 'SUSPICIOUS', 'triggers': ['ओटीपी']},
+            {'startMs': 65000, 'text': 'अभी पैसे भेजें वरना गिरफ़्तारी होगी', 'label': 'SCAM', 'triggers': ['गिरफ़्तारी', 'पैसे भेजें']},
+          ];
+          events.add({
+            'stage': 'done',
+            'pct': 100,
+            'report': {'overall': 'SCAM', 'risk': 0.87, 'statements': stmts, 'topTriggers': ['गिरफ़्तारी', 'ओटीपी']},
+          });
+          await t.pumpAndSettle();
+          expect(find.byKey(const Key('risk_card')), findsOneWidget);
+          await t.drag(find.byType(SingleChildScrollView), const Offset(0, -6000)); // reach the last rows
+          await t.pumpAndSettle();
+          expect(find.byKey(const Key('row_2')), findsOneWidget);
+        }
+        expect(t.takeException(), isNull);
+      });
+    }
   }
 }

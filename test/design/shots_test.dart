@@ -1,5 +1,6 @@
 // Local visual review only: renders the design system to PNG outside the repo.
 // Skips itself when fonts or the output dir are unavailable. Never commit PNGs.
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -14,6 +15,7 @@ import 'package:scamshield/screens/family_screen.dart';
 import 'package:scamshield/screens/lessons_screen.dart';
 import 'package:scamshield/screens/live_feed_screen.dart';
 import 'package:scamshield/screens/quiz_screen.dart';
+import 'package:scamshield/screens/recording_screen.dart';
 import 'package:scamshield/screens/report_screen.dart';
 import 'package:scamshield/screens/settings_screen.dart';
 import 'package:scamshield/screens/setup_screen.dart';
@@ -398,5 +400,85 @@ void main() {
       final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
       File('$_out/ux_verdict_masked_light_2x.png').writeAsBytesSync(bytes!.buffer.asUint8List());
     });
+  });
+
+  testWidgets('shots: recording empty, progress, results light + results dark 2x', (tester) async {
+    if (!await _loadFonts(tester)) return;
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    const ch = MethodChannel('scamshield/recording');
+    messenger.setMockMethodCallHandler(ch, (c) async => switch (c.method) {
+          'recording.status' => {'modelReady': true, 'busy': false},
+          'recording.pending' || 'recording.pick' => false,
+          _ => true,
+        });
+    addTearDown(() => messenger.setMockMethodCallHandler(ch, null));
+    final stmts = [
+      {'startMs': 0, 'text': 'नमस्ते, मैं आपके बैंक से बोल रहा हूँ', 'label': 'SAFE', 'triggers': <String>[]},
+      {'startMs': 12000, 'text': 'आपका खाता बंद हो जाएगा, ओटीपी बताइए', 'label': 'SUSPICIOUS', 'triggers': ['ओटीपी']},
+      {'startMs': 65000, 'text': 'अभी पैसे भेजें वरना गिरफ़्तारी होगी', 'label': 'SCAM', 'triggers': ['गिरफ़्तारी', 'पैसे भेजें']},
+    ];
+    for (final (name, dark, scale) in [
+      ('empty_light', false, 1.0),
+      ('progress_light', false, 1.0),
+      ('results_light', false, 1.0),
+      ('results_dark_2x', true, 2.0),
+    ]) {
+      final base = dark ? AppTheme.dark() : AppTheme.light();
+      TextStyle? f(TextStyle? s) => s?.copyWith(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']);
+      final theme = base.copyWith(
+          textTheme: base.textTheme.apply(fontFamily: 'Roboto', fontFamilyFallback: ['Deva']),
+          appBarTheme: base.appBarTheme.copyWith(titleTextStyle: f(base.appBarTheme.titleTextStyle)),
+          chipTheme: base.chipTheme.copyWith(labelStyle: f(base.chipTheme.labelStyle)),
+          filledButtonTheme: FilledButtonThemeData(
+              style: base.filledButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+              style: base.outlinedButtonTheme.style!.copyWith(textStyle: WidgetStatePropertyAll(f(AppText.label)))));
+      // Results shots are tall so the whole story timeline is visible in one image.
+      tester.view.physicalSize = Size(720, name.startsWith('results') ? 3200 : 1600);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.reset);
+      final events = StreamController<Object?>.broadcast();
+      final key = GlobalKey();
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        builder: (c, child) => RepaintBoundary(
+            key: key,
+            child: MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: child!)),
+        home: Scaffold(
+            appBar: AppBar(title: const Text('रिकॉर्डिंग')),
+            body: RecordingScreen(initialLang: 'hi', api: RecordingApi(events: events.stream))),
+      ));
+      await tester.pumpAndSettle();
+      if (name != 'empty_light') {
+        events.add({'stage': 'shared', 'pct': 0});
+        await tester.pump();
+        await tester.pump();
+        events.add({
+          'stage': name == 'progress_light' ? 'classify' : 'stt',
+          'pct': 40,
+          'segment': {'startMs': 0, 'text': 'नमस्ते, मैं आपके बैंक से बोल रहा हूँ'},
+          if (name == 'progress_light') 'statement': stmts[0],
+        });
+        await tester.pumpAndSettle();
+      }
+      if (name.startsWith('results')) {
+        events.add({
+          'stage': 'done',
+          'pct': 100,
+          'report': {'overall': 'SCAM', 'risk': 0.87, 'statements': stmts, 'topTriggers': ['गिरफ़्तारी', 'ओटीपी']},
+        });
+        await tester.pumpAndSettle();
+      }
+      await tester.runAsync(() async {
+        final b = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        final img = await b.toImage(pixelRatio: 1);
+        final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+        File('$_out/ux_recording_$name.png').writeAsBytesSync(bytes!.buffer.asUint8List());
+      });
+      await tester.pumpWidget(const SizedBox()); // unmount before closing the stream
+      await events.close();
+    }
   });
 }
