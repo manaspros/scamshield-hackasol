@@ -3,6 +3,7 @@
 Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 
 ## Done
+- T2.7 [sonnet] Recording screen: pick (SAF) or share audio/* -> Vosk model download if needed -> decode -> STT -> RecordingPipeline -> per-statement timeline, overall risk, triggers, Report button; Recording tile + 'recording' deep link in Help hub — 2026-11-23 — flutter test test/recording_screen_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T3.10 [sonnet] Settings: district picker (persisted via scamshield/prefs), 'Export anonymised counts' share-sheet file via TrendChannel ({district, scam_type, date} only), loading/error state (UX audit #10); prefs allowlist now lesson_best_v1, district, lang_v1, captions_ack_v1 (fixes first-run language not persisting) — 2026-11-23 — flutter test test/settings_screen_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T3.11 [sonnet] Navigation: tabs Setup/Check/Live/Learn/Help (Help: Report, Family, Settings), persistent 'ठगे गए? 1930' entry -> Report, nav/app bar text clamped to 1.2, route=report deep link (UX audit #1, #9) — 2026-11-23 — flutter test test/nav_test.dart test/qa/qa_nav_test.dart && flutter build apk --debug --android-skip-build-dependency-validation
 - T2.6 [sonnet] Vosk offline STT (com.alphacephei:vosk-android 0.3.75, JNA 5.18.1 transitive), vosk-model-small-hi-0.22 downloaded on device via ModelDownloader (zip traversal guard), SttResultParser — 2026-11-23 — cd android && ./gradlew -PskipDependencyChecks=true :app:testDebugUnitTest --tests '*SttResultParserTest*' && flutter build apk --debug --android-skip-build-dependency-validation && flutter build apk --release --split-per-abi --android-skip-build-dependency-validation (arm64 51.1 MiB)
@@ -56,6 +57,7 @@ Branch: `main`. Orchestrator-only file (with BUILD_PLAN.md).
 - T3.6 — native Chhattisgarhi speaker sign-off.
 
 ## Decisions
+- 2026-11-23: T2.7 classifies statements via TextApi (source=RECORDING) inside runBlocking on a Default thread (shortcut). No audio or transcript is stored; verdict events (label, triggers, no text) are logged as for every source. Device run is T2.8 (blocked: phone).
 - 2026-11-23: scamshield/prefs allowlist extended with lang_v1 and captions_ack_v1 (design lead's first-run keys) so the language choice persists; district read times out after 1 s so settings never block on it. settings_screen.dart was reformatted by dart format in T3.10 (large diff, no other session had edits there).
 - Quiz wrong-answer feedback is amber 'ध्यान दें' with a warning icon, not red 'गलत' (gentler for first-time learners; coordinator-approved UX change; lessons_screen_test updated).
 - 2026-11-23: T3.11 committed ahead of T2.7 at QA priority (Report/Lessons were unreachable; QA's qa_nav_test a60c299 depends on it). Recording tile + 'recording' deep link come with T2.7. Full flutter test had 4 order-dependent failures in test/design/screens_scale_test.dart setup_screen cases (pass alone; another session's uncommitted setup_screen.dart edit), not caused by main.dart.

@@ -121,7 +121,7 @@ Node: no npm packages (`node:test`, `node:http`). No new Flutter pub packages: u
 - [x] T2.6 [sonnet] [NEEDS-OK:DEP6] Vosk STT engine + Hindi model download via the existing `ModelDownloader` path; Vosk JSON -> `SttSegment`; keep-rules added
   - **Files**: `android/app/build.gradle(.kts)`, `K/SttEngine.kt`, `K/ModelDownloader.kt`, `android/app/proguard-rules.pro`, `KT/core/SttResultParserTest.kt`  **Depends on**: T2.5, T1.15
   - **Done when**: `APP` and `REL` succeed; `KT(SttResultParserTest)` passes `T2_6_parsesVoskJson`
-- [ ] T2.7 [sonnet] [UI] Recording screen: pick file (SAF) or share `audio/*` -> decode -> STT -> pipeline; progress, per-statement timeline with verdicts, overall risk, trigger phrases, Report button
+- [x] T2.7 [sonnet] [UI] Recording screen: pick file (SAF) or share `audio/*` -> decode -> STT -> pipeline; progress, per-statement timeline with verdicts, overall risk, trigger phrases, Report button
   - **Files**: `lib/screens/recording_screen.dart`, `K/RecordingChannel.kt`, `K/MainActivity.kt`, `android/app/src/main/AndroidManifest.xml`  **Depends on**: T2.4, T2.6, T1.7
   - **Done when**: `APP` succeeds; `FT(recording_screen_test.dart)` passes `T2_7_rendersTimelineAndRisk` (fake channel)
 - [ ] T2.8 [sonnet] [BLOCKED:device: OnePlus 10T + real or team-scripted Hindi call recording] Run T2.7 on the phone; log verdict, STT quality and latency

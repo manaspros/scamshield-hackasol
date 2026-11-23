@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'screens/family_screen.dart';
 import 'screens/lessons_screen.dart';
 import 'screens/live_feed_screen.dart';
+import 'screens/recording_screen.dart';
 import 'screens/report_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/setup_screen.dart';
@@ -81,10 +82,12 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       return;
     }
     if (!mounted) return;
-    // T2.7 adds: case 'recording' -> push RecordingScreen.
     if (route == 'report') {
       Navigator.of(context).popUntil((r) => r.isFirst);
       _openReport();
+    } else if (route == 'recording') {
+      Navigator.of(context).popUntil((r) => r.isFirst);
+      _push('रिकॉर्डिंग', const RecordingScreen());
     }
   }
 
@@ -167,7 +170,13 @@ class _HelpHub extends StatelessWidget {
           caption: 'Settings',
           onTap: () => onOpen('सेटिंग', const SettingsScreen()),
         ),
-        // T2.7 adds the Recording tile here: ActionTile(icon: Icons.mic, label: 'कॉल रिकॉर्डिंग', caption: 'Check a recorded call', ...)
+        const SizedBox(height: Sp.m),
+        ActionTile(
+          icon: Icons.mic,
+          label: 'कॉल रिकॉर्डिंग',
+          caption: 'Check a recorded call',
+          onTap: () => onOpen('रिकॉर्डिंग', const RecordingScreen()),
+        ),
       ],
     );
   }

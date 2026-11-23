@@ -32,6 +32,7 @@ class MainActivity : FlutterActivity() {
         CoroutineExceptionHandler { _, t -> Log.e("ScamShield/Main", "uncaught", t) })
     private var pendingImport: MethodChannel.Result? = null
     private var player: MediaPlayer? = null
+    private var recording: RecordingChannel? = null
     private var initialRoute: String? = null   // from the launching intent's `route` extra; consumed once by app.initialRoute
 
     companion object { private const val REQ_IMPORT = 4201
@@ -41,11 +42,13 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         initialRoute = intent?.getStringExtra("route")
+        if (intent != null && recording?.handleShare(intent) == true) initialRoute = "recording"
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getStringExtra("route")?.let { initialRoute = it }
+        if (recording?.handleShare(intent) == true) initialRoute = "recording"
     }
 
     // FlutterActivity treats the intent extra "route" as its own initial route; pin it to "/" (app.initialRoute is the source).
@@ -60,6 +63,7 @@ class MainActivity : FlutterActivity() {
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         FamilyChannel.register(messenger, this)
         HandoffChannel(this, scope).register(messenger)
+        recording = RecordingChannel(this, scope).also { it.register(messenger) }
 
         MethodChannel(messenger, "scamshield/api").setMethodCallHandler { call, result ->
             when (call.method) {
@@ -190,6 +194,7 @@ class MainActivity : FlutterActivity() {
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (recording?.onActivityResult(requestCode, resultCode, data) == true) return
         if (requestCode != REQ_IMPORT) return
         val res = pendingImport ?: return
         pendingImport = null
