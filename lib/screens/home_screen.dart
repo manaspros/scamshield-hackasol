@@ -133,32 +133,34 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       liveRegion: true,
       child: Container(
         key: const Key('home_hero'),
-        padding: const EdgeInsets.symmetric(horizontal: Sp.l, vertical: Sp.m),
+        padding: const EdgeInsets.symmetric(horizontal: Sp.l, vertical: Sp.s),
         decoration: ShapeDecoration(
           color: st.tintOver(label, th.colorScheme.surface),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Rad.lg), side: BorderSide(color: color)),
         ),
-        // Column, not Row: at large text the Fix button would squeeze the status line to nothing.
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Row(children: [
+        // One line (icon, status, Fix) at normal text; at large text Fix drops below so the status keeps its width.
+        child: Builder(builder: (context) {
+          final big = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+          final fix = off == null
+              ? null
+              : TextButton(
+                  key: const Key('home_fix'),
+                  style: TextButton.styleFrom(minimumSize: const Size(kTouch, kTouch), foregroundColor: color),
+                  onPressed: () async {
+                    await openSetupPage(context);
+                    _refresh();
+                  },
+                  child: Text(homeT(lang, 'fix')),
+                );
+          final status = Row(children: [
             Icon(off != null ? Icons.warning_amber_rounded : Icons.verified_user, size: 32, color: color),
             const SizedBox(width: Sp.m),
             Expanded(child: Text(text, key: const Key('home_hero_text'), style: th.textTheme.titleMedium?.copyWith(color: color))),
-          ]),
-          if (off != null)
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                key: const Key('home_fix'),
-                style: TextButton.styleFrom(minimumSize: const Size(kTouch, kTouch), foregroundColor: color),
-                onPressed: () async {
-                  await openSetupPage(context);
-                  _refresh();
-                },
-                child: Text(homeT(lang, 'fix')),
-              ),
-            ),
-        ]),
+            if (!big && fix != null) fix,
+          ]);
+          if (!big || fix == null) return status;
+          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [status, Align(alignment: Alignment.centerRight, child: fix)]);
+        }),
       ),
     );
   }

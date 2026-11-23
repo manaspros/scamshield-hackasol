@@ -49,6 +49,22 @@ class HomeDataTest {
         assertFalse("raw values must not be exposed", m.toString().contains("a@upi"))
     }
 
+    @Test fun HOME_senders_neverExposePhoneNumbers() {
+        val raw = listOf("9999900000", "+919999900001", "+91 99999 00002", "98765-43210", "0091 9999 900003", "12345", "567676", "a@upi", "AB-9999900")
+        val snap = GraphSnapshot(
+            ingested = 20,
+            senders = listOf(SenderRecord("VM-SBIINB", now - h, now, 3, true)) + raw.map { SenderRecord(it, now - h, now, 2, false) },
+            numbers = emptyList(), upiIds = emptyList(), events = emptyList(),
+        )
+        val m = GraphSummary.build(snap)
+        assertEquals(listOf("VM-SBIINB"), (m["senders"] as List<*>).map { (it as Map<*, *>)["sender"] })
+        assertEquals(raw.size, m["personalSenders"])
+        assertEquals(raw.size * 2, m["personalMessages"])
+        val out = m.toString()
+        raw.forEach { assertFalse("leaked $it", out.contains(it)) }
+        assertFalse(Regex("\\d{6}").containsMatchIn(out.replace(now.toString(), "").replace((now - h).toString(), "")))
+    }
+
     @Test fun HOME_evidenceSelect_defaultsToLast24hFlaggedOnlyOldestFirst() {
         val all = listOf(ev(1, 30, Label.SCAM), ev(2, 5, Label.SAFE), ev(3, 4, Label.SUSPICIOUS), ev(4, 1, Label.SCAM))
         assertEquals(listOf(3L, 4L), EvidenceMake.select(all, null, now).map { it.id })

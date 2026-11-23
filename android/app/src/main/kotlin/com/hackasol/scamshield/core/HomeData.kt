@@ -1,5 +1,6 @@
 package com.hackasol.scamshield.core
 
+import com.hackasol.scamshield.core.graph.ClaimVsContext
 import com.hackasol.scamshield.core.graph.GraphSnapshot
 import com.hackasol.scamshield.core.graph.SenderRecord
 
@@ -8,6 +9,11 @@ import com.hackasol.scamshield.core.graph.SenderRecord
  * verdict log holds raw message text, so nothing here can expose any.
  */
 object GraphSummary {
+    private val LONG_DIGITS = Regex("\\d{6}")
+
+    /** Only a brand-style DLT header (AX-HDFCBK) may be shown by name; phone numbers, UPI ids and anything else are counted. */
+    internal fun showable(sender: String) = ClaimVsContext.isDltHeader(sender) && !LONG_DIGITS.containsMatchIn(sender)
+
     const val RECENT_LIMIT = 20
     const val SENDER_LIMIT = 12
 
@@ -16,6 +22,7 @@ object GraphSummary {
      * The Demo Lab never writes to graph.db (it runs on its own in-memory graph), so no demo events can appear.
      */
     fun build(s: GraphSnapshot): Map<String, Any?> {
+        val (named, personal) = s.senders.partition { showable(it.sender) }
         val brands = s.events.groupBy { it.brand }.map { (brand, ev) ->
             mapOf(
                 "brand" to brand,
@@ -30,8 +37,10 @@ object GraphSummary {
             "brands" to brands,
             "recent" to s.events.sortedByDescending { it.tsMs }.take(RECENT_LIMIT)
                 .map { mapOf("brand" to it.brand, "type" to it.type.name, "tsMs" to it.tsMs) },
-            "senders" to s.senders.sortedWith(compareByDescending<SenderRecord> { it.count }.thenByDescending { it.lastSeenMs }).take(SENDER_LIMIT)
+            "senders" to named.sortedWith(compareByDescending<SenderRecord> { it.count }.thenByDescending { it.lastSeenMs }).take(SENDER_LIMIT)
                 .map { mapOf("sender" to it.sender, "count" to it.count, "firstMs" to it.firstSeenMs, "lastMs" to it.lastSeenMs, "dlt" to it.isDlt) },
+            "personalSenders" to personal.size,
+            "personalMessages" to personal.sumOf { it.count },
             "numbers" to s.numbers.size,
             "upiIds" to s.upiIds.size,
         )

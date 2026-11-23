@@ -40,6 +40,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   final _expanded = <String>{}; // done steps the user opened again
   bool _failed = false;
   final _prefs = PrefsStrings();
+  String? _askedFor; // the hand-off the user already tapped; the "Android will ask" card shows only then
   bool _captionsOn = false; // no native check for Live Caption, so the user confirms it
 
   @override
@@ -248,17 +249,24 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
 
     // One primary action: the next required step that is still pending.
     final Widget primary = !serviceOn
-        ? _primary(Icons.accessibility_new, _t('call_title'), TextApi.openAccessibilitySettings)
+        ? _primary(Icons.accessibility_new, _t('call_title'), () {
+            setState(() => _askedFor = _whyNext(serviceOn));
+            TextApi.openAccessibilitySettings();
+          })
         : !_captionsOn
             ? _primary(Icons.closed_caption, _t('prim_cap'), _confirmCaptions)
             : !_notif
                 ? _primary(Icons.notifications_active, _t('notif_enable'), () async {
+                    setState(() => _askedFor = _whyNext(serviceOn));
                     await _api.invokeMethod('perm.requestNotifications');
                     _refresh();
                   })
                 : !_nlAccess
                     ? _primary(Icons.mark_email_unread, _t('msg_title'),
-                        () => _api.invokeMethod('perm.openNotificationAccess'))
+                        () {
+                          setState(() => _askedFor = _whyNext(serviceOn));
+                          _api.invokeMethod('perm.openNotificationAccess');
+                        })
                     : _primary(Icons.chat_bubble_outline, _t('bub_title'), () async {
                         try { await TextApi.testOverlay(); } on PlatformException catch (e) { _snack('${e.message}'); }
                       });
@@ -281,7 +289,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
       steps = [StateMessage(loading: true, title: _t('checking'))];
     } else {
       steps = [
-        if (_whyNext(serviceOn) case final why?) _prePermissionCard(why),
+        if (_whyNext(serviceOn) case final why? when why == _askedFor) _prePermissionCard(why),
         ..._steps(serviceOn),
         _advanced(modelStatus, modelReady, downloading, serviceOn),
       ];

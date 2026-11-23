@@ -48,8 +48,9 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
       return Center(child: StateMessage(icon: Icons.error_outline, title: t('kn_err'), actionLabel: t('retry'), onAction: _load));
     }
     final brands = _list('brands'), recent = _list('recent'), senders = _list('senders');
+    final personal = (g['personalSenders'] as num?)?.toInt() ?? 0, personalMsgs = (g['personalMessages'] as num?)?.toInt() ?? 0;
     final numbers = (g['numbers'] as num?)?.toInt() ?? 0, upi = (g['upiIds'] as num?)?.toInt() ?? 0;
-    if (g['empty'] == true && brands.isEmpty && senders.isEmpty) {
+    if (g['empty'] == true && brands.isEmpty && senders.isEmpty && personal == 0) {
       return Center(child: StateMessage(icon: Icons.hub_outlined, title: t('kn_empty_t'), subtitle: t('kn_empty_s')));
     }
 
@@ -99,9 +100,11 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
         card(t('kn_recent'), [
           for (final e in recent) row(t('ev_${e['type']}'), _title('${e['brand']}'), trailing: ago(e['tsMs'])),
         ]),
-      if (senders.isNotEmpty)
+      if (senders.isNotEmpty || personal > 0)
         card(t('kn_senders'), [
           for (final s in senders) row('${s['sender']}', t('kn_msgs', {'n': s['count']}), trailing: ago(s['lastMs'])),
+          // Personal numbers are only counted, never listed: the native side sends no digits for them.
+          if (personal > 0) row(t('kn_personal', {'n': personal, 'm': personalMsgs}), ''),
         ]),
       if (numbers + upi > 0)
         card(t('kn_contacts'), [

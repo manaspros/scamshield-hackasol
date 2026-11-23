@@ -123,7 +123,10 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         // Always visible: the fastest way to the 1930 report flow (the dial itself happens only in ReportScreen).
         Builder(builder: (context) {
           final st = Theme.of(context).extension<StatusColors>() ?? StatusColors.light;
-          return TextButton.icon(
+          // Capped at 60% of the width and shrunk to fit, so it never pushes past the screen's side gutter.
+          return ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.6),
+            child: TextButton.icon(
             key: const Key('btn_report_1930'),
             onPressed: _openReport,
             style: TextButton.styleFrom(
@@ -134,13 +137,16 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
               shape: const StadiumBorder(),
             ),
             icon: const Icon(Icons.support_agent, size: 24),
-            label: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(t('help_me'), style: TextStyle(height: 1.1)),
-              Text(t('help_1930'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: st.scam, height: 1.1)),
-            ]),
-          );
+            label: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(t('help_me'), style: TextStyle(height: 1.1)),
+                Text(t('help_1930'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: st.scam, height: 1.1)),
+              ]),
+            ),
+          ));
         }),
-        const SizedBox(width: Sp.s),
+        const SizedBox(width: Sp.l),
       ]),
       body: IndexedStack(index: _tab, children: [
         for (var i = 0; i < _tabKeys.length; i++) _visited.contains(i) ? _page(i) : const SizedBox.shrink(),

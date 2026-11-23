@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scamshield/l10n/app_language.dart';
+import 'package:scamshield/l10n/strings_shell.dart';
 import 'package:scamshield/main.dart';
 import 'package:scamshield/models/verdict.dart';
 import 'package:scamshield/widgets/verdict_card.dart';
@@ -142,5 +143,14 @@ void main() {
     expect(t('hne', 'b'), 'दो');
     expect(t('en', 'b'), 'b');
     expect(t('xx', 'a'), 'हिंदी');
+  });
+
+  test('L10N_shell_englishHasNoHindi_helpCaptionsIncluded', () {
+    final hindi = RegExp('[\u0900-\u097F]');
+    final bad = shellStrings.en.entries.where((e) => hindi.hasMatch(e.value)).map((e) => e.key).toList();
+    expect(bad, isEmpty);
+    for (final k in ['report_cap', 'family_cap', 'settings_cap', 'recording_cap', 'demo_cap', 'help_sub']) {
+      expect(shellStrings.en[k], isNotNull, reason: k);
+    }
   });
 }

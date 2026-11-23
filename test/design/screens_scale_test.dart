@@ -250,6 +250,10 @@ void main() {
         expect(find.byKey(const Key('setup_firstrun_card')), findsNothing);
         expect(find.text('0 / 4 ज़रूरी कदम पूरे'), findsOneWidget);
         expect(t.takeException(), isNull);
+        // The card appears only after the user taps the action that opens the Android screen.
+        expect(find.byKey(const Key('setup_prepermission_card')), findsNothing);
+        await t.tap(find.byKey(const Key('setup_primary')));
+        await t.pumpAndSettle();
         await t.scrollUntilVisible(find.byKey(const Key('setup_prepermission_card')), 200);
         expect(find.byKey(const Key('setup_prepermission_card')), findsOneWidget);
         // back to the top (the AppBar owns the "सेटअप" title; the counter is the first line)

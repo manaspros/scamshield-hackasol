@@ -219,6 +219,15 @@ void main() {
       await _end(t);
     });
 
+    testWidgets('HOME_home_heroFixSitsBesideStatus_notOnItsOwnRow', (t) async {
+      _phone(t);
+      _Native(callOn: false).install(t);
+      await _show(t, const HomeScreen());
+      // Fix sits beside the status text, not on a row of its own (the test font is wider than real text, so no pixel height).
+      expect(t.getTopLeft(find.byKey(const Key('home_fix'))).dx, greaterThan(t.getTopRight(find.byKey(const Key('home_hero_text'))).dx - 1));
+      await _end(t);
+    });
+
     testWidgets('HOME_home_threeButtonsOpenTheirScreens', (t) async {
       _phone(t);
       _Native().install(t);
@@ -375,6 +384,24 @@ void main() {
       expect(find.text('4 phone numbers'), findsOneWidget);
       await t.scrollUntilVisible(find.text('Learned from 12 messages'), 200);
       expect(find.text('Learned from 12 messages'), findsOneWidget);
+    });
+
+    testWidgets('HOME_knowledge_personalNumbersAreOnlyCounted_noDigitRunOf6OnScreen', (t) async {
+      _phone(t);
+      _Native(graph: {...graph, 'personalSenders': 4, 'personalMessages': 12}).install(t);
+      await _show(t, const KnowledgeScreen());
+      await t.scrollUntilVisible(find.text('12 messages from 4 personal numbers'), 200);
+      expect(find.text('12 messages from 4 personal numbers'), findsOneWidget);
+      await t.scrollUntilVisible(find.text('Learned from 12 messages'), 200);
+      // Everything rendered, top to bottom: no phone-number-sized digit run anywhere.
+      final all = <String>[];
+      await t.drag(find.byType(Scrollable).first, const Offset(0, 5000));
+      for (var i = 0; i < 8; i++) {
+        all.addAll(t.widgetList<Text>(find.byType(Text)).map((w) => w.data ?? ''));
+        await t.drag(find.byType(Scrollable).first, const Offset(0, -300));
+        await t.pump();
+      }
+      expect(all.where(RegExp(r'\d{6,}').hasMatch), isEmpty);
     });
 
     testWidgets('HOME_knowledge_emptyGraph_showsEmptyState', (t) async {
