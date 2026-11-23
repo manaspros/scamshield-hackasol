@@ -17,6 +17,7 @@ import com.hackasol.scamshield.core.graph.AlertRef
 import com.hackasol.scamshield.core.graph.ClaimParsers
 import com.hackasol.scamshield.core.graph.GraphContext
 import com.hackasol.scamshield.core.graph.KnowledgeGraph
+import com.hackasol.scamshield.core.MappedNotification
 import com.hackasol.scamshield.core.NotificationMapper
 import com.hackasol.scamshield.core.Source
 import com.hackasol.scamshield.core.Verdict
@@ -72,7 +73,12 @@ class ListenerWiring(
     suspend fun onPosted(n: NotificationInfo) {
         val m = mapper.map(n.pkg, n.text, n.ongoing, n.groupSummary, n.postTime) ?: return
         val g = graph
-        if (g == null || (classifyRequest == null && classifyLogged == null)) { dispatch(classify(m.text, m.source), m.source); return }
+        val t0 = System.currentTimeMillis()
+        if (g == null || (classifyRequest == null && classifyLogged == null)) {
+            val v = releaseOnFailure(n, m) { classify(m.text, m.source) }
+            logVerdict(n.pkg, m, v, t0)
+            dispatch(v, m.source); return
+        }
         val ts = n.messageTsMs
         // Only an SMS title is a sender header; a WhatsApp title is a contact name and must not be judged as one.
         val sender = if (m.source == Source.SMS) n.title.trim() else ""
@@ -86,12 +92,20 @@ class ListenerWiring(
             if (lines.isEmpty()) GemmaPrompt.CALL_CONTEXT_LABEL else GraphContext.LABEL, flags,
         )
         // If classify throws nothing is ingested (an unclassified message must not become "known").
-        val (v, loggedTs) = classifyLogged?.invoke(req) ?: (classifyRequest!!(req) to ts)
+        val (v, loggedTs) = releaseOnFailure(n, m) { classifyLogged?.invoke(req) ?: (classifyRequest!!(req) to ts) }
+        logVerdict(n.pkg, m, v, t0)
         g.ingest(m.text, sender, ts, trusted = v.label == Label.SAFE)
         if (v.label != Label.SAFE) g.rememberAlert(AlertRef(loggedTs, key, claims.numbers, claims.upiIds))
         if (trusted && Trust.quietAlert(v.label, true, Trust.hardSignal(m.text, flags))) return   // still logged by TextApi
         dispatch(v, m.source)
     }
+
+    /** A classify that throws or is cancelled releases the mapper's dedupe claim, so the message can be retried. */
+    private suspend fun <T> releaseOnFailure(n: NotificationInfo, m: MappedNotification, block: suspend () -> T): T =
+        try { block() } catch (t: Throwable) { mapper.abort(n.pkg, m.text); AlertPath.d("classify failed pkg=${n.pkg} len=${m.text.length} ${t.javaClass.simpleName}"); throw t }
+
+    private fun logVerdict(pkg: String, m: MappedNotification, v: Verdict, t0: Long) =
+        AlertPath.d("verdict pkg=$pkg len=${m.text.length} label=${v.label} conf=${"%.2f".format(v.confidence)} engine=${v.engine} elapsedMs=${System.currentTimeMillis() - t0}")
 
     /** Key for trust / report / alert lookups: SMS title as is; WhatsApp "wa:" + contact name (never used as an SMS sender header). */
     private fun senderKey(source: Source, title: String): String = when (source) {
@@ -115,7 +129,7 @@ class ScamNotificationListener : NotificationListenerService() {
     // Lazy: first built inside the notification coroutine, so the graph DB load stays off the main thread.
     private val wiring by lazy {
         ListenerWiring(
-            NotificationMapper(),
+            NotificationMapper(onDrop = { AlertPath.d("mapper drop $it") }),
             { text, src -> TextApi.classify(ClassifyRequest(text, source = src)) },
             { v, _ -> main.post { safe("dispatch") { dispatcher.dispatch(v, v.label, v.label, v.risk) } } },
             TextApi.graph(this),   // the same instance the caption path reads
@@ -127,9 +141,12 @@ class ScamNotificationListener : NotificationListenerService() {
         try { block() } catch (t: Throwable) { Log.e(TAG, "error in $where", t) }
     }
 
-    override fun onListenerConnected() = safe("connected") { TextApi.init(this) }
+    override fun onListenerConnected() = safe("connected") { AlertPath.d("listener connected"); TextApi.init(this) }
 
     override fun onDestroy() {
+        AlertPath.d("listener onDestroy")
+        // Post any delayed alert now (the service is going away; its scheduled runnable would not outlive it reliably).
+        safe("flush") { dispatcher.flushPending() }
         scope.cancel()
         super.onDestroy()
     }

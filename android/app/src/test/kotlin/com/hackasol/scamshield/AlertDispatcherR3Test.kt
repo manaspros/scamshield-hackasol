@@ -50,23 +50,46 @@ class AlertDispatcherR3Test {
         assertTrue("SMS never draws an overlay", sink.calls.isEmpty())
     }
 
-    @Test fun R3_ALERT_twoDelayedScamsWithinSixSecondsPostOnlyTheNewest() {
+    // Was ...PostOnlyTheNewest (asserted the first alert was dropped = the missed-SMS-alert bug). Now both are posted, newest last.
+    @Test fun R3_ALERT_twoDelayedScamsWithinSixSecondsPostBoth() {
         val d = dispatcher()
         d.dispatch(v(Label.SCAM, Source.SMS).copy(triggers = listOf("first")), Label.SCAM, Label.SCAM, 0.9)
         d.dispatch(v(Label.SCAM, Source.WHATSAPP).copy(triggers = listOf("second")), Label.SCAM, Label.SCAM, 0.9)
+        assertEquals("the older one posts as soon as a newer heads-up arrives", 1, posted.size)
+        assertTrue(posted[0].text.contains("first"))
         sched.runAll()
-        assertEquals(1, posted.size)
-        assertTrue(posted.single().text.contains("second"))
+        assertEquals(2, posted.size)
+        assertTrue(posted[1].text.contains("second"))
     }
 
-    @Test fun R3_ALERT_staleDelayedScamNeverOverwritesNewerImmediatePaste() {
+    // Was ...staleDelayedScamNeverOverwritesNewerImmediatePaste (the delayed SMS was dropped). Now it posts first, the paste stays on top.
+    @Test fun R3_ALERT_delayedScamPostsBeforeNewerImmediatePasteAndNeverAfter() {
+        val d = dispatcher()
+        d.dispatch(v(Label.SCAM, Source.SMS).copy(triggers = listOf("sms")), Label.SCAM, Label.SCAM, 0.9)
+        d.dispatch(v(Label.SCAM, Source.PASTE).copy(triggers = listOf("paste")), Label.SCAM, Label.SCAM, 0.9)
+        assertEquals(2, posted.size)
+        sched.runAll()
+        assertEquals("the delayed SMS runnable must not double-post", 2, posted.size)
+        assertTrue(posted[0].text.contains("sms")); assertTrue(posted[1].text.contains("paste"))
+    }
+
+    @Test fun flushPendingPostsNowAndScheduledRunnableDoesNotDoublePost() {
         val d = dispatcher()
         d.dispatch(v(Label.SCAM, Source.SMS), Label.SCAM, Label.SCAM, 0.9)
-        d.dispatch(v(Label.SCAM, Source.PASTE).copy(triggers = listOf("paste")), Label.SCAM, Label.SCAM, 0.9)
+        assertTrue(posted.isEmpty())
+        d.flushPending()
         assertEquals(1, posted.size)
         sched.runAll()
-        assertEquals("the delayed SMS post must not fire after the paste post", 1, posted.size)
-        assertTrue(posted.single().text.contains("paste"))
+        assertEquals(1, posted.size)
+        d.flushPending()
+        assertEquals("nothing pending: no-op", 1, posted.size)
+    }
+
+    @Test fun idOffsetKeepsDemoIdsApartFromRealOnes() {
+        val demo = AlertDispatcher(sink, { posted += it }, "[DEMO] ", sched, { "hi" }, 100)
+        demo.dispatch(v(Label.SCAM, Source.PASTE), Label.SCAM, Label.SCAM, 0.9)
+        demo.dispatch(v(Label.SUSPICIOUS, Source.SMS), Label.SUSPICIOUS, Label.SUSPICIOUS, 0.5)
+        assertEquals(listOf(7101, 7103), posted.map { it.notificationId })
     }
 
     @Test fun R3_ALERT_cancelPendingDropsDelayedPost() {

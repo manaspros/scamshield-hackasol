@@ -43,4 +43,16 @@ class ListenerWiringTest {
         wiring.onPosted(info("com.whatsapp", ts = 1_000))
         assertEquals(1, classified.size)
     }
+
+    @Test fun classifyFailureDoesNotSuppressRetryTenSecondsLater() = runBlocking {
+        var first = true
+        val d = mutableListOf<Verdict>()
+        val w = ListenerWiring(NotificationMapper(), { t, s ->
+            if (first) { first = false; error("boom") }
+            Verdict(t, Label.SCAM, 0.9, "r", emptyList(), "rules-only", 0, s)
+        }, { v, _ -> d += v })
+        runCatching { w.onPosted(info("com.whatsapp", ts = 0)) }
+        w.onPosted(info("com.whatsapp", ts = 10_000))
+        assertEquals(1, d.size)
+    }
 }

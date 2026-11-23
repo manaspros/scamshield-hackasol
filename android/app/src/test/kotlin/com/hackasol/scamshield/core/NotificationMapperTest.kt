@@ -40,6 +40,40 @@ class NotificationMapperTest {
         assertNotNull(map(m, "com.whatsapp", text = "A different long message", ts = 61_500))
     }
 
+    @Test fun abortedMessageIsNotDeduped() {   // classify threw: the retry 10 s later must go through
+        val m = NotificationMapper()
+        assertNotNull(map(m, "com.whatsapp", ts = 1_000))
+        assertNull("claimed while classifying", map(m, "com.whatsapp", ts = 2_000))
+        m.abort("com.whatsapp", "  $body ")
+        assertNotNull(map(m, "com.whatsapp", ts = 11_000))
+    }
+
+    @Test fun sameTextFromAnotherPackageIsNotDeduped() {
+        val m = NotificationMapper()
+        map(m, "com.whatsapp", ts = 1_000)
+        assertNotNull(map(m, "com.google.android.apps.messaging", ts = 2_000))
+        assertNull(map(m, "com.whatsapp", ts = 3_000))
+    }
+
+    @Test fun concurrentMapAndCommitDoNotThrow() {
+        val m = NotificationMapper()
+        val errors = java.util.concurrent.ConcurrentLinkedQueue<Throwable>()
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(8)
+        repeat(8) { th ->
+            pool.execute {
+                try {
+                    repeat(2_000) { i ->
+                        val t = "message number $i from thread $th long enough"
+                        m.map("com.whatsapp", t, false, false, i.toLong())?.let { if (i % 2 == 0) m.abort("com.whatsapp", t) }
+                    }
+                } catch (e: Throwable) { errors += e }
+            }
+        }
+        pool.shutdown()
+        assertEquals(true, pool.awaitTermination(30, java.util.concurrent.TimeUnit.SECONDS))
+        assertEquals(emptyList<Throwable>(), errors.toList())
+    }
+
     @Test fun T2_2_ignoresOwn() {
         assertNull(map(NotificationMapper(), "com.hackasol.scamshield"))
     }
