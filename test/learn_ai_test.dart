@@ -53,8 +53,8 @@ void main() {
     });
 
     test('accepts a valid question and shuffles options keeping the right answer', () {
-      final q = parseQuestion('Here: ${_q('What do you do?')}', rng: Random(1))!;
-      expect(q.question, 'What do you do?');
+      final q = parseQuestion('Here: ${_q('A caller says CBI. What do you do?')}', rng: Random(1))!;
+      expect(q.question, 'A caller says CBI. What do you do?');
       expect(q.options, hasLength(4));
       expect(q.options[q.correctIndex], 'Hang up and call 1930');
       expect(q.explanation, isNotEmpty);
@@ -67,6 +67,53 @@ void main() {
       expect(parseQuestion('{"q":"","options":["a","b","c","d"],"answer":0,"explain":"e"}'), isNull); // empty question
       expect(parseQuestion('{"q":"x","options":["a","b","c","d"],"answer":"1","explain":""}'), isNull); // no explanation
       expect(parseQuestion(null), isNull);
+    });
+
+    String qj(List<String> options, {String q = 'A caller says your account is blocked. What do you do?', String e = 'Banks never call for this.'}) =>
+        jsonEncode({'q': q, 'options': options, 'answer': 1, 'explain': e});
+
+    test('rejects dead questions: letter / "Option 2" placeholders, templates, copied example', () {
+      expect(parseQuestion(qj(['a', 'b', 'c', 'd'])), isNull);
+      expect(parseQuestion(qj(['A)', 'B)', 'C)', 'D)'])), isNull);
+      expect(parseQuestion(qj(['Option 1', 'Option 2', 'Option 3', 'Option 4'])), isNull);
+      expect(parseQuestion(qj(['<safe action>', '<wrong 1>', '<wrong 2>', '<wrong 3>'])), isNull);
+      expect(parseQuestion(qj(['Hang up', 'Call 1930', '...', 'Pay the fee'])), isNull);
+      expect(parseQuestion(qj(['Hang up', 'Call 1930', 'Pay the fee', 'Share OTP'], q: 'question')), isNull);
+      expect(parseQuestion(qj(['Hang up', 'Call 1930', 'Pay the fee', 'Share OTP'], e: 'one sentence why')), isNull);
+      expect(parseQuestion(qj(exampleOptions, q: exampleQuestion)), isNull); // the prompt's example copied back
+      expect(parseQuestion(qj(['Hang up', 'Call 1930', 'Pay the fee', 'Share OTP'])), isNotNull);
+      expect(isPlaceholder('b'), isTrue);
+      expect(isPlaceholder('विकल्प 2'), isTrue);
+      expect(isPlaceholder('Hang up'), isFalse);
+    });
+
+    test('rejects a question in the wrong script for the app language', () {
+      final en = qj(['Hang up', 'Call 1930', 'Pay the fee', 'Share OTP']);
+      final hi = jsonEncode({
+        'q': 'कॉल करने वाला कहता है कि खाता बंद होगा। आप क्या करेंगे?',
+        'options': ['फ़ोन काट दें', '1930 पर कॉल करें', 'फ़ीस भर दें', 'OTP बता दें'],
+        'answer': 1,
+        'explain': 'बैंक ऐसे कॉल नहीं करते।',
+      });
+      expect(parseQuestion(en, lang: 'en'), isNotNull);
+      expect(parseQuestion(en, lang: 'hi'), isNull);
+      expect(parseQuestion(hi, lang: 'hi'), isNotNull);
+      expect(parseQuestion(hi, lang: 'en'), isNull);
+    });
+
+    test('the prompt no longer shows a copyable "a, b, c, d" template', () {
+      final l = _en().first;
+      final p = questionPrompt(lesson: l, profile: UserProfile.empty, lang: 'en');
+      expect(p, isNot(contains('["a","b","c","d"]')));
+      expect(p, contains('never just a letter'));
+    });
+
+    test('three tries per AI question before falling back', () async {
+      final l = _en().first;
+      final llm = _FakeLlm(['{"q":"x","options":["a","b","c","d"],"answer":0,"explain":"e"}', 'junk', 'junk']);
+      final q = await QuizGenerator(llm).question(lesson: l, profile: UserProfile.empty, lang: 'en');
+      expect(q, isNull);
+      expect(llm.prompts, hasLength(3));
     });
 
     test('question prompt is grounded in the lesson, tailored to the learner, never leaks name or phone', () {
@@ -91,7 +138,7 @@ void main() {
 
     test('review: keeps up to 4 valid cards, maps unknown topics to the quiz topic', () {
       final r = parseReview(
-        '{"weak":["digital_arrest","bogus"],"cards":[{"front":"F1","back":"B1","topic":"qr"},{"front":"F2","back":"B2","topic":"nope"},{"front":"","back":"x"}],"plan":"Practise daily."}',
+        '{"weak":["digital_arrest","bogus"],"cards":[{"front":"A QR to receive money","back":"Scanning a QR only sends money","topic":"qr"},{"front":"A caller says CBI","back":"Hang up and call 1930","topic":"nope"},{"front":"...","back":"Placeholder card"},{"front":"","back":"x"}],"plan":"Practise daily."}',
         topicId: 'digital_arrest',
         validTopics: {'digital_arrest', 'qr'},
       )!;
@@ -205,23 +252,23 @@ void main() {
 
     test('model: five AI questions; a bad answer falls back to a built-in one', () async {
       final l = _en().first;
-      final llm = _FakeLlm([_q('Q1'), 'garbage', 'still garbage', _q('Q3'), _q('Q4'), _q('Q5')]);
+      final llm = _FakeLlm([_q('Q1 a caller wants the OTP?'), 'garbage', 'still garbage', 'more garbage', _q('Q3 a caller wants the OTP?'), _q('Q4 a caller wants the OTP?'), _q('Q5 a caller wants the OTP?')]);
       final s = QuizSession(lesson: l, llm: llm, profile: UserProfile.empty, lang: 'en');
       await s.start();
       expect(s.length, 5);
       final qs = [for (var i = 0; i < 5; i++) await s.at(i)];
-      expect(qs[0].question, 'Q1');
+      expect(qs[0].question, 'Q1 a caller wants the OTP?');
       expect(s.aiMade(0), isTrue);
       expect(s.aiMade(1), isFalse);
       expect(qs[1].question, l.questions.first.question);
-      expect(qs[2].question, 'Q3');
+      expect(qs[2].question, 'Q3 a caller wants the OTP?');
       // later prompts list earlier questions so the model does not repeat them
       expect(llm.prompts.last, contains('Q1'));
     });
 
     test('use ready questions: stops the model and shrinks to the built-in set', () async {
       final l = _en().first;
-      final s = QuizSession(lesson: l, llm: _FakeLlm([_q('Q1')]), profile: UserProfile.empty, lang: 'en');
+      final s = QuizSession(lesson: l, llm: _FakeLlm([_q('Q1 a caller wants the OTP?')]), profile: UserProfile.empty, lang: 'en');
       await s.start();
       await s.at(0);
       final q = s.useReady(1);
@@ -249,14 +296,14 @@ void main() {
         ],
         'plan': 'Practise OTP calls for 5 minutes a day.',
       });
-      final llm = _FakeLlm([for (var i = 0; i < 5; i++) _q('AI question ${i + 1}?'), review]);
+      final llm = _FakeLlm([for (var i = 0; i < 5; i++) _q('AI question ${i + 1}: what do you do?'), review]);
       await t.pumpWidget(MaterialApp(
         theme: AppTheme.light(),
         builder: (c, w) => LangScope(notifier: AppLanguage.current, child: w!),
         home: QuizScreen(lesson: lessons.first, engine: engine, lang: 'en', llm: llm, startWithQuiz: true),
       ));
       await t.pumpAndSettle();
-      expect(find.text('AI question 1?'), findsOneWidget);
+      expect(find.text('AI question 1: what do you do?'), findsOneWidget);
       expect(find.byKey(const Key('quiz_ai_chip')), findsOneWidget);
       for (var i = 0; i < 5; i++) {
         // always pick a wrong option (the options are shuffled)

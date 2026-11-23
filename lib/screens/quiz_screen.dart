@@ -408,20 +408,38 @@ class _QuizScreenState extends State<QuizScreen> {
             onPageChanged: (i) => setState(() => _card = i),
             itemBuilder: (_, i) {
               final c = _lesson.cards[i];
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(Sp.l),
-                child: PCard(
-                  radius: 28,
-                  padding: const EdgeInsets.all(Sp.xl),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      IconBadge(icon: Icons.shield_rounded, color: p.accent, tint: p.accentTint, size: 60, iconSize: 32),
-                      const SizedBox(height: Sp.l),
-                      Text(c.title, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
-                      const SizedBox(height: Sp.m),
-                      Text(c.body, style: theme.textTheme.bodyLarge),
-                    ],
+              // Centred in the page (scrolls if the text is long), content centred like a flashcard.
+              return LayoutBuilder(
+                builder: (context, box) => SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: Sp.l, vertical: Sp.m),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: box.maxHeight - Sp.m * 2),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 440),
+                        child: PCard(
+                          radius: 28,
+                          padding: const EdgeInsets.fromLTRB(Sp.xl, Sp.xl + 4, Sp.xl, Sp.xl + 4),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('${i + 1} / ${_lesson.cards.length}',
+                                  style: theme.textTheme.labelLarge?.copyWith(color: p.muted, fontWeight: FontWeight.w600)),
+                              const SizedBox(height: Sp.l),
+                              IconBadge(icon: Icons.shield_rounded, color: p.accent, tint: p.accentTint, size: 64, iconSize: 34),
+                              const SizedBox(height: Sp.l),
+                              Text(c.title,
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, height: 1.25)),
+                              const SizedBox(height: Sp.m),
+                              Container(width: 40, height: 3, decoration: BoxDecoration(color: p.accentTint, borderRadius: BorderRadius.circular(2))),
+                              const SizedBox(height: Sp.m),
+                              Text(c.body, textAlign: TextAlign.center, style: theme.textTheme.bodyLarge?.copyWith(height: 1.5)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               );

@@ -135,18 +135,18 @@ void main() {
         }
       });
 
-      testWidgets('QA_nav_floatingBar_onlySelectedTabShowsItsWord_everyTab48dp_${mode}_scale2', (t) async {
+      testWidgets('QA_nav_floatingBar_everyTabShowsItsWord_everyTab48dp_${mode}_scale2', (t) async {
         await _boot(t, dark: dark);
         final bar = find.byType(FloatingNav);
-        for (final (_, key, word) in _tabs) {
+        for (final (_, key, _) in _tabs) {
           await _goTab(t, key);
-          final label = find.descendant(of: bar, matching: find.text(word));
-          expect(label, findsOneWidget, reason: 'selected $key shows its word');
-          final r = t.getRect(label);
-          expect(r.left, greaterThanOrEqualTo(0));
-          expect(r.right, lessThanOrEqualTo(360));
-          for (final (_, other, otherWord) in _tabs.where((e) => e.$2 != key)) {
-            expect(find.descendant(of: bar, matching: find.text(otherWord)), findsNothing, reason: '$other has no word while $key is selected');
+          // Every tab shows its word, whichever is selected, fully inside the 360dp screen.
+          for (final (_, other, otherWord) in _tabs) {
+            final label = find.descendant(of: bar, matching: find.text(otherWord));
+            expect(label, findsOneWidget, reason: '$other shows its word while $key is selected');
+            final r = t.getRect(label);
+            expect(r.left, greaterThanOrEqualTo(0));
+            expect(r.right, lessThanOrEqualTo(360));
           }
           for (final (_, k, _) in _tabs) {
             expectTapTarget(t, find.byKey(Key(k)));

@@ -101,7 +101,8 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                           child: Text(
                             _l('fc_pos', {'i': _i + 1, 'n': _deck.length}) + (_newCount > 0 ? ' · ${_l('fc_new', {'n': _newCount})}' : ''),
                             key: const Key('fc_position'),
-                            style: th.textTheme.titleSmall?.copyWith(color: p.muted),
+                            textAlign: TextAlign.center,
+                            style: th.textTheme.titleSmall?.copyWith(color: p.muted, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ]),
@@ -115,21 +116,42 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(Sp.l),
-                        // TalkBack: the visible face as the label, "double-tap to flip" as the hint.
-                        child: Semantics(
-                          key: const Key('fc_card_sem'),
-                          button: true,
-                          label: _flipped ? _deck[_i].back : _deck[_i].front,
-                          onTapHint: _l('fc_flip_do'),
-                          onTap: () => setState(() => _flipped = !_flipped),
-                          excludeSemantics: true,
-                          child: GestureDetector(
-                            key: const Key('fc_card'),
-                            onTap: () => setState(() => _flipped = !_flipped),
-                            child: _flipCard(th, p, _deck[_i]),
-                          ),
-                        ),
+                        padding: const EdgeInsets.fromLTRB(Sp.l, Sp.l, Sp.l, Sp.l + 6),
+                        // Centred, card-shaped (not the whole screen), with the next cards peeking behind it.
+                        child: LayoutBuilder(builder: (context, box) {
+                          final w = math.min(box.maxWidth, 440.0);
+                          final h = math.min(box.maxHeight - 12, w * 1.3);
+                          return Center(
+                            child: SizedBox(
+                              width: w,
+                              height: h + 12,
+                              child: Stack(clipBehavior: Clip.none, children: [
+                                if (_deck.length - _i > 2) _peek(p, w, h, 12, 0.92),
+                                if (_deck.length - _i > 1) _peek(p, w, h, 6, 0.96),
+                                Positioned(
+                                  left: 0,
+                                  right: 0,
+                                  top: 0,
+                                  height: h,
+                                  // TalkBack: the visible face as the label, "double-tap to flip" as the hint.
+                                  child: Semantics(
+                                    key: const Key('fc_card_sem'),
+                                    button: true,
+                                    label: _flipped ? _deck[_i].back : _deck[_i].front,
+                                    onTapHint: _l('fc_flip_do'),
+                                    onTap: () => setState(() => _flipped = !_flipped),
+                                    excludeSemantics: true,
+                                    child: GestureDetector(
+                                      key: const Key('fc_card'),
+                                      onTap: () => setState(() => _flipped = !_flipped),
+                                      child: _flipCard(th, p, _deck[_i]),
+                                    ),
+                                  ),
+                                ),
+                              ]),
+                            ),
+                          );
+                        }),
                       ),
                     ),
                     Padding(
@@ -190,29 +212,60 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
     );
   }
 
+  /// A card edge peeking out under the current one: the deck has more to come.
+  Widget _peek(Pal p, double w, double h, double dy, double scale) => Positioned(
+        left: w * (1 - scale) / 2,
+        right: w * (1 - scale) / 2,
+        top: dy,
+        height: h,
+        child: Container(
+          decoration: BoxDecoration(
+            color: p.isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: p.hairline),
+          ),
+        ),
+      );
+
+  /// Text centred in the middle of a card face; scrolls when it is longer than the card.
+  Widget _centred(Widget child) => LayoutBuilder(
+        builder: (context, box) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: box.maxHeight),
+            child: Center(child: child),
+          ),
+        ),
+      );
+
   Widget _front(ThemeData th, Pal p, StudyCard c) {
     final st = th.extension<StatusColors>() ?? StatusColors.light;
     final topic = _topicTitle(c.topic);
     return PCard(
       key: const Key('fc_front'),
       radius: 28,
-      padding: const EdgeInsets.all(Sp.xl),
+      padding: const EdgeInsets.fromLTRB(Sp.xl, Sp.l, Sp.xl, Sp.l),
       child: SizedBox.expand(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Wrap(spacing: Sp.s, runSpacing: Sp.s, children: [
+        child: Column(children: [
+          Wrap(alignment: WrapAlignment.center, spacing: Sp.s, runSpacing: Sp.s, children: [
             if (topic.isNotEmpty) _chip(th, topic, st.scam, st.scam.withValues(alpha: 0.12)),
             if (c.ai) _chip(th, _l('ai_tag'), p.accent, p.accentTint),
           ]),
-          const SizedBox(height: Sp.l),
           Expanded(
-            child: SingleChildScrollView(
-              child: Text(c.front, style: th.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, height: 1.3)),
-            ),
+            child: _centred(Padding(
+              padding: const EdgeInsets.symmetric(vertical: Sp.l),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                IconBadge(icon: Icons.help_outline_rounded, color: p.accent, tint: p.accentTint, size: 56, iconSize: 30),
+                const SizedBox(height: Sp.l),
+                Text(c.front,
+                    textAlign: TextAlign.center,
+                    style: th.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, height: 1.3)),
+              ]),
+            )),
           ),
-          Row(children: [
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(Icons.touch_app_rounded, size: 18, color: p.muted),
             const SizedBox(width: Sp.xs),
-            Text(_l('fc_flip'), style: th.textTheme.bodySmall?.copyWith(color: p.muted)),
+            Flexible(child: Text(_l('fc_flip'), textAlign: TextAlign.center, style: th.textTheme.bodySmall?.copyWith(color: p.muted))),
           ]),
         ]),
       ),
@@ -226,16 +279,27 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
           borderRadius: BorderRadius.circular(28),
           border: p.isDark ? Border.all(color: const Color(0xFF48484A)) : null,
         ),
-        padding: const EdgeInsets.all(Sp.xl),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(Icons.verified_user_rounded, color: StatusColors.dark.safe, size: 32),
-          const SizedBox(height: Sp.l),
+        padding: const EdgeInsets.fromLTRB(Sp.xl, Sp.l, Sp.xl, Sp.l),
+        child: Column(children: [
           Expanded(
-            child: SingleChildScrollView(
-              child: Text(c.back, style: th.textTheme.titleLarge?.copyWith(color: const Color(0xFFF5F5F7), height: 1.45, fontWeight: FontWeight.w500)),
-            ),
+            child: _centred(Padding(
+              padding: const EdgeInsets.symmetric(vertical: Sp.l),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(color: StatusColors.dark.safe.withValues(alpha: 0.18), shape: BoxShape.circle),
+                  child: Icon(Icons.verified_user_rounded, color: StatusColors.dark.safe, size: 30),
+                ),
+                const SizedBox(height: Sp.l),
+                Text(c.back,
+                    textAlign: TextAlign.center,
+                    style: th.textTheme.titleLarge
+                        ?.copyWith(color: const Color(0xFFF5F5F7), height: 1.45, fontWeight: FontWeight.w500)),
+              ]),
+            )),
           ),
-          Text(_l('fc_flip_back'), style: th.textTheme.bodySmall?.copyWith(color: const Color(0xFFA1A1A6))),
+          Text(_l('fc_flip_back'), textAlign: TextAlign.center, style: th.textTheme.bodySmall?.copyWith(color: const Color(0xFFA1A1A6))),
         ]),
       );
 
