@@ -43,7 +43,7 @@ class RecordingPipeline(
 
     /** Flushes the pending tail and builds the report. */
     fun finish(): CallReport {
-        val endMs = lastMs + 10_000
+        val endMs = if (lastMs > Long.MAX_VALUE - 10_000) Long.MAX_VALUE else lastMs + 10_000 // saturating: a huge start must not wrap negative
         process(segmenter.onTick(endMs), endMs)
         val triggers = results.flatMap { it.verdict.triggers }
             .groupBy { it.trim().lowercase() }

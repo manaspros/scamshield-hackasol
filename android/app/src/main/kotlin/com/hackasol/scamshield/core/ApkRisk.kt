@@ -35,10 +35,37 @@ object ApkRisk {
     )
 
     private val SMS_READ = setOf("RECEIVE_SMS", "READ_SMS")
-    private val APK_NAME = Regex("""[^\s/\\"']+\.apk\b""", RegexOption.IGNORE_CASE)
+    private const val MAX_APK_NAME = 255
+    private const val PERMISSION_PREFIX = "android.permission."
 
-    /** First ".apk" file name mentioned in the given notification fields (e.g. a chat document), else null. */
-    fun apkNameIn(vararg fields: String): String? = fields.firstNotNullOfOrNull { APK_NAME.find(it)?.value }
+    private fun isSeparator(c: Char) = c.isWhitespace() || c == '/' || c == '\\' || c == '"' || c == '\''
+
+    /**
+     * First ".apk" file name mentioned in the given notification fields (e.g. a chat document), else null.
+     * Linear scan over tokens (no backtracking regex: a long spaceless text must not stall the listener).
+     */
+    fun apkNameIn(vararg fields: String): String? = fields.firstNotNullOfOrNull { f ->
+        var start = 0
+        var found: String? = null
+        for (i in 0..f.length) {
+            if (i < f.length && !isSeparator(f[i])) continue
+            if (i - start in 5..MAX_APK_NAME) found = apkInToken(f, start, i)
+            if (found != null) break
+            start = i + 1
+        }
+        found
+    }
+
+    /** Token [from, to) up to the first ".apk" that ends a word ("invoice.apk.pdf" -> "invoice.apk", "file.apkx" -> none). */
+    private fun apkInToken(f: String, from: Int, to: Int): String? {
+        var at = f.indexOf(".apk", from, ignoreCase = true)
+        while (at in 1 until to && at + 4 <= to) {
+            val after = at + 4
+            if (at > from && (after == to || !(f[after].isLetterOrDigit() || f[after] == '_'))) return f.substring(from, after)
+            at = f.indexOf(".apk", after, ignoreCase = true)
+        }
+        return null
+    }
 
     fun assess(
         permissions: List<String>,
@@ -46,7 +73,9 @@ object ApkRisk {
         label: String? = null,        // reserved for the warning text; not scored
         packageName: String? = null,  // reserved; not scored
     ): ApkRiskResult {
-        val names = permissions.map { it.substringAfterLast('.') }.toSet()
+        // Full android.permission.* names only: com.vendor.permission.READ_SMS is not the system permission.
+        // (bare names like "READ_SMS" are accepted too)
+        val names = permissions.filter { it.startsWith(PERMISSION_PREFIX) || '.' !in it }.map { it.removePrefix(PERMISSION_PREFIX) }.toSet()
         val hits = RULES.keys.filter { it in names }
         var score = hits.sumOf { RULES.getValue(it).weight }
         if (hits.isNotEmpty() && fromUnknownSource) score += UNKNOWN_SOURCE_BONUS
@@ -58,6 +87,6 @@ object ApkRisk {
             score >= MEDIUM_THRESHOLD -> ApkRiskLevel.MEDIUM
             else -> ApkRiskLevel.LOW
         }
-        return ApkRiskResult(level, score, hits.map { RiskyPermission("android.permission.$it", RULES.getValue(it).hi, RULES.getValue(it).en) })
+        return ApkRiskResult(level, score, hits.map { RiskyPermission(PERMISSION_PREFIX + it, RULES.getValue(it).hi, RULES.getValue(it).en) })
     }
 }

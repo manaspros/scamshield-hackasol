@@ -8,6 +8,8 @@ package com.hackasol.scamshield.core
  * startMs = first word's start * 1000, else [fallbackStartMs] (result without word timings).
  */
 object SttResultParser {
+    private const val MAX_DEPTH = 32          // Vosk output nests 3 deep; deeper is garbage and would overflow the stack
+    const val MAX_START_MS = 86_400_000L      // one day: a sane upper bound for a call recording offset
     fun parse(json: String, fallbackStartMs: Long = 0L): SttSegment? {
         val parsed = try {
             Reader(json).value() as? Map<*, *>
@@ -18,13 +20,15 @@ object SttResultParser {
         val text = (obj["text"] as? String)?.trim().orEmpty()
         if (text.isEmpty()) return null
         val first = (obj["result"] as? List<*>)?.firstOrNull() as? Map<*, *>
-        val startMs = (first?.get("start") as? Double)?.let { Math.round(it * 1000) } ?: fallbackStartMs
+        val startMs = (first?.get("start") as? Double)?.takeIf { it.isFinite() }
+            ?.let { Math.round(it * 1000).coerceIn(0L, MAX_START_MS) } ?: fallbackStartMs
         return SttSegment(text, startMs)
     }
 
     // Minimal JSON reader: objects -> Map, arrays -> List, strings (all escapes), numbers -> Double, literals.
     private class Reader(private val s: String) {
         private var i = 0
+        private var depth = 0
         private fun ws() { while (i < s.length && s[i].isWhitespace()) i++ }
         private fun fail(): Nothing = throw IllegalArgumentException("bad json at $i")
 
@@ -81,6 +85,11 @@ object SttResultParser {
         }
 
         private fun arr(): List<Any?> {
+            if (++depth > MAX_DEPTH) fail()
+            try { return arrBody() } finally { depth-- }
+        }
+
+        private fun arrBody(): List<Any?> {
             i++
             val out = mutableListOf<Any?>()
             ws()
@@ -98,6 +107,11 @@ object SttResultParser {
         }
 
         private fun obj(): Map<String, Any?> {
+            if (++depth > MAX_DEPTH) fail()
+            try { return objBody() } finally { depth-- }
+        }
+
+        private fun objBody(): Map<String, Any?> {
             i++
             val out = mutableMapOf<String, Any?>()
             ws()

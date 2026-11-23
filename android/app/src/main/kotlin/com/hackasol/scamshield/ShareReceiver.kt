@@ -24,7 +24,11 @@ class ShareReceiver : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (intent?.action == android.content.Intent.ACTION_SEND && intent?.type == APK_MIME) { checkApk(); return }
+        if (intent?.action == android.content.Intent.ACTION_SEND && (intent?.type == APK_MIME || intent?.type == OCTET_MIME)) {
+            // octet-stream is what many chat apps send for an .apk; only a name ending in .apk is treated as one.
+            if (intent?.type == APK_MIME || sharedName()?.endsWith(".apk", ignoreCase = true) == true) checkApk() else finish()
+            return
+        }
         val text = ShareIntentMapper.map(intent?.action, intent?.type, intent?.getCharSequenceExtra(EXTRA_TEXT))
         if (text == null) { finish(); return }
         val app = applicationContext
@@ -45,10 +49,23 @@ class ShareReceiver : Activity() {
         }
     }
 
-    private fun checkApk() {
-        val uri = if (android.os.Build.VERSION.SDK_INT >= 33)
+    private fun sharedUri(): android.net.Uri? =
+        if (android.os.Build.VERSION.SDK_INT >= 33)
             intent.getParcelableExtra(android.content.Intent.EXTRA_STREAM, android.net.Uri::class.java)
         else @Suppress("DEPRECATION") intent.getParcelableExtra<android.net.Uri>(android.content.Intent.EXTRA_STREAM)
+
+    private fun sharedName(): String? {
+        val uri = sharedUri() ?: return null
+        val shown = try {
+            contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
+                if (it.moveToFirst()) it.getString(0) else null
+            }
+        } catch (_: Exception) { null }
+        return shown ?: uri.lastPathSegment
+    }
+
+    private fun checkApk() {
+        val uri = sharedUri()
         val app = applicationContext
         scope.launch {
             try {
@@ -72,5 +89,6 @@ class ShareReceiver : Activity() {
     private companion object {
         const val EXTRA_TEXT = android.content.Intent.EXTRA_TEXT
         const val APK_MIME = "application/vnd.android.package-archive"
+        const val OCTET_MIME = "application/octet-stream"
     }
 }
