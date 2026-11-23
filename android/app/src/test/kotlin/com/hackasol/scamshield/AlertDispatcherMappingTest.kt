@@ -7,6 +7,7 @@ import com.hackasol.scamshield.core.ScamType
 import com.hackasol.scamshield.core.Source
 import com.hackasol.scamshield.core.Verdict
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -23,8 +24,9 @@ class AlertDispatcherMappingTest {
 
     @Test fun T1_7_scamHasReportAction() {
         val f = fields(v(Label.SCAM, Source.CAPTION), ScamType.OTP)!!
-        assertEquals("scam_alerts", f.channelId)
-        assertTrue(f.priorityHigh)
+        // In-call SCAM shows a card; its notification is a silent record (never a heads-up over the call).
+        assertEquals("scam_suspicious", f.channelId)
+        assertFalse(f.priorityHigh)
         assertEquals(listOf("report"), f.actions.map { it.route })
         assertTrue(f.title.contains("SCAM"))
         assertTrue(f.text.contains("OTP ठगी"))

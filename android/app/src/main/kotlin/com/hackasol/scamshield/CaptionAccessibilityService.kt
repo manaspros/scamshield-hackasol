@@ -99,7 +99,7 @@ class CaptionAccessibilityService : AccessibilityService() {
         bg.removeCallbacksAndMessages(null)
         scanThread.quitSafely()
         safe("installReceiver") { unregisterReceiver(installReceiver) }
-        if (::overlay.isInitialized) safe("hide") { overlay.hide() }
+        if (::overlay.isInitialized) safe("hide") { overlay.release() }
         EventBus.emit("service", mapOf("connected" to false))
         super.onDestroy()
     }
@@ -165,6 +165,7 @@ class CaptionAccessibilityService : AccessibilityService() {
         if (callNow != inCall) {
             inCall = callNow
             EventBus.emit("call", mapOf("active" to callNow))
+            if (!callNow) overlay.callEnded()   // chip/card never outlive the call
             if (callNow) {
                 callStartMs = now; enableAttempted = false
                 gate.startCall(); probeDoneThisCall = false

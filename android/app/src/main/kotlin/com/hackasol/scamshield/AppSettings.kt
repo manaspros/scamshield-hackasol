@@ -35,6 +35,11 @@ object AppSettings {
         get() = prefs.getBoolean("overlayEnabled", true)
         set(v) = prefs.edit().putBoolean("overlayEnabled", v).apply()
 
+    /** Read the in-call SCAM card aloud (platform TextToSpeech). Default on. */
+    var readAloud: Boolean
+        get() = prefs.getBoolean("readAloud", true)
+        set(v) = prefs.edit().putBoolean("readAloud", v).apply()
+
     var autoEnableCaptions: Boolean
         get() = prefs.getBoolean("autoEnableCaptions", false)
         set(v) = prefs.edit().putBoolean("autoEnableCaptions", v).apply()
@@ -72,6 +77,7 @@ object AppSettings {
     fun toMap(): Map<String, Any?> = mapOf(
         "discoveryMode" to discoveryMode,
         "overlayEnabled" to overlayEnabled,
+        "readAloud" to readAloud,
         "autoEnableCaptions" to autoEnableCaptions,
         "ocrFallback" to ocrFallback,
         "useLlm" to useLlm,
@@ -84,6 +90,7 @@ object AppSettings {
     fun update(m: Map<*, *>) {
         (m["discoveryMode"] as? Boolean)?.let { discoveryMode = it }
         (m["overlayEnabled"] as? Boolean)?.let { overlayEnabled = it }
+        (m["readAloud"] as? Boolean)?.let { readAloud = it }
         (m["autoEnableCaptions"] as? Boolean)?.let { autoEnableCaptions = it }
         (m["ocrFallback"] as? Boolean)?.let { ocrFallback = it }
         (m["useLlm"] as? Boolean)?.let { useLlm = it }

@@ -191,9 +191,54 @@ object L10n {
 
     // ---- overlay ----
 
-    /** Collapsed title keeps its English wording in every language (hi/hne look unchanged); only the label name is shown as-is. */
+    /** Verdict title with the confidence (Demo/debug only; the in-call chip and card never show a percentage). hi/hne are Devanagari. */
     fun overlayTitle(label: Label, pct: Int, lang: String): String =
-        pick(lang, "This statement is ${label.name} · $pct%", "This statement is ${label.name} · $pct%")
+        pick(lang, "This statement is ${label.name} · $pct%", "यह बात ${labelWord(label, lang)} · $pct%")
+
+    // ---- R3 alert surfaces: chip, card, spoken line, notification channels ----
+
+    /** The one-word verdict shown next to the icon (colour is never the only cue). */
+    fun labelWord(label: Label, lang: String): String = when (label) {
+        Label.SCAM -> pick(lang, "Scam", "ठगी")
+        Label.SUSPICIOUS -> pick(lang, "Careful", "सावधान")
+        Label.SAFE -> pick(lang, "Safe", "सुरक्षित")
+    }
+
+    fun labelIcon(label: Label): String = when (label) { Label.SCAM -> "⛔"; Label.SUSPICIOUS -> "⚠"; Label.SAFE -> "✓" }
+
+    /** Chip text: icon + word. */
+    fun chipText(label: Label, lang: String): String = "${labelIcon(label)} ${labelWord(label, lang)}"
+
+    fun chipDescription(label: Label, lang: String): String = when (label) {
+        Label.SCAM -> pick(lang, "ScamShield warning: scam. Tap for details.", "ScamShield चेतावनी: ठगी। जानकारी के लिए छुएँ।")
+        else -> pick(lang, "ScamShield warning: be careful. Tap for details.", "ScamShield चेतावनी: सावधान। जानकारी के लिए छुएँ।")
+    }
+
+    /** Card headline for a caption verdict (signals use [signalTitle]). */
+    fun cardTitle(label: Label, lang: String): String = when (label) {
+        Label.SCAM -> pick(lang, "This may be a scam", "ठगी हो सकती है")
+        Label.SUSPICIOUS -> pick(lang, "Be careful", "सावधान रहें")
+        Label.SAFE -> pick(lang, "Normal conversation", "सामान्य बातचीत")
+    }
+
+    /** The one plain line of why/what to do on a caption card. No engine, no percentage, no quote. */
+    fun cardWhy(label: Label, lang: String): String =
+        if (label == Label.SCAM) pick(lang, "Do not share OTP, PIN or money.", "OTP, PIN या पैसे न दें।")
+        else pick(lang, "Do not share personal information.", "निजी जानकारी न दें।")
+
+    /** The ONE line read aloud for an in-call SCAM card: the signal's advice, or the generic scam line. */
+    fun ttsLine(signalKind: String?, lang: String): String =
+        if (signalKind != null) signalAdvice(signalKind, lang)
+        else pick(lang, "Warning. This may be a scam. Do not share OTP or money.", "सावधान। यह ठगी हो सकती है। OTP या पैसे न दें।")
+
+    /** BCP-47 tag for the platform TextToSpeech; hne has no voice, so it speaks Hindi. */
+    fun ttsLanguageTag(lang: String): String = if (normalizeLang(lang) == "en") "en-IN" else "hi-IN"
+
+    fun detailsAction(lang: String): String = pick(lang, "Details", "विवरण देखें")
+
+    fun channelName(headsUp: Boolean, lang: String): String =
+        if (headsUp) pick(lang, "Scam alerts", "स्कैम अलर्ट")
+        else pick(lang, "Suspicious messages (silent)", "संदिग्ध संदेश (बिना आवाज़)")
 
     /** Secondary line under the title: Hindi in hi/hne, English advice in en. */
     fun overlayLine(label: Label, lang: String): String = when (label) {

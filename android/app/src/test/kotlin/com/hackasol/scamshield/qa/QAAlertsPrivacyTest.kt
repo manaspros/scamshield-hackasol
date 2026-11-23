@@ -59,7 +59,9 @@ class QAAlertsPrivacyTest {
     @Test fun `QA_alertMapper_reportActionAlwaysPresentWithReportRoute`() {
         for (l in listOf(Label.SCAM, Label.SUSPICIOUS)) {
             val f = fields(qaVerdict(l, 0.5))!!
-            assertEquals(listOf(AlertNotificationMapper.ROUTE_REPORT), f.actions.map { it.route }); assertTrue(f.priorityHigh)
+            // R3: report is always the first action; only the SMS SCAM heads-up (high channel) adds Details.
+            assertEquals(AlertNotificationMapper.ROUTE_REPORT, f.actions.first().route); assertEquals(l == Label.SCAM, f.priorityHigh)
+            assertEquals(if (l == Label.SCAM) 2 else 1, f.actions.size)
         }
     }
 
