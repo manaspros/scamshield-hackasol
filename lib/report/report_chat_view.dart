@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
 import '../theme/tokens.dart';
@@ -247,7 +248,8 @@ class _TypingBubbleState extends State<TypingBubble> with SingleTickerProviderSt
   }
 }
 
-/// Mic is open: a live waveform, the words heard so far, and a red stop button.
+/// Mic is open: a live waveform, the words heard so far, and a red stop button (tap mode). While the mic button is
+/// held there is no stop button: releasing sends, and [cancelArmed] greys the panel when sliding away to cancel.
 class ListeningPanel extends StatelessWidget {
   const ListeningPanel({
     super.key,
@@ -257,11 +259,14 @@ class ListeningPanel extends StatelessWidget {
     required this.stopLabel,
     required this.onStop,
     this.scale = const ChatScale(),
+    this.holding = false,
+    this.cancelArmed = false,
   });
   final String partial, caption, stopLabel;
   final List<double> levels;
   final VoidCallback onStop;
   final ChatScale scale;
+  final bool holding, cancelArmed;
 
   @override
   Widget build(BuildContext context) {
@@ -289,7 +294,7 @@ class ListeningPanel extends StatelessWidget {
                           duration: const Duration(milliseconds: 120),
                           margin: const EdgeInsets.symmetric(horizontal: 1.5),
                           height: 6 + 34 * l.clamp(0.0, 1.0),
-                          decoration: BoxDecoration(color: p.accent, borderRadius: BorderRadius.circular(3)),
+                          decoration: BoxDecoration(color: cancelArmed ? p.muted : p.accent, borderRadius: BorderRadius.circular(3)),
                         ),
                       ),
                     ),
@@ -297,25 +302,32 @@ class ListeningPanel extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: Sp.m),
-          SizedBox(
-            width: 52,
-            height: 52,
-            child: IconButton.filled(
-              key: const Key('btn_mic_stop'),
-              tooltip: stopLabel,
-              onPressed: onStop,
-              style: IconButton.styleFrom(backgroundColor: st.scam, foregroundColor: Colors.white),
-              icon: const Icon(Icons.stop_rounded, size: 26),
+          if (!holding) ...[
+            const SizedBox(width: Sp.m),
+            SizedBox(
+              width: 52,
+              height: 52,
+              child: IconButton.filled(
+                key: const Key('btn_mic_stop'),
+                tooltip: stopLabel,
+                onPressed: onStop,
+                style: IconButton.styleFrom(backgroundColor: st.scam, foregroundColor: Colors.white),
+                icon: const Icon(Icons.stop_rounded, size: 26),
+              ),
             ),
-          ),
+          ],
         ]),
         if (partial.isNotEmpty) ...[
           const SizedBox(height: Sp.s),
           Text('"$partial"', key: const Key('mic_partial'), style: TextStyle(fontSize: scale.body + 1, color: p.ink)),
         ],
         const SizedBox(height: Sp.xs),
-        Text(caption, style: TextStyle(fontSize: 13, color: p.muted)),
+        Semantics(
+          liveRegion: true,
+          child: Text(caption,
+              key: const Key('mic_caption'),
+              style: TextStyle(fontSize: 13, color: cancelArmed ? st.scam : p.muted, fontWeight: cancelArmed ? FontWeight.w700 : null)),
+        ),
       ]),
     );
   }
@@ -335,12 +347,30 @@ class ChatInputBar extends StatelessWidget {
     required this.onSend,
     this.numeric = false,
     this.focusNode,
+    this.micHint,
+    this.onHoldStart,
+    this.onHoldEnd,
+    this.onHoldSlide,
+    this.holding = false,
   });
   final TextEditingController controller;
   final FocusNode? focusNode;
   final String hint, attachLabel, micLabel, sendLabel;
   final VoidCallback onAttach, onMic, onSend;
   final bool numeric;
+
+  /// TalkBack hint for the mic ("tap, or hold and speak").
+  final String? micHint;
+
+  /// Hold-to-talk: press and hold the mic, release to send. [onHoldEnd] gets true when the finger slid away to cancel;
+  /// [onHoldSlide] reports whether the slide currently cancels.
+  final VoidCallback? onHoldStart;
+  final ValueChanged<bool>? onHoldEnd;
+  final ValueChanged<bool>? onHoldSlide;
+  final bool holding;
+
+  /// How far left (logical px) the finger must slide to cancel.
+  static const cancelSlide = 80.0;
 
   @override
   Widget build(BuildContext context) {
@@ -390,11 +420,92 @@ class ChatInputBar extends StatelessWidget {
         const SizedBox(width: Sp.s),
         ValueListenableBuilder<TextEditingValue>(
           valueListenable: controller,
-          builder: (_, v, _) => v.text.trim().isEmpty
-              ? round(const Key('btn_mic'), micLabel, Icons.mic_rounded, onMic, bg: p.accentTint, fg: p.accent)
+          builder: (_, v, _) => v.text.trim().isEmpty || holding
+              ? _HoldMic(
+                  label: micLabel,
+                  hint: micHint,
+                  holding: holding,
+                  onTap: onMic,
+                  onHoldStart: onHoldStart,
+                  onHoldEnd: onHoldEnd,
+                  onHoldSlide: onHoldSlide,
+                )
               : round(const Key('btn_send'), sendLabel, Icons.arrow_upward_rounded, onSend, bg: p.accent, fg: p.onAccent),
         ),
       ]),
+    );
+  }
+}
+
+/// The mic button: tap toggles listening; press and hold talks until release (slide left to cancel).
+/// While held it grows and turns solid, so it is clear the app is listening.
+class _HoldMic extends StatefulWidget {
+  const _HoldMic({required this.label, this.hint, required this.holding, required this.onTap, this.onHoldStart, this.onHoldEnd, this.onHoldSlide});
+  final String label;
+  final String? hint;
+  final bool holding;
+  final VoidCallback onTap;
+  final VoidCallback? onHoldStart;
+  final ValueChanged<bool>? onHoldEnd;
+  final ValueChanged<bool>? onHoldSlide;
+  @override
+  State<_HoldMic> createState() => _HoldMicState();
+}
+
+class _HoldMicState extends State<_HoldMic> {
+  bool _armed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = palOf(context);
+    final on = widget.holding;
+    return Semantics(
+      button: true,
+      label: widget.label,
+      hint: widget.hint,
+      excludeSemantics: true,
+      child: GestureDetector(
+        key: const Key('btn_mic'),
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        onLongPressStart: widget.onHoldStart == null
+            ? null
+            : (_) {
+                HapticFeedback.mediumImpact();
+                setState(() => _armed = false);
+                widget.onHoldStart!();
+              },
+        onLongPressMoveUpdate: (d) {
+          final armed = d.offsetFromOrigin.dx < -ChatInputBar.cancelSlide;
+          if (armed != _armed) {
+            HapticFeedback.selectionClick();
+            setState(() => _armed = armed);
+            widget.onHoldSlide?.call(armed);
+          }
+        },
+        onLongPressEnd: (_) => widget.onHoldEnd?.call(_armed),
+        onLongPressCancel: () {
+          if (widget.holding) widget.onHoldEnd?.call(true);
+        },
+        child: SizedBox(
+          width: 60,
+          height: 60,
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOutCubic,
+              width: on ? 60 : 48,
+              height: on ? 60 : 48,
+              decoration: BoxDecoration(
+                color: on ? (_armed ? p.muted : p.accent) : p.accentTint,
+                shape: BoxShape.circle,
+                boxShadow: on && !_armed ? [BoxShadow(color: p.accent.withValues(alpha: 0.35), blurRadius: 18, spreadRadius: 2)] : null,
+              ),
+              child: Icon(on && _armed ? Icons.close_rounded : Icons.mic_rounded, size: on ? 30 : 24, color: on ? p.onAccent : p.accent),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -322,6 +322,12 @@ class _ReportScreenState extends State<ReportScreen> {
   StreamSubscription<SpeechEvent>? _speechSub;
   bool _listening = false;
   String _partial = '';
+  // One voice answer can span several recogniser sessions (Android stops at pauses): finished pieces collect here.
+  String _heard = '';
+  bool _holding = false, _cancelArmed = false, _stopping = false;
+  int _restarts = 0;
+  Timer? _finishTimer;
+  DateTime _lastLevel = DateTime(0);
   final _levels = List<double>.filled(24, 0.1);
 
   String get _lang => widget.initialLang ?? AppLanguage.of(context);
@@ -339,6 +345,7 @@ class _ReportScreenState extends State<ReportScreen> {
   void dispose() {
     _timer?.cancel();
     _speechSub?.cancel();
+    _finishTimer?.cancel();
     if (_listening) widget.speech.cancel();
     _input.dispose();
     _focus.dispose();
@@ -681,69 +688,157 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
+  /// Tap on the mic: start listening, or (when already listening) stop and send what was heard.
   Future<void> _mic() async {
-    if (_listening) {
-      await widget.speech.stop();
-      return;
+    if (_listening) return _stopVoice();
+    await _beginVoice(hold: false);
+  }
+
+  /// Press and hold the mic: listen until the finger lifts.
+  Future<void> _holdStart() async {
+    if (_listening) return;
+    await _beginVoice(hold: true);
+  }
+
+  /// Finger lifted: send, or drop everything when it slid away to cancel.
+  void _holdEnd(bool cancel) {
+    if (!_listening) return;
+    if (cancel) {
+      _cancelVoice();
+    } else {
+      _stopVoice();
     }
+  }
+
+  Future<void> _beginVoice({required bool hold}) async {
     _focus.unfocus();
     _speechSub?.cancel();
-    _speechSub = widget.speech.stream().listen(_onSpeech, onError: (_) => _endListening());
+    _speechSub = widget.speech.stream().listen(_onSpeech, onError: (_) => _finishVoice());
     setState(() {
       _listening = true;
+      _holding = hold;
+      _cancelArmed = false;
+      _stopping = false;
       _partial = '';
+      _heard = '';
+      _restarts = 0;
       _levels.fillRange(0, _levels.length, 0.1);
     });
     _scrollToEnd();
+    await _startRecognizer();
+  }
+
+  Future<void> _startRecognizer() async {
     final r = await widget.speech.start(_lang);
-    if (!mounted) return;
+    if (!mounted || !_listening) return;
     switch (r.status) {
       case SpeechStatus.live:
         return;
-      case SpeechStatus.done:
-        _endListening();
-        if (r.text.trim().isNotEmpty) _send(voice: true, text: r.text);
+      case SpeechStatus.done: // the system dialog already returned the words
+        _heard = _join(_heard, r.text);
+        _finishVoice();
       case SpeechStatus.denied:
-        _endListening();
+        _endVoice();
         _toast(rc(_lang, 'mic_denied'));
       case SpeechStatus.unavailable:
-        _endListening();
+        _endVoice();
         _toast(rc(_lang, 'mic_none'));
       case SpeechStatus.failed:
-        _endListening();
+        _endVoice();
         _toast(rc(_lang, 'mic_err'));
     }
   }
 
+  static String _join(String a, String b) => [a.trim(), b.trim()].where((x) => x.isNotEmpty).join(' ');
+
+  /// The recogniser stopped by itself (a pause). Keep listening unless the user has finished.
+  void _continueOrFinish() {
+    if (_stopping || !_listening || _restarts >= 30) return _finishVoice();
+    _restarts++;
+    Future<void>.delayed(const Duration(milliseconds: 150), () {
+      if (mounted && _listening && !_stopping) _startRecognizer();
+    });
+  }
+
   void _onSpeech(SpeechEvent e) {
-    if (!mounted) return;
+    if (!mounted || !_listening) return;
     switch (e.type) {
       case 'partial':
         setState(() => _partial = e.text);
       case 'rms':
+        // ~20 updates a second from Android: redraw at most every 60 ms so the waveform does not jitter.
+        final now = DateTime.now();
+        if (now.difference(_lastLevel).inMilliseconds < 60) return;
+        _lastLevel = now;
         setState(() {
           _levels.removeAt(0);
           _levels.add(e.level);
         });
       case 'final':
-        _endListening();
-        if (e.text.trim().isNotEmpty) {
-          _send(voice: true, text: e.text);
-        } else {
-          _toast(rc(_lang, 'mic_err'));
-        }
+        setState(() {
+          _heard = _join(_heard, e.text.isNotEmpty ? e.text : _partial);
+          _partial = '';
+        });
+        _continueOrFinish();
       case 'error':
-        _endListening();
-        _toast(rc(_lang, e.code == 'NO_PERMISSION' ? 'mic_denied' : 'mic_err'));
+        if (e.code == 'NO_PERMISSION') {
+          _endVoice();
+          _toast(rc(_lang, 'mic_denied'));
+          return;
+        }
+        // NO_MATCH (silence) and busy/client errors mid-session: keep the words so far and carry on.
+        setState(() {
+          _heard = _join(_heard, _partial);
+          _partial = '';
+        });
+        _continueOrFinish();
       case 'end':
-        _endListening();
+        // Bookkeeping from the native side after each session; the screen decides when listening ends.
+        break;
     }
   }
 
-  void _endListening() {
+  /// Stop listening and send. Waits briefly for the recogniser's last words.
+  Future<void> _stopVoice() async {
+    if (!_listening || _stopping) return;
+    setState(() => _stopping = true);
+    _finishTimer?.cancel();
+    _finishTimer = Timer(const Duration(milliseconds: 1800), _finishVoice);
+    await widget.speech.stop();
+  }
+
+  void _cancelVoice() {
+    widget.speech.cancel();
+    _endVoice();
+    _toast(rc(_lang, 'mic_cancelled'));
+  }
+
+  /// Sends everything heard in this voice answer.
+  void _finishVoice() {
+    if (!_listening) return;
+    final text = _join(_heard, _partial);
+    widget.speech.cancel();
+    _endVoice();
+    if (text.isNotEmpty) {
+      _send(voice: true, text: text);
+    } else {
+      _toast(rc(_lang, 'mic_err'));
+    }
+  }
+
+  void _endVoice() {
+    _finishTimer?.cancel();
+    _finishTimer = null;
     _speechSub?.cancel();
     _speechSub = null;
-    if (mounted && _listening) setState(() => _listening = false);
+    if (mounted && _listening) {
+      setState(() {
+        _listening = false;
+        _holding = false;
+        _cancelArmed = false;
+        _stopping = false;
+      });
+    }
   }
 
   Future<void> _run(Future<bool> call, String errKey) async {
@@ -835,14 +930,21 @@ class _ReportScreenState extends State<ReportScreen> {
       ),
       if (_listening)
         _chrome(ListeningPanel(
-          partial: _partial,
+          partial: _join(_heard, _partial),
           levels: _levels,
-          caption: rc(lang, 'listening_sub', {'lang': _langName(lang)}),
+          caption: _cancelArmed
+              ? rc(lang, 'hold_cancel')
+              : _holding
+                  ? rc(lang, 'hold_hint')
+                  : '${rc(lang, 'listening_sub', {'lang': _langName(lang)})} · ${rc(lang, 'tap_hint')}',
           stopLabel: rc(lang, 'stop'),
           onStop: _mic,
           scale: _scale,
-        )),
-      if (iv != null && !_listening)
+          holding: _holding,
+          cancelArmed: _cancelArmed,
+        ), key: const ValueKey('listening_panel')),
+      // While the mic is held the bar stays, so the finger keeps its button; in tap mode the panel replaces it.
+      if (iv != null && (!_listening || _holding))
         _chrome(ChatInputBar(
           controller: _input,
           focusNode: _focus,
@@ -854,7 +956,12 @@ class _ReportScreenState extends State<ReportScreen> {
           onAttach: _attach,
           onMic: _mic,
           onSend: _send,
-        )),
+          micHint: rc(lang, 'mic_tip'),
+          holding: _holding,
+          onHoldStart: _holdStart,
+          onHoldEnd: _holdEnd,
+          onHoldSlide: (armed) => setState(() => _cancelArmed = armed),
+        ), key: const ValueKey('input_bar')), // keyed: the panel appearing above must not rebuild it mid-hold
       // SafeArea: Android draws edge to edge, so without it the 1930 button sits under the system navigation bar.
       SafeArea(
         top: false,
@@ -873,8 +980,8 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   // Pinned controls stop growing at 1.3x text (like the app bar) so the chat keeps room at 2x; the chat itself scales fully.
-  static Widget _chrome(Widget child) => Builder(
-      builder: (context) => MediaQuery.withClampedTextScaling(maxScaleFactor: 1.3, child: child));
+  static Widget _chrome(Widget child, {Key? key}) => Builder(
+      key: key, builder: (context) => MediaQuery.withClampedTextScaling(maxScaleFactor: 1.3, child: child));
 
   static String _langName(String l) => switch (l) { 'en' => 'English', 'hne' => 'छत्तीसगढ़ी', _ => 'हिंदी' };
 
