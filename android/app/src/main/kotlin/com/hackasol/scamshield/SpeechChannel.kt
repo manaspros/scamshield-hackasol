@@ -62,6 +62,10 @@ class SpeechChannel(private val activity: Activity) {
         .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
         .putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, activity.packageName)
+        // Let people pause mid-sentence (older people speak slowly); Dart also restarts after an early stop.
+        .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 4000L)
+        .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 3000L)
+        .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 2000L)
 
     private fun start(locale: String, result: MethodChannel.Result) {
         if (activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -70,7 +74,8 @@ class SpeechChannel(private val activity: Activity) {
             return
         }
         if (!SpeechRecognizer.isRecognitionAvailable(activity)) { startDialog(locale, result); return }
-        release()
+        // Quietly drop any previous recogniser: an "end" here would close the panel of the session we are starting.
+        release(notify = false)
         val r = SpeechRecognizer.createSpeechRecognizer(activity)
         recognizer = r
         r.setRecognitionListener(object : RecognitionListener {
@@ -133,9 +138,11 @@ class SpeechChannel(private val activity: Activity) {
         return true
     }
 
-    fun release() {
-        recognizer?.let { try { it.cancel(); it.destroy() } catch (_: Throwable) {} }
+    /** Frees the recogniser; tells Dart ("end") only when a session was actually running. */
+    fun release(notify: Boolean = true) {
+        val r = recognizer ?: return
         recognizer = null
-        emit("end")
+        try { r.cancel(); r.destroy() } catch (_: Throwable) {}
+        if (notify) emit("end")
     }
 }

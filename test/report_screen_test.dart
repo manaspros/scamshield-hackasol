@@ -236,6 +236,90 @@ void main() {
     expect(t.takeException(), isNull);
   });
 
+  group('hold to talk', () {
+    // Live recogniser: the fake answers "start" with live mode and the test pushes events like SpeechChannel.kt.
+    late MockStreamHandlerEventSink sink;
+    Future<_Fake> live(WidgetTester t) async {
+      final fake = await _setup(t, scale: 1.0);
+      fake.speechStart = {'mode': 'live'};
+      t.binding.defaultBinaryMessenger.setMockStreamHandler(
+        const EventChannel('scamshield/speech/events'),
+        MockStreamHandler.inline(onListen: (_, s) {
+          sink = s;
+        }),
+      );
+      addTearDown(() => t.binding.defaultBinaryMessenger.setMockStreamHandler(const EventChannel('scamshield/speech/events'), null));
+      AppLanguage.debugSet('en');
+      fake.evidence = false;
+      await _show(t);
+      await _tap(t, find.byKey(const Key('path_lost')));
+      await _tap(t, find.byKey(const Key('chip_KYC')));
+      await _tap(t, find.byKey(const Key('chip_call')));
+      return fake;
+    }
+
+    Future<void> emit(WidgetTester t, Map<String, Object?> e) async {
+      sink.success(e);
+      await t.pump();
+    }
+
+    testWidgets('hold, speak through a pause, release: one answer with every word', (t) async {
+      final fake = await live(t);
+      final g = await t.startGesture(t.getCenter(find.byKey(const Key('btn_mic'))));
+      await t.pump(const Duration(milliseconds: 700)); // long press
+      expect(find.byKey(const Key('mic_caption')), findsOneWidget);
+      expect(find.text('Release to send · slide left to cancel'), findsOneWidget);
+      expect(find.byKey(const Key('btn_mic_stop')), findsNothing); // releasing sends; no stop button while held
+      await emit(t, {'type': 'partial', 'text': 'my bank'});
+      await emit(t, {'type': 'final', 'text': 'my bank called'});
+      await emit(t, {'type': 'end'}); // native bookkeeping must not close the panel
+      await t.pump(const Duration(milliseconds: 200)); // the screen restarts the recogniser after the pause
+      expect(fake.named('start').length, 2);
+      expect(find.text('Release to send · slide left to cancel'), findsOneWidget);
+      await emit(t, {'type': 'partial', 'text': 'and asked for the OTP'});
+      await g.up();
+      await t.pump();
+      expect(fake.named('stop'), isNotEmpty);
+      await emit(t, {'type': 'final', 'text': 'and asked for the OTP'});
+      await t.pump(const Duration(milliseconds: 300));
+      expect(find.text('my bank called and asked for the OTP'), findsOneWidget);
+      expect(find.text('Spoken'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    });
+
+    testWidgets('slide left while holding cancels: nothing is sent', (t) async {
+      final fake = await live(t);
+      final at = t.getCenter(find.byKey(const Key('btn_mic')));
+      final g = await t.startGesture(at);
+      await t.pump(const Duration(milliseconds: 700));
+      await emit(t, {'type': 'partial', 'text': 'wrong words'});
+      await g.moveBy(const Offset(-120, 0));
+      await t.pump();
+      expect(find.text('Release to cancel'), findsOneWidget);
+      await g.up();
+      await t.pump();
+      expect(fake.named('cancel'), isNotEmpty);
+      expect(find.text('wrong words'), findsNothing);
+      expect(find.byKey(const Key('mic_caption')), findsNothing);
+      await t.pump(const Duration(seconds: 4)); // toast
+      expect(t.takeException(), isNull);
+    });
+
+    testWidgets('tap mode: a pause (no match) keeps listening; stop sends what was heard', (t) async {
+      final fake = await live(t);
+      await _tap(t, find.byKey(const Key('btn_mic')));
+      await emit(t, {'type': 'final', 'text': 'they wanted ten thousand'});
+      await emit(t, {'type': 'error', 'code': 'NO_MATCH'});
+      await t.pump(const Duration(milliseconds: 200));
+      expect(fake.named('start').length, greaterThanOrEqualTo(2));
+      expect(find.byKey(const Key('btn_mic_stop')), findsOneWidget); // still listening
+      await t.tap(find.byKey(const Key('btn_mic_stop')));
+      await t.pump(const Duration(seconds: 2)); // no last words arrive: the timer sends what was heard
+      expect(find.text('they wanted ten thousand'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    });
+  });
+
   testWidgets('switching the app language re-renders scripted bot lines live', (t) async {
     await _setup(t, scale: 1.0);
     await _show(t);
